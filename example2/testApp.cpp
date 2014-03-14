@@ -10,9 +10,9 @@ void testApp::setup(){
 	ofBackground(22);
 	ofSetWindowPosition(20, 20);
 
-//	downloadList.push_back("http://uri.cat/dontlook/m_a.zip");
-//	downloadList.push_back("http://uri.cat/snibbe/BugRugArizona.zip");
-//	downloadList.push_back("http://uri.cat/snibbe/nemo_31_08.mov");
+	downloadList.push_back("http://uri.cat/dontlook/m_a.zip");
+	downloadList.push_back("http://uri.cat/dontlook/snibbe/BugRugArizona.zip");
+	downloadList.push_back("http://uri.cat/dontlook/snibbe/nemo_31_08.mov");
 	downloadList.push_back("http://farm8.staticflickr.com/7420/10032530563_86ff701d19_o.jpg");
 	downloadList.push_back("http://farm4.staticflickr.com/3686/9225463176_d0bf83a992_o.jpg");
 	downloadList.push_back("http://farm8.staticflickr.com/7255/6888724266_158ce261a2_o.jpg");
@@ -58,7 +58,7 @@ void testApp::keyPressed(int key){
 
 void testApp::downloadFinished(ofxBatchDownloaderReport &report){
 
-	cout << "downloadFinished!" << endl;
+	cout << "download Finished!" << endl;
 	cout << report.successfulDownloads.size() << " successfull downloads, " <<  report.failedDownloads.size() << " failed downloads." << endl;
 
 	if( report.failedDownloads.size() ){

@@ -342,7 +342,7 @@ bool ofxSimpleHttp::downloadURLtoDisk(ofxSimpleHttpResponse* resp, bool sendResu
 			if (resp->status == 200){
 				resp->ok = true;
 			}else{
-				cout << "response status is weird ? (" << resp->status << "(" << endl;
+				cout << "response status is weird ? (" << resp->status << ")" << endl;
 				resp->ok = false;
 			}
 		}
@@ -485,22 +485,24 @@ bool ofxSimpleHttp::downloadURL( ofxSimpleHttpResponse* resp, bool sendResultThr
 }
 
 
-void ofxSimpleHttp::streamCopyWithProgress(std::istream & in, std::ostream & out, std::streamsize totalBytes,float & progress){
+void ofxSimpleHttp::streamCopyWithProgress(std::istream & istr, std::ostream & out, std::streamsize totalBytes,float & progress){
 
-	std::streamsize numBytes = totalBytes;
-	const std::size_t buffer_size = COPY_BUFFER_SIZE;
-	char buffer[buffer_size];
-	unsigned int c = 0;
-	while(numBytes > buffer_size){
-		in.read(buffer, buffer_size);
-		out.write(buffer, buffer_size);
-		numBytes -= buffer_size;
-		c++;
-		progress = float(totalBytes - numBytes) / float(totalBytes);
+	Buffer<char> buffer(COPY_BUFFER_SIZE);
+	std::streamsize len = 0;
+	istr.read(buffer.begin(), COPY_BUFFER_SIZE);
+	std::streamsize n = istr.gcount();
+
+	while (n > 0){
+		len += n;
+		out.write(buffer.begin(), static_cast<std::string::size_type>(n));
+		if (istr){
+			istr.read(buffer.begin(), COPY_BUFFER_SIZE);
+			n = istr.gcount();
+		}
+		else n = 0;
+		progress = float(len) / float(totalBytes);
 	}
-
-	in.read(buffer, numBytes);
-	out.write(buffer, numBytes);
+	return len;
 }
 
 
