@@ -53,6 +53,8 @@
 #include <iostream>
 
 
+#define COPY_BUFFER_SIZE				1024 * 50  /*25kb buffer size*/
+
 using namespace Poco::Net;
 using namespace Poco;
 using Poco::Exception;
@@ -71,14 +73,14 @@ struct ofxSimpleHttpResponse{
 	string						responseBody;		// the actual response << DATA IS HERE!
 	string						contentType;		// the mime type of the response
 	Poco::Timestamp				timestamp;			// time of the response
-	HTTPClientSession *			session;			// this is messy, only valid while the download is going om //TODO
+	float						downloadProgress;	//[0..1]
 	string						url;
 	string						fileName;			//file + extension, no path
 	string						absolutePath;		//where file was saved
 
 	ofxSimpleHttpResponse(){
-		session = NULL;
 		downloadToDisk = false;
+		downloadProgress = 0.0f;
 	}
 };
 
@@ -146,4 +148,6 @@ class ofxSimpleHttp : public ofThread, public ofBaseDraws{
 
 		queue<ofxSimpleHttpResponse>	responsesPendingNotification; //we store here downloads that arrived so that we can notify from main thread
 
+		void streamCopyWithProgress(std::istream & in, std::ostream & out, std::streamsize totalBytes,float & progress);
+		std::streamsize copyToStringWithProgress(std::istream& istr, std::string& str, std::streamsize totalBytes, float & progress);
 };

@@ -11,6 +11,7 @@
 #include "ofxSimpleHttp.h"
 #include "ofEvents.h"
 #include "poco/Net/HTTPStreamFactory.h"
+#include "Poco/Buffer.h"
 
 ofxSimpleHttp::ofxSimpleHttp(){
 	timeOut = 10;
@@ -142,19 +143,19 @@ float ofxSimpleHttp::getCurrentDownloadProgress(){
 
 void ofxSimpleHttp::stopCurrentDownload(){
 
-	lock();
-		int n = q.size();
-		if ( isThreadRunning() && n > 0){
-			ofxSimpleHttpResponse * r = q.front();
-			if (debug) printf( "ofxSimpleHttp::stopCurrentDownload() >> about to stop download of %s...\n", r->fileName.c_str() );
-			try{
-				r->downloadCanceled = true;
-				if ( r->session != NULL ) r->session->abort();
-			}catch(Exception& exc){
-				printf( "ofxSimpleHttp::stopCurrentDownload(%s) >> Exception: %s\n", r->fileName.c_str(), exc.displayText().c_str() );
-			}
-		}
-	unlock();
+//	lock();
+//		int n = q.size();
+//		if ( isThreadRunning() && n > 0){
+//			ofxSimpleHttpResponse * r = q.front();
+//			if (debug) printf( "ofxSimpleHttp::stopCurrentDownload() >> about to stop download of %s...\n", r->fileName.c_str() );
+//			try{
+//				r->downloadCanceled = true;
+//				if ( r->session != NULL ) r->session->abort();
+//			}catch(Exception& exc){
+//				printf( "ofxSimpleHttp::stopCurrentDownload(%s) >> Exception: %s\n", r->fileName.c_str(), exc.displayText().c_str() );
+//			}
+//		}
+//	unlock();
 }
 
 void ofxSimpleHttp::draw(float x, float y , float w , float h  ){
@@ -164,12 +165,10 @@ void ofxSimpleHttp::draw(float x, float y , float w , float h  ){
 	int n = q.size();
 	if ( isThreadRunning() && n > 0 ){
 		ofxSimpleHttpResponse * r = q.front();
-		//float downloadPercent = fabs( (float) (r->responseBody.size()) / (0.1f + r->serverReportedSize) );
-		float downloadPercent = 0;
-		if ( r->serverReportedSize >= 0)
-			aux = "ofxSimpleHttp Now Fetching:\n" + r->url.substr(0, w / 8 ) + "\n" + ofToString(100.0f * downloadPercent,1) + "% done...\nQueue Size " + ofToString(n) ;
-		else
-			aux = "ofxSimpleHttp Now Fetching:\n" + r->url.substr(0, w / 8) + "\nQueue Size " + ofToString(n);
+		//if ( r->serverReportedSize >= 0)
+			aux = "ofxSimpleHttp Now Fetching:\n" + r->url.substr(0, w / 8 ) + "\n" + ofToString(100.0f * r->downloadProgress,1) + "% done...\nQueue Size " + ofToString(n) ;
+		//else
+		//	aux = "ofxSimpleHttp Now Fetching:\n" + r->url.substr(0, w / 8) + "\nQueue Size " + ofToString(n);
 	}else{
 		aux= "ofxSimpleHttp idle...";
 	}
@@ -209,7 +208,6 @@ void ofxSimpleHttp::fetchURL(string url, bool notifyOnSuccess){
 	response->downloadCanceled = false;
 	response->fileName = extractFileFromUrl(url);
 	response->notifyOnSuccess = notifyOnSuccess;
-	response->session = NULL;
 
 	lock();
 		q.push(response);
@@ -226,7 +224,6 @@ ofxSimpleHttpResponse ofxSimpleHttp::fetchURLBlocking(string  url){
 
 	response.url = url;
 	response.downloadCanceled = false;
-	response.session = NULL;
 	response.fileName = extractFileFromUrl(url);
 	response.notifyOnSuccess = true;
 	bool ok = downloadURL(&response, false);
@@ -252,7 +249,6 @@ void ofxSimpleHttp::fetchURLToDisk(string url, bool notifyOnSuccess, string dirW
 	response->downloadCanceled = false;
 	response->fileName = extractFileFromUrl(url);
 	response->notifyOnSuccess = notifyOnSuccess;
-	response->session = NULL;
 	response->downloadToDisk = true;
 
 	lock();
@@ -275,7 +271,6 @@ ofxSimpleHttpResponse ofxSimpleHttp::fetchURLtoDiskBlocking(string  url, string 
 	response.absolutePath = savePath;
 	response.url = url;
 	response.downloadCanceled = false;
-	response.session = NULL;
 	response.fileName = extractFileFromUrl(url);
 	response.notifyOnSuccess = true;
 	response.downloadToDisk = true;
@@ -290,7 +285,7 @@ bool ofxSimpleHttp::downloadURLtoDisk(ofxSimpleHttpResponse* resp, bool sendResu
 	ofstream myfile;
 
 	//create a file to save the stream to
-	myfile.open( resp->absolutePath.c_str() );
+	myfile.open( resp->absolutePath.c_str(), ios_base::binary );
 	//myfile.open(ofToDataPath(filename).c_str()); //for not binary?
 
 	try {
@@ -301,7 +296,6 @@ bool ofxSimpleHttp::downloadURLtoDisk(ofxSimpleHttpResponse* resp, bool sendResu
 		if (path.empty()) path = "/";
 
 		HTTPClientSession session(uri.getHost(), uri.getPort());
-		resp->session = &session; //SESSION ///////////////////////////////////////////
 
 		HTTPRequest req(HTTPRequest::HTTP_GET, path, HTTPMessage::HTTP_1_1);
 		session.setTimeout( Poco::Timespan(timeOut,0) );
@@ -309,15 +303,22 @@ bool ofxSimpleHttp::downloadURLtoDisk(ofxSimpleHttpResponse* resp, bool sendResu
 
 		HTTPResponse res;
 		istream& rs = session.receiveResponse(res);
-		StreamCopier::copyStream(rs, myfile);
-		myfile.close();
+
+		//StreamCopier::copyStream(rs, myfile); //write to file here!
+
 
 		resp->status = res.getStatus();
 		resp->timestamp = res.getDate();
 		resp->reasonForStatus = res.getReasonForStatus( res.getStatus() );
 		resp->contentType = res.getContentType();
 		resp->serverReportedSize = res.getContentLength();
-		resp->session = NULL;  //SESSION ///////////////////////////////////////////////
+
+		if (debug) if (resp->serverReportedSize == -1) printf("ofxSimpleHttp::downloadURL(%s) >> Server doesn't report download size...\n", resp->fileName.c_str() );
+		if (debug) printf("ofxSimpleHttp::downloadURL() >> about to start download (%s, %d bytes)\n", resp->fileName.c_str(), res.getContentLength() );
+		if (debug) printf("ofxSimpleHttp::downloadURL() >> server reports request staus: (%d-%s)\n", resp->status, resp->reasonForStatus.c_str() );
+
+		streamCopyWithProgress(rs, myfile, resp->serverReportedSize, resp->downloadProgress);
+		myfile.close();
 
 		if(debug) printf("ofxSimpleHttp::downloadURLtoDiskBlocking() >> downloaded to %s\n", resp->fileName.c_str() );
 
@@ -358,7 +359,7 @@ bool ofxSimpleHttp::downloadURLtoDisk(ofxSimpleHttpResponse* resp, bool sendResu
 			}
 		}
 
-		cout << "download finished! " << resp->url << " !" << endl;
+		if(debug) cout << "download finished! " << resp->url << " !" << endl;
 		ok = TRUE;
 
 	}catch(Exception& exc){
@@ -368,7 +369,6 @@ bool ofxSimpleHttp::downloadURLtoDisk(ofxSimpleHttpResponse* resp, bool sendResu
 		resp->reasonForStatus = exc.displayText();
 		resp->ok = false;
 		resp->status = -1;
-		resp->session = NULL;
 		ok = false;
 
 		cout << "failed to download " << resp->url << " !" << endl;
@@ -402,7 +402,6 @@ bool ofxSimpleHttp::downloadURL( ofxSimpleHttpResponse* resp, bool sendResultThr
 		if ( path.empty() ) path = "/";
 
 		HTTPClientSession session( uri.getHost(), uri.getPort() );
-		resp->session = &session;
 
 		HTTPRequest req( HTTPRequest::HTTP_GET, path, HTTPMessage::HTTP_1_1 );
 		req.set( "User-Agent", userAgent.c_str() );
@@ -427,18 +426,17 @@ bool ofxSimpleHttp::downloadURL( ofxSimpleHttpResponse* resp, bool sendResultThr
 		if (debug) printf("ofxSimpleHttp::downloadURL() >> server reports request staus: (%d-%s)\n", resp->status, resp->reasonForStatus.c_str() );
 
 		if (timeToStop) {
-			resp->session = NULL;
 			return false;
 		};
 
 		try{
-			StreamCopier::copyToString(rs, resp->responseBody);	//copy the data...
+			//StreamCopier::copyToString(rs, resp->responseBody);	//copy the data...
+			copyToStringWithProgress(rs, resp->responseBody, resp->serverReportedSize, resp->downloadProgress);
 		}catch(Exception& exc){
 			printf("ofxSimpleHttp::downloadURL(%s) >> Exception: %s\n", resp->fileName.c_str(), exc.displayText().c_str() );
 			resp->reasonForStatus = exc.displayText();
 			resp->ok = false;
 			resp->status = -1;
-			resp->session = NULL;
 			return false;
 		}
 
@@ -447,7 +445,6 @@ bool ofxSimpleHttp::downloadURL( ofxSimpleHttpResponse* resp, bool sendResultThr
 			resp->reasonForStatus = "download canceled by user!";
 			resp->ok = false;
 			resp->status = -1;
-			resp->session = NULL;
 			return false;
 		}
 
@@ -478,15 +475,51 @@ bool ofxSimpleHttp::downloadURL( ofxSimpleHttpResponse* resp, bool sendResultThr
 			}
 		}
 
-
 	}catch(Exception& exc){
 		printf("ofxSimpleHttp::downloadURL(%s) >> General Exception: %s\n", resp->url.c_str(), exc.displayText().c_str() );
 		resp->ok = FALSE;
 		resp->reasonForStatus = exc.displayText();
 		resp->status = -1;
-		resp->session = NULL;
 	}
-	resp->session = NULL;
 	return resp->ok;
 }
 
+
+void ofxSimpleHttp::streamCopyWithProgress(std::istream & in, std::ostream & out, std::streamsize totalBytes,float & progress){
+
+	std::streamsize numBytes = totalBytes;
+	const std::size_t buffer_size = COPY_BUFFER_SIZE;
+	char buffer[buffer_size];
+	unsigned int c = 0;
+	while(numBytes > buffer_size){
+		in.read(buffer, buffer_size);
+		out.write(buffer, buffer_size);
+		numBytes -= buffer_size;
+		c++;
+		progress = float(totalBytes - numBytes) / float(totalBytes);
+	}
+
+	in.read(buffer, numBytes);
+	out.write(buffer, numBytes);
+}
+
+
+std::streamsize ofxSimpleHttp::copyToStringWithProgress(std::istream& istr, std::string& str,std::streamsize totalBytes, float & progress){
+
+	Buffer<char> buffer(COPY_BUFFER_SIZE);
+	std::streamsize len = 0;
+	istr.read(buffer.begin(), COPY_BUFFER_SIZE);
+	std::streamsize n = istr.gcount();
+
+	while (n > 0){
+		len += n;
+		str.append(buffer.begin(), static_cast<std::string::size_type>(n));
+		if (istr){
+			istr.read(buffer.begin(), COPY_BUFFER_SIZE);
+			n = istr.gcount();
+		}
+		else n = 0;
+		progress = float(len) / float(totalBytes);
+	}
+	return len;
+}
