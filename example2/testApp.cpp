@@ -10,9 +10,9 @@ void testApp::setup(){
 	ofBackground(22);
 	ofSetWindowPosition(20, 20);
 
-	downloadList.push_back("http://uri.cat/dontlook/m_a.zip");
-	downloadList.push_back("http://uri.cat/dontlook/snibbe/BugRugArizona.zip");
-	downloadList.push_back("http://uri.cat/dontlook/snibbe/nemo_31_08.mov");
+//	downloadList.push_back("http://uri.cat/dontlook/m_a.zip");
+//	downloadList.push_back("http://uri.cat/dontlook/snibbe/BugRugArizona.zip");
+//	downloadList.push_back("http://uri.cat/dontlook/snibbe/nemo_31_08.mov");
 	downloadList.push_back("http://farm8.staticflickr.com/7420/10032530563_86ff701d19_o.jpg");
 	downloadList.push_back("http://farm4.staticflickr.com/3686/9225463176_d0bf83a992_o.jpg");
 	downloadList.push_back("http://farm8.staticflickr.com/7255/6888724266_158ce261a2_o.jpg");
@@ -42,24 +42,35 @@ void testApp::draw(){
 
 	//clock hand to see threading in action
 	ofPushMatrix();
-	ofTranslate(ofGetWidth()/2, ofGetHeight()/2);
-	ofRotate(360 * ofGetElapsedTimef(), 0, 0, 1);
-	ofTriangle(10, 0, -10, 0, 0, 200);
+
+	ofTranslate(ofGetWidth() - 60,60, 0);
+	ofRotate( ofGetFrameNum() * 3, 0,0,1);
+    ofSetColor(255,255,255);
+	float h = 5;
+	ofRect(-h/2,h/2, h,50);
+
 	ofPopMatrix();
 }
 
 
 void testApp::keyPressed(int key){
 
-	string outputDirectory = "tempDownloads";
-	downloader.downloadResources(downloadList);
+	if(key==' '){
+		string outputDirectory = "tempDownloads";
+		downloader.downloadResources(downloadList);
+	}
+
+	if(key=='c'){
+		//downloader.
+		downloader.cancelDownload();
+	}
 }
 
 
 void testApp::downloadFinished(ofxBatchDownloaderReport &report){
 
 	cout << "download Finished!" << endl;
-	cout << report.successfulDownloads.size() << " successfull downloads, " <<  report.failedDownloads.size() << " failed downloads." << endl;
+	cout << report.successfulDownloads.size() << " successful downloads, " <<  report.failedDownloads.size() << " failed downloads." << endl;
 
 	if( report.failedDownloads.size() ){
 		cout << "these downloads failed: " ;

@@ -3,6 +3,8 @@
 #include "ofMain.h"
 #include "ofxSimpleHttp.h"
 
+#define OUTPUT_DIRECTORY "tempDownloads"
+
 class testApp : public ofBaseApp{
 
 	public:

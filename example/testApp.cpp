@@ -40,19 +40,23 @@ void testApp::draw(){
 
 	//clock hand to see threading in action
 	ofPushMatrix();
-	ofTranslate(ofGetWidth()/2, ofGetHeight()/2);
-	ofRotate(360 * ofGetElapsedTimef(), 0, 0, 1);
-	ofTriangle(10, 0, -10, 0, 0, 200);
+	ofTranslate(ofGetWidth() - 60,60, 0);
+	ofRotate( ofGetFrameNum() * 3, 0,0,1);
+    ofSetColor(255,255,255);
+	float h = 5;
+	ofRect(-h/2,h/2, h,50);
 	ofPopMatrix();
 
 	//instructions
 	ofDrawBitmapStringHighlight("press '1' to download asset to disk on a bg thread\n"
-								"press '2' to download multiple assets to disk on a bg thread\n"
-								"press '3' to download asset on main thread\n"
-								"press '4' to download multiple assets on main thread"
-								,
+								"press '2' to download asset to disk blocking (main thread)\n"
+								"press '3' to download asset to RAM on bg thread\n"
+								"press '4' to download asset to RAM blocking (main thread)\n"
+								"press '5' to download multiple assets to Disk on main thread\n"
+								"press 'c' to cancel current download\n"
+								"press 'C' to cancel current download and empty queue",
 								20,
-								ofGetHeight() - 60
+								ofGetHeight() - 100
 								);
 
 
@@ -61,29 +65,44 @@ void testApp::draw(){
 
 void testApp::keyPressed(int key){
 
-	string outputDirectory = "tempDownloads";
 
 	if(key=='1'){
 		string url = downloadList[floor(ofRandom(downloadList.size()))];
-		http.fetchURLToDisk(url , true/*notify when done*/, outputDirectory);
+		url = "http://uri.cat/dontlook/snibbe/BugRugArizona.zip";
+		http.fetchURLToDisk(url , true/*notify when done*/, OUTPUT_DIRECTORY);
 	}
 
-
 	if(key=='2'){
-		for(int i=0 ; i < downloadList.size(); i++){
-			http.fetchURLToDisk(downloadList[i], true/*notify when done*/, outputDirectory );
-		}
+		string url = downloadList[floor(ofRandom(downloadList.size()))];
+		url = "http://uri.cat/dontlook/snibbe/BugRugArizona.zip";
+		http.fetchURLtoDiskBlocking(url, OUTPUT_DIRECTORY);
 	}
 
 	if(key=='3'){
 		string url = downloadList[floor(ofRandom(downloadList.size()))];
-		http.fetchURLtoDiskBlocking(url, outputDirectory);
+		url = "http://uri.cat/dontlook/snibbe/BugRugArizona.zip";
+		http.fetchURL(url , true/*notify when done*/);
 	}
 
 	if(key=='4'){
+		string url = downloadList[floor(ofRandom(downloadList.size()))];
+		url = "http://uri.cat/dontlook/snibbe/BugRugArizona.zip";
+		http.fetchURLBlocking(url);
+	}
+
+	if(key=='5'){
 		for(int i=0 ; i < downloadList.size(); i++){
-			http.fetchURLtoDiskBlocking(downloadList[i], outputDirectory );
+			//by quickly adding more urls to download, we create a download queue
+			http.fetchURLToDisk(downloadList[i], true/*notify when done*/, OUTPUT_DIRECTORY);
 		}
+	}
+
+	if(key=='c'){
+		http.stopCurrentDownload(false);
+	}
+
+	if(key=='C'){
+		http.stopCurrentDownload(true);
 	}
 
 }
@@ -91,6 +110,7 @@ void testApp::keyPressed(int key){
 
 void testApp::newResponse(ofxSimpleHttpResponse &r){
 
+	cout << "#########################################################" << endl;
 	cout << "download of " << r.url << " returned : "<< string(r.ok ? "OK" : "KO") << endl;
 	cout << "server reported size is " << r.serverReportedSize << endl;
 	cout << "server status is " << r.status << endl;
@@ -112,5 +132,4 @@ void testApp::newResponse(ofxSimpleHttpResponse &r){
 			cout << "file was not downloaded???!" << r.absolutePath << endl;
 		}
 	}
-
 }

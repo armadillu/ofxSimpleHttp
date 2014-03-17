@@ -13,6 +13,7 @@ ofxBatchDownloader::ofxBatchDownloader(){
 
 	verbose = true;
 	http.setVerbose(false);
+	busy = false;
 
 	//add download listener
 	ofAddListener(http.newResponseEvent, this, &ofxBatchDownloader::httpResult);
@@ -21,6 +22,10 @@ ofxBatchDownloader::ofxBatchDownloader(){
 
 void ofxBatchDownloader::update(){
 	http.update();
+}
+
+void ofxBatchDownloader::cancelDownload(){
+	http.stopCurrentDownload(true);
 }
 
 
@@ -44,7 +49,6 @@ void ofxBatchDownloader::downloadResources( vector<string> _urlList, string down
 	}else{
 		cout << "ofxBatchDownloader already working, wait for it to finish!" << endl;
 	}
-
 }
 
 

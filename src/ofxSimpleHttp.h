@@ -53,7 +53,7 @@
 #include <iostream>
 
 
-#define COPY_BUFFER_SIZE				1024 * 50  /*25kb buffer size*/
+#define COPY_BUFFER_SIZE				1024 * 50   /*50 Kb buffer size*/
 
 using namespace Poco::Net;
 using namespace Poco;
@@ -67,6 +67,7 @@ struct ofxSimpleHttpResponse{
 	bool						notifyOnSuccess;	// user wants to be notified when download is ready
 	bool						downloadCanceled;	// flag to cancel download
 	bool						downloadToDisk;		// user wants bytes on disk; otherwise just return data as string in "responseBody"
+	bool						emptyWholeQueue;
 	int							status; 			// return code for the response ie: 200 = OK
 	int							serverReportedSize;
 	string						reasonForStatus;	// text explaining the status
@@ -74,13 +75,17 @@ struct ofxSimpleHttpResponse{
 	string						contentType;		// the mime type of the response
 	Poco::Timestamp				timestamp;			// time of the response
 	float						downloadProgress;	//[0..1]
+	float						downloadSpeed;		//kb/sec
 	string						url;
 	string						fileName;			//file + extension, no path
 	string						absolutePath;		//where file was saved
 
+	HTTPClientSession *			session;			//careful what you do with this! will be NULL if session is finished
+
 	ofxSimpleHttpResponse(){
-		downloadToDisk = false;
-		downloadProgress = 0.0f;
+		downloadToDisk = emptyWholeQueue = false;
+		downloadProgress = downloadSpeed = 0.0f;
+		session = NULL;
 	}
 };
 
@@ -110,12 +115,12 @@ class ofxSimpleHttp : public ofThread, public ofBaseDraws{
 		float getHeight(){ if ( isThreadRunning() ) return 18 * 4; else return 18; }
 		float getWidth(){ return 320; }
 	
-		void						stopCurrentDownload();
-	
+		void						stopCurrentDownload(bool emptyQueue); //if there's more downloads on queue, next will start immediatelly
+
 		int							getPendingDownloads();
 		float						getCurrentDownloadProgress();	//retuns [0..1] how complete is the download
 		string						getCurrentDownloadFileName();
-		ofxSimpleHttpResponse*		getCurrentDownloadResponse(){ return &response;}	//get this to read progress from another thread, might return NULL if no download is running
+		//ofxSimpleHttpResponse*		getCurrentDownloadResponse(){ return &response;}	//get this to read progress from another thread, might return NULL if no download is running
 	
 		// properties //////////////////////////////////////////////////////////
 	
@@ -123,14 +128,13 @@ class ofxSimpleHttp : public ofThread, public ofBaseDraws{
 		void						setVerbose(bool verbose);
 		void						setUserAgent( string newUserAgent );
 		void						setAcceptString( string newAcceptString );
-		void						setMaxQueueLenght(int len);
+		void						setMaxQueueLength(int len);
 			
 		ofEvent<ofxSimpleHttpResponse>		newResponseEvent;
 	
 	private:
 		
-		bool downloadURL( ofxSimpleHttpResponse * resp, bool sendResultThroughEvents );
-		bool downloadURLtoDisk(ofxSimpleHttpResponse* resp, bool sendResultThroughEvents);
+		bool downloadURL( ofxSimpleHttpResponse * resp, bool sendResultThroughEvents, bool saveToDisk );
 
 		void threadedFunction();	//the queue runs here
 		string extractFileFromUrl(string url);
@@ -148,6 +152,6 @@ class ofxSimpleHttp : public ofThread, public ofBaseDraws{
 
 		queue<ofxSimpleHttpResponse>	responsesPendingNotification; //we store here downloads that arrived so that we can notify from main thread
 
-		void streamCopyWithProgress(std::istream & in, std::ostream & out, std::streamsize totalBytes,float & progress);
-		std::streamsize copyToStringWithProgress(std::istream& istr, std::string& str, std::streamsize totalBytes, float & progress);
+		void streamCopyWithProgress(std::istream & in, std::ostream & out, std::streamsize totalBytes,float & progress, float &speed, const bool &shouldCancel);
+		std::streamsize copyToStringWithProgress(std::istream& istr, std::string& str, std::streamsize totalBytes, float & progress, float & speed, const bool &shouldCancel);
 };
