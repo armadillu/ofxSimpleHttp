@@ -13,7 +13,7 @@
 #include "ofxSimpleHttp.h"
 
 /*
- 
+
  ####### how to get notifications ############################################
 
  //create a batch downloader
@@ -26,7 +26,6 @@
  void myApp::downloadFinished(ofxBatchDownloaderReport &report){}
 
  */
-
 
 class ofxBatchDownloader;
 
@@ -69,7 +68,8 @@ private:
 
 	void httpResult(ofxSimpleHttpResponse &response);
 	void reset();
-
+	
 };
 
 #endif
+
