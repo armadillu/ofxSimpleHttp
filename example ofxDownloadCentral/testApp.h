@@ -3,7 +3,6 @@
 #include "ofMain.h"
 #include "ofxBatchDownloader.h"
 #include "ofxDownloadCentral.h"
-#include "ofxJSONElement.h"
 
 #define NUM_OBJECTS 5
 
@@ -29,7 +28,6 @@ public:
 	void setup(ofxDownloadCentral *downloader){
 
 		d = downloader;
-		//ofAddListener(d->resourcesDownloadFinished, this, &Object::downloadFinished);
 		vector<string> downloadList;
 
 		if(ofRandom(1) > 0.5){

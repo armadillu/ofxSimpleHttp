@@ -25,7 +25,7 @@ void testApp::setup(){
 	http.setVerbose(true);
 
 	//add download listener
-	ofAddListener(http.newResponseEvent, this, &testApp::newResponse);
+	ofAddListener(http.httpResponse, this, &testApp::newResponse);
 }
 
 

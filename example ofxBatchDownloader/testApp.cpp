@@ -10,9 +10,6 @@ void testApp::setup(){
 	ofBackground(22);
 	ofSetWindowPosition(20, 20);
 
-//	downloadList.push_back("http://uri.cat/dontlook/m_a.zip");
-//	downloadList.push_back("http://uri.cat/dontlook/snibbe/BugRugArizona.zip");
-//	downloadList.push_back("http://uri.cat/dontlook/snibbe/nemo_31_08.mov");
 	downloadList.push_back("http://farm8.staticflickr.com/7420/10032530563_86ff701d19_o.jpg");
 	downloadList.push_back("http://farm4.staticflickr.com/3686/9225463176_d0bf83a992_o.jpg");
 	downloadList.push_back("http://farm8.staticflickr.com/7255/6888724266_158ce261a2_o.jpg");
@@ -27,6 +24,7 @@ void testApp::setup(){
 
 	//add download listener
 	ofAddListener(downloader.resourcesDownloadFinished, this, &testApp::downloadFinished);
+	downloader.setDownloadFolder("tempDownloads");
 }
 
 
@@ -55,14 +53,16 @@ void testApp::draw(){
 
 void testApp::keyPressed(int key){
 
+	if(key=='a'){
+		downloader.addResourcesToDownloadList(downloadList);
+	}
+
 	if(key==' '){
-		string outputDirectory = "tempDownloads";
-		downloader.downloadResources(downloadList);
+		downloader.startDownloading();
 	}
 
 	if(key=='c'){
-		//downloader.
-		downloader.cancelDownload();
+		downloader.cancelBatch();
 	}
 }
 
