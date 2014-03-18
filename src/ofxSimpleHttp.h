@@ -79,6 +79,7 @@ struct ofxSimpleHttpResponse{
 	string						url;
 	string						fileName;			//file + extension, no path
 	string						absolutePath;		//where file was saved
+	float						timeTakenToDownload;//seconds
 
 	HTTPClientSession *			session;			//careful what you do with this! will be NULL if session is finished
 
@@ -86,6 +87,28 @@ struct ofxSimpleHttpResponse{
 		downloadToDisk = emptyWholeQueue = false;
 		downloadProgress = downloadSpeed = 0.0f;
 		session = NULL;
+		timeTakenToDownload = 0.0;
+		serverReportedSize = -1;
+	}
+
+	void print(){
+		cout << "#### " << url << " ########" << endl;
+		if (ok){
+			cout << "    server status: " << status << endl;
+			cout << "    server reported size: " << serverReportedSize << endl;
+			cout << "    content type: " << contentType << endl;
+			cout << "    time to download: " << timeTakenToDownload << " seconds" << endl;
+			if (serverReportedSize != -1){
+				cout << "    avg dl speed: " << (serverReportedSize / 1024.f) / timeTakenToDownload << "Kb/sec" << endl;
+			}
+			if(downloadToDisk){
+				cout << "    saved at: " << absolutePath << endl;
+			}
+		}else{
+			cout << "    download FAILED! " << endl;
+			cout << "    status: " << status << " " << reasonForStatus << endl;
+		}
+		cout << endl;
 	}
 };
 

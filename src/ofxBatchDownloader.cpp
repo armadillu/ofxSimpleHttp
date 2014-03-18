@@ -11,7 +11,7 @@
 
 ofxBatchDownloader::ofxBatchDownloader(){
 
-	verbose = true;
+	verbose = false;
 	http.setVerbose(false);
 	busy = false;
 	downloadFolder = "_downloads_";

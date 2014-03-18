@@ -29,8 +29,6 @@ void ofxDownloadCentral::startQueue(){
 		if(downloaders.size() > 0){
 			ofxBatchDownloader * bd = downloaders[0];
 			bd->startDownloading();
-		}else{
-			cout << "proper wtf! " << endl;
 		}
 	}
 }
@@ -48,7 +46,9 @@ void ofxDownloadCentral::update(){
 				downloaders.erase(downloaders.begin());
 				delete bd;
 				busy = false;
-				startQueue();
+				if (downloaders.size()){
+					startQueue();
+				}
 			}
 		}
 	}

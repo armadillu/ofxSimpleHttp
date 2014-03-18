@@ -318,6 +318,7 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 		resp->reasonForStatus = res.getReasonForStatus( res.getStatus() );
 		resp->contentType = res.getContentType();
 		resp->serverReportedSize = res.getContentLength();
+		resp->timeTakenToDownload = ofGetElapsedTimef();
 
 		if (debug) if (resp->serverReportedSize == -1) printf("ofxSimpleHttp::downloadURL(%s) >> Server doesn't report download size...\n", resp->fileName.c_str() );
 		if (debug) printf("ofxSimpleHttp::downloadURL() >> about to start download (%s, %d bytes)\n", resp->fileName.c_str(), res.getContentLength() );
@@ -329,7 +330,8 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 		}else{
 			copyToStringWithProgress(rs, resp->responseBody, resp->serverReportedSize, resp->downloadProgress, resp->downloadSpeed, resp->downloadCanceled);
 		}
-		cout << "ended copy" << endl;
+
+		resp->timeTakenToDownload = ofGetElapsedTimef() - resp->timeTakenToDownload;
 
 		resp->downloadSpeed = 0;
 		resp->session = NULL;
@@ -379,7 +381,7 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 				if (resp->status == 200){
 					resp->ok = true;
 				}else{
-					cout << "response status is weird ? (" << resp->status << ")" << endl;
+					//cout << "ofxSimpleHttp:: downloadURL() >> Response status is Weird ? (" << resp->status << ")" << endl;
 					resp->ok = false;
 				}
 			}
@@ -411,7 +413,6 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 		ok = false;
 		cout << "failed to download " << resp->url << " !" << endl;
 	}
-
 
 	return ok;
 }
