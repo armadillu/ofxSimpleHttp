@@ -60,6 +60,20 @@ class ofxDownloadCentral{
 		void cancelCurrentDownload();
 		void cancelAllDownloads();
 
+		///////////////////////////////////////////////////////////////////////////////
+		template <typename ArgumentsType, class ListenerClass>
+		void downloadResources(	string url,
+							   ListenerClass  * listener,
+							   void (ListenerClass::*listenerMethod)(ArgumentsType&),
+							   string destinationFolder = "ofxDownloadCentral_downloads"
+							   ){
+
+			vector<string> list;
+			list.push_back(url);
+			downloadResources(list, listener, listenerMethod, destinationFolder);
+		}
+
+		///////////////////////////////////////////////////////////////////////////////
 		template <typename ArgumentsType, class ListenerClass>
 		void downloadResources(	vector<string>urlList,
 								ListenerClass  * listener,
