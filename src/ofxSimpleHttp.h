@@ -21,7 +21,7 @@
  
  3 - add Listener:
  
-	ofAddListener(http.newResponseEvent, this, &testApp::newResponse);
+	ofAddListener(http.httpResponse, this, &testApp::newResponse);
  
  4 - fetch URLs:
 
@@ -130,7 +130,7 @@ class ofxSimpleHttp : public ofThread, public ofBaseDraws{
 		void						setAcceptString( string newAcceptString );
 		void						setMaxQueueLength(int len);
 			
-		ofEvent<ofxSimpleHttpResponse>		newResponseEvent;
+		ofEvent<ofxSimpleHttpResponse>		httpResponse;
 	
 	private:
 		

@@ -48,8 +48,14 @@ public:
 	void update();
 	void draw(float x, float y);
 
-	void downloadResources( vector<string>urlList, string downloadFolder = "_downloads_" );
+	void setDownloadFolder(string f);
+
+	void addResourcesToDownloadList( vector<string>urlList );
+	void startDownloading();
 	void cancelDownload();
+
+	int pendingDownloads();
+	bool isBusy();
 
 	ofEvent<ofxBatchDownloaderReport>	resourcesDownloadFinished;
 

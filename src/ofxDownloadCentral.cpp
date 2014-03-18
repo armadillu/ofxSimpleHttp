@@ -1,5 +1,5 @@
 //
-//  ofxBatchDownloader.cpp
+//  ofxDownloadCentral.cpp
 //  emptyExample
 //
 //  Created by Oriol Ferrer Mesià on 14/03/14.
@@ -7,79 +7,94 @@
 //
 
 
-#include "ofxBatchDownloader.h"
+#include "ofxDownloadCentral.h"
+#include "ofEvents.h"
+#include "ofEventUtils.h"
 
-ofxBatchDownloader::ofxBatchDownloader(){
+ofxDownloadCentral::ofxDownloadCentral(){
 
 	verbose = true;
-	http.setVerbose(false);
 	busy = false;
 
-	//add download listener
-	ofAddListener(http.newResponseEvent, this, &ofxBatchDownloader::httpResult);
 }
 
 
-void ofxBatchDownloader::update(){
-	http.update();
-}
+void ofxDownloadCentral::startQueue(){
 
-void ofxBatchDownloader::cancelDownload(){
-	http.stopCurrentDownload(true);
-}
-
-
-void ofxBatchDownloader::draw(float x, float y){
-	http.draw(x, y);
-}
-
-void ofxBatchDownloader::downloadResources( vector<string> _urlList, string downloadFolder_ ){
-
-	if(!busy){
-
-		downloadFolder = downloadFolder_;
-		originalUrlList = _urlList;
-		reset();
-
-		for(int i = 0; i < originalUrlList.size(); i++){
-			if(verbose) cout << "ofxBatchDownloader queueing " << originalUrlList[i] << " for download" << endl;
-			http.fetchURLToDisk(originalUrlList[i], true, downloadFolder);
+	if (!busy){
+		busy = true;
+		if(downloaders.size() > 0){
+			ofxBatchDownloader * bd = downloaders[0];
+			bd->startDownloading();
+		}else{
+			cout << "proper wtf! " << endl;
 		}
-
-	}else{
-		cout << "ofxBatchDownloader already working, wait for it to finish!" << endl;
 	}
 }
 
 
-//we know this will be called from the main thread!
-void ofxBatchDownloader::httpResult(ofxSimpleHttpResponse &r){
+void ofxDownloadCentral::update(){
+	//downloader.update();
 
-	responses.push_back(r);
+	if (busy){
 
-	if(r.ok){
-		okList.push_back( r.url );
-		if(verbose) cout << "ofxBatchDownloader downloaded OK " << r.url << endl;
-	}else{
-		failedList.push_back( r.url );
-		if(verbose) cout << "ofxBatchDownloader FAILED TO download " << r.url << endl;
+		if(downloaders.size() > 0){
+			ofxBatchDownloader * bd = downloaders[0];
+			bd->update();
+			if (!bd->isBusy()){ //this one is over! start the next one!
+				//ofRemoveEvent???
+				downloaders.erase(downloaders.begin());
+				delete bd;
+				busy = false;
+				startQueue();
+			}
+		}
 	}
+}
 
-	if (originalUrlList.size() == failedList.size() + okList.size()){
-		//we are done!
-		ofxBatchDownloaderReport report;
-		report.downloadPath = downloadFolder;
-		report.attemptedDownloads = originalUrlList;
-		report.successfulDownloads = okList;
-		report.failedDownloads = failedList;
-		report.responses = responses;
-		ofNotifyEvent( resourcesDownloadFinished, report, this );
+void ofxDownloadCentral::cancelDownload(){
+	//downloader.ca(true);
+}
+
+
+//void ofxDownloadCentral::downloadFinished(ofxBatchDownloaderReport &report){
+//	//ofxDownloadCentralReport r;
+//	//ofNotifyEvent( resourcesDownloadFinished, r, this );
+//}
+
+void ofxDownloadCentral::draw(float x, float y){
+
+	if (busy){
+
+		if(downloaders.size() > 0){
+			ofxBatchDownloader * bd = downloaders[0];
+			bd->draw(20, 20);
+		}
 	}
 }
 
 
-void ofxBatchDownloader::reset(){
-	failedList.clear();
-	okList.clear();
-	responses.clear();
-}
+//void ofxDownloadCentral::downloadResources( vector<string> _urlList, string dlFolder ){
+//
+//	//add download listener
+//	ofxBatchDownloader * d = new ofxBatchDownloader();
+//
+////	ofAddListener(downloaders.resourcesDownloadFinished, this, &ofxDownloadCentral::downloadFinished);
+////
+////	downloaders.downloadResources(_urlList);
+//
+//}
+
+//template <typename ArgumentsType, class ListenerClass>
+//void ofxDownloadCentral::downloadResources(	vector<string>urlList,
+//											//EventType & event,
+//											ListenerClass  * listener,
+//											void (ListenerClass::*listenerMethod)(ArgumentsType&)
+//										){
+//
+//
+//	ofxBatchDownloader * d = new ofxBatchDownloader();
+//	ofAddListener(d->resourcesDownloadFinished, listener, listenerMethod); //set the notification to hit our original caller
+//	downloaders.push_back(d);
+//
+//}

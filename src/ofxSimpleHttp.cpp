@@ -421,7 +421,7 @@ void ofxSimpleHttp::update(){
 	if(responsesPendingNotification.size()){
 		ofxSimpleHttpResponse r = responsesPendingNotification.front();
 		responsesPendingNotification.pop();
-		ofNotifyEvent( newResponseEvent, r, this );
+		ofNotifyEvent( httpResponse, r, this );
 	}
 	unlock();
 }

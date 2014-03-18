@@ -14,9 +14,10 @@ ofxBatchDownloader::ofxBatchDownloader(){
 	verbose = true;
 	http.setVerbose(false);
 	busy = false;
+	downloadFolder = "_downloads_";
 
 	//add download listener
-	ofAddListener(http.newResponseEvent, this, &ofxBatchDownloader::httpResult);
+	ofAddListener(http.httpResponse, this, &ofxBatchDownloader::httpResult);
 }
 
 
@@ -28,26 +29,50 @@ void ofxBatchDownloader::cancelDownload(){
 	http.stopCurrentDownload(true);
 }
 
+void ofxBatchDownloader::setDownloadFolder(string f){
+	downloadFolder = f;
+}
 
 void ofxBatchDownloader::draw(float x, float y){
 	http.draw(x, y);
 }
 
-void ofxBatchDownloader::downloadResources( vector<string> _urlList, string downloadFolder_ ){
+void ofxBatchDownloader::addResourcesToDownloadList( vector<string> _urlList ){
 
 	if(!busy){
 
-		downloadFolder = downloadFolder_;
-		originalUrlList = _urlList;
-		reset();
-
-		for(int i = 0; i < originalUrlList.size(); i++){
-			if(verbose) cout << "ofxBatchDownloader queueing " << originalUrlList[i] << " for download" << endl;
-			http.fetchURLToDisk(originalUrlList[i], true, downloadFolder);
+		for(int i = 0; i < _urlList.size(); i++){
+			originalUrlList.push_back(_urlList[i]);
+			if(verbose) cout << "ofxBatchDownloader queueing " << _urlList[i] << " for download" << endl;
 		}
 
 	}else{
 		cout << "ofxBatchDownloader already working, wait for it to finish!" << endl;
+	}
+}
+
+int ofxBatchDownloader::pendingDownloads(){
+	return http.getPendingDownloads();
+}
+
+
+bool ofxBatchDownloader::isBusy(){
+	return busy;
+};
+
+
+void ofxBatchDownloader::startDownloading(){
+
+	if (!busy){
+
+		busy = true;
+		reset();
+
+		if(verbose) cout << "ofxBatchDownloader starting downloads! " << endl;
+
+		for(int i = 0; i < originalUrlList.size(); i++){
+			http.fetchURLToDisk(originalUrlList[i], true, downloadFolder);
+		}
 	}
 }
 
@@ -74,6 +99,7 @@ void ofxBatchDownloader::httpResult(ofxSimpleHttpResponse &r){
 		report.failedDownloads = failedList;
 		report.responses = responses;
 		ofNotifyEvent( resourcesDownloadFinished, report, this );
+		busy = false;
 	}
 }
 
