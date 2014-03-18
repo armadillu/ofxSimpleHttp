@@ -21,21 +21,31 @@ ofxBatchDownloader::ofxBatchDownloader(){
 }
 
 
+ofxBatchDownloader::~ofxBatchDownloader(){
+	cancelBatch();
+}
+
+
 void ofxBatchDownloader::update(){
 	http.update();
 }
 
-void ofxBatchDownloader::cancelDownload(){
+
+void ofxBatchDownloader::cancelBatch(){
 	http.stopCurrentDownload(true);
+	busy = false;
 }
+
 
 void ofxBatchDownloader::setDownloadFolder(string f){
 	downloadFolder = f;
 }
 
+
 void ofxBatchDownloader::draw(float x, float y){
 	http.draw(x, y);
 }
+
 
 void ofxBatchDownloader::addResourcesToDownloadList( vector<string> _urlList ){
 
@@ -50,6 +60,7 @@ void ofxBatchDownloader::addResourcesToDownloadList( vector<string> _urlList ){
 		cout << "ofxBatchDownloader already working, wait for it to finish!" << endl;
 	}
 }
+
 
 int ofxBatchDownloader::pendingDownloads(){
 	return http.getPendingDownloads();

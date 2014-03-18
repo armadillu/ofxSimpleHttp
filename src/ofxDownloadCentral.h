@@ -16,78 +16,75 @@
 #include "ofEventUtils.h"
 
 /*
+
+
+// WHAT IS THIS?
+
+ Centralised downloads from any number of objects.
+ creates a download queue, each object that requests a download list 
+ will be notified when its downloads are ready.
+ this is meant mainly to download assets on demand, telling its owner 
+ when the asset is ready to load.
+
+ // HOW IS THIS MEANT TO BE USED ?
+
+ 1 - define a central downloads object
+	ofxDownloadCentral dlc;
+
+ 2 - implement a notification callback
+	void downloadsFinished(ofxBatchDownloaderReport &report){}
+
+ 3 - fill in a list of url with assets you need downloaded
+	vector<string> urlList;
  
- ofxDownloadCentral dlc;
+ 4 - start the download
+ 
+	dlc.downloadResources( urlList, this, &myClass::downloadsFinished, destinationFolder );
 
- //sign up for the notification
- ofAddListener(dlc.resourcesDownloadFinished, this, &myClass::downloadsFinished);
-
- //define the callback in your app
- void myClass::downloadsFinished(ofxDownloadCentralReport &report){}
+	it will all will be downloaded in a bg thread
+	you will be notified from the main thread when they are done
+	you will get a report
 
  */
-class ofxDownloadCentral;
-
-//struct DownloadInfo{
-//	string url;
-//	string absolutePath;
-//	ofxSimpleHttpResponse response;
-//};
-
-
-//struct ofxDownloadCentralReport{
-//	vector<DownloadInfo> downloadInfo;	//list of all asset URLs to download
-//	string downloadPath;				//full path to the directory that holds the downloads
-//	ofxDownloadCentral* owner;			//pointer to the object in charge of the downloads
-//};
-
-
 
 class ofxDownloadCentral{
 
 	public:
 
 		ofxDownloadCentral();
+		~ofxDownloadCentral();
 
 		void update();
 		void draw(float x, float y);
 
-		//void downloadResources( vector<string>urlList, string downloadFolder = "_downloads_" );
-		void cancelDownload();
+		void cancelCurrentDownload();
+		void cancelAllDownloads();
 
-
-
-		template < typename ArgumentsType, class ListenerClass>
+		template <typename ArgumentsType, class ListenerClass>
 		void downloadResources(	vector<string>urlList,
-								//EventType & event,
 								ListenerClass  * listener,
-								void (ListenerClass::*listenerMethod)(ArgumentsType&)
+								void (ListenerClass::*listenerMethod)(ArgumentsType&),
+								string destinationFolder = "ofxDownloadCentral_downloads"
 							   ){
 
 			ofxBatchDownloader * d = new ofxBatchDownloader();
+			d->setDownloadFolder(destinationFolder);
 			d->addResourcesToDownloadList(urlList);
 			ofAddListener(d->resourcesDownloadFinished, listener, listenerMethod); //set the notification to hit our original caller
 			downloaders.push_back(d);
 			if (!busy) startQueue();
+
 		}
-
-
-		//callback
-		//void downloadFinished(ofxBatchDownloaderReport &report);
-
-		//ofEvent<ofxBatchDownloaderReport>	resourcesDownloadFinished;
 
 	private:
 
-	
 		void startQueue();
 
 		vector<ofxBatchDownloader*>			downloaders;
 
 		bool								busy;
-		bool								needToStop; //user wants to cancel!
 		bool								verbose;
-		string								downloadFolder;
+		ofMutex								mutex;
 
 };
 

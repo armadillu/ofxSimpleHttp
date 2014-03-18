@@ -146,18 +146,20 @@ void ofxSimpleHttp::stopCurrentDownload(bool emptyQueue){
 		int n = q.size();
 		if ( isThreadRunning() && n > 0){
 			ofxSimpleHttpResponse * r = q.front();
-			if (debug) printf( "ofxSimpleHttp::stopCurrentDownload() >> about to stop download of %s...\n", r->fileName.c_str() );
-			try{
-				r->emptyWholeQueue = emptyQueue;
-				r->downloadCanceled = true;
-				if ( r->session != NULL ){
-					r->session->abort();
+			if (!r->downloadCanceled){ //dont cancel it twice!
+				if (debug) printf( "ofxSimpleHttp::stopCurrentDownload() >> about to stop download of %s...\n", r->fileName.c_str() );
+				try{
+					r->emptyWholeQueue = emptyQueue;
+					r->downloadCanceled = true;
+					if ( r->session != NULL ){
+						//cout << "aboritng session " << r->session << endl;
+						r->session->abort();
+					}
+				}catch(Exception& exc){
+					printf( "ofxSimpleHttp::stopCurrentDownload(%s) >> Exception: %s\n", r->fileName.c_str(), exc.displayText().c_str() );
 				}
-			}catch(Exception& exc){
-				printf( "ofxSimpleHttp::stopCurrentDownload(%s) >> Exception: %s\n", r->fileName.c_str(), exc.displayText().c_str() );
 			}
 		}
-
 	unlock();
 }
 
@@ -167,10 +169,10 @@ void ofxSimpleHttp::draw(float x, float y , float w , float h  ){
 	string aux;
 	lock();
 	int n = q.size();
-	if ( isThreadRunning() && n > 0 ){
+	if( isThreadRunning() && n > 0 ){
 		ofxSimpleHttpResponse * r = q.front();
-		aux =	"ofxSimpleHttp Now Fetching: " + r->url.substr(0, w / 8 ) + "\n" +
-				ofToString(100.0f * r->downloadProgress,1) + "% done...\n" +
+		aux =	"ofxSimpleHttp Now Fetching:\n" + r->url.substr(0, w / 8) + "\n" +
+				"progress: " + ofToString(100.0f * r->downloadProgress, 2) + "\n" +
 				"Download Speed: " + ofToString(r->downloadSpeed / 1024.0f, 2) + "Mb/sec\n" +
 				"Queue Size " + ofToString(n) ;
 	}else{
@@ -321,13 +323,13 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 		if (debug) printf("ofxSimpleHttp::downloadURL() >> about to start download (%s, %d bytes)\n", resp->fileName.c_str(), res.getContentLength() );
 		if (debug) printf("ofxSimpleHttp::downloadURL() >> server reports request staus: (%d-%s)\n", resp->status, resp->reasonForStatus.c_str() );
 
-
 		//StreamCopier::copyStream(rs, myfile); //write to file here!
 		if(saveToDisk){
 			streamCopyWithProgress(rs, myfile, resp->serverReportedSize, resp->downloadProgress, resp->downloadSpeed, resp->downloadCanceled);
 		}else{
 			copyToStringWithProgress(rs, resp->responseBody, resp->serverReportedSize, resp->downloadProgress, resp->downloadSpeed, resp->downloadCanceled);
 		}
+		cout << "ended copy" << endl;
 
 		resp->downloadSpeed = 0;
 		resp->session = NULL;

@@ -44,6 +44,7 @@ class ofxBatchDownloader{
 public:
 
 	ofxBatchDownloader();
+	~ofxBatchDownloader();
 
 	void update();
 	void draw(float x, float y);
@@ -52,7 +53,7 @@ public:
 
 	void addResourcesToDownloadList( vector<string>urlList );
 	void startDownloading();
-	void cancelDownload();
+	void cancelBatch();
 
 	int pendingDownloads();
 	bool isBusy();
