@@ -12,7 +12,7 @@ void testApp::setup(){
 
 
 	for(int i = 0 ; i < NUM_OBJECTS; i++){
-		Object * o = new Object();
+		AssetObject * o = new AssetObject();
 		o->setup(&downloader);
 		objects.push_back(o);
 	}
@@ -23,12 +23,23 @@ void testApp::setup(){
 void testApp::update(){
 
 	downloader.update();
+	for(int i = 0 ; i < NUM_OBJECTS; i++){
+		objects[i]->update();
+		if (ofGetFrameNum()%120 == 1){
+			objects[i]->loadRandomAsset();
+		}
+	}
 }
+
 
 void testApp::draw(){
 
 	downloader.draw(30,30);
 	ofSetColor(255);
+
+	for(int i = 0 ; i < NUM_OBJECTS; i++){
+		objects[i]->draw();
+	}
 
 	//clock hand to see threading in action
 	ofPushMatrix();
@@ -52,8 +63,13 @@ void testApp::keyPressed(int key){
 
 
 	if(key=='C'){
-		//downloader.
 		downloader.cancelAllDownloads();
+	}
+
+	if(key=='r'){
+		for(int i = 0 ; i < NUM_OBJECTS; i++){
+			objects[i]->loadRandomAsset();
+		}
 	}
 }
 
