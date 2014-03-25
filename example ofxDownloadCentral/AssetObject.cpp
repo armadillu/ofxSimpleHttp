@@ -98,23 +98,30 @@ void AssetObject::videoIsReadyCallback(ofxThreadedVideoPlayerStatus &status){
 void AssetObject::loadRandomAsset(){
 
 	if (waitingForDownload){
-		cout << "already waiting for a download! ignoring request" << endl;
+		//cout << "already waiting for a download! ignoring request" << endl;
 		return;
 	}
 
 	vector<string> allURLS;
+	vector<string> allSha1s;
 
-	allURLS.push_back("http://uri.cat/dontlook/localProjects/CWRU/chaos.mov");
-	allURLS.push_back("http://uri.cat/dontlook/localProjects/CWRU/bill.mov");
-	allURLS.push_back("http://uri.cat/dontlook/localProjects/CWRU/walle.mov");
-	allURLS.push_back("http://uri.cat/dontlook/localProjects/CWRU/walle2.mov");
-	allURLS.push_back("http://uri.cat/dontlook/localProjects/CWRU/success.mov");
-	allURLS.push_back("http://uri.cat/dontlook/localProjects/CWRU/cat.mov");
-	allURLS.push_back("http://uri.cat/dontlook/localProjects/CWRU/blackboard.mov");
-	allURLS.push_back("http://uri.cat/dontlook/localProjects/CWRU/after.mov");
-	allURLS.push_back("http://uri.cat/dontlook/localProjects/CWRU/allpowerful.mov");
-	allURLS.push_back("http://uri.cat/dontlook/localProjects/CWRU/beep.mov");
-	allURLS.push_back("http://uri.cat/dontlook/localProjects/CWRU/walle3.mov");
+	allURLS.push_back("http://uri.cat/dontlook/localProjects/CWRU/df780aa89408ab095240921d5fa3f7e59ffab412.jpg");
+	allSha1s.push_back("df780aa89408ab095240921d5fa3f7e59ffab412");
+
+//	allURLS.push_back("http://uri.cat/dontlook/localProjects/CWRU/71827399.mov");
+//	allSha1s.push_back("whatever dude!");
+
+//	allURLS.push_back("http://uri.cat/dontlook/localProjects/CWRU/chaos.mov");
+//	allURLS.push_back("http://uri.cat/dontlook/localProjects/CWRU/bill.mov");
+//	allURLS.push_back("http://uri.cat/dontlook/localProjects/CWRU/walle.mov");
+//	allURLS.push_back("http://uri.cat/dontlook/localProjects/CWRU/walle2.mov");
+//	allURLS.push_back("http://uri.cat/dontlook/localProjects/CWRU/success.mov");
+//	allURLS.push_back("http://uri.cat/dontlook/localProjects/CWRU/cat.mov");
+//	allURLS.push_back("http://uri.cat/dontlook/localProjects/CWRU/blackboard.mov");
+//	allURLS.push_back("http://uri.cat/dontlook/localProjects/CWRU/after.mov");
+//	allURLS.push_back("http://uri.cat/dontlook/localProjects/CWRU/allpowerful.mov");
+//	allURLS.push_back("http://uri.cat/dontlook/localProjects/CWRU/beep.mov");
+//	allURLS.push_back("http://uri.cat/dontlook/localProjects/CWRU/walle3.mov");
 
 //	allURLS.push_back("http://farm8.staticflickr.com/7420/10032530563_86ff701d19_o.jpg");
 //	allURLS.push_back("http://farm4.staticflickr.com/3686/9225463176_d0bf83a992_o.jpg");
@@ -135,6 +142,7 @@ void AssetObject::loadRandomAsset(){
 
 	waitingForDownload = true;
 	d->downloadResources(downloadList,						//list of urls to download
+						 allSha1s,							//1:1 list of sha1's for those files
 						 this,								//who will be notified
 						 &AssetObject::downloadFinished,	//callback method
 						 "downloads_" + ofToString(ID)		//destination folder

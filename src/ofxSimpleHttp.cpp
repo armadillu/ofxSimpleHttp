@@ -12,6 +12,7 @@
 #include "ofEvents.h"
 #include "poco/Net/HTTPStreamFactory.h"
 #include "Poco/Buffer.h"
+#include "ofxChecksum.h"
 
 ofxSimpleHttp::ofxSimpleHttp(){
 	timeOut = 10;
@@ -21,6 +22,7 @@ ofxSimpleHttp::ofxSimpleHttp(){
 	timeToStop = false;
 	userAgent = "ofxSimpleHttp (Poco Powered)";
 	acceptString = "";
+	notifyFromMainThread = true;
 }
 
 ofxSimpleHttp::~ofxSimpleHttp(){
@@ -44,6 +46,9 @@ ofxSimpleHttp::~ofxSimpleHttp(){
 	}
 }
 
+void ofxSimpleHttp::setNotifyFromMainThread(bool mainThread){
+	notifyFromMainThread = mainThread;
+}
 
 void ofxSimpleHttp::setTimeOut(int seconds){
 	timeOut = seconds;
@@ -242,8 +247,7 @@ ofxSimpleHttpResponse ofxSimpleHttp::fetchURLBlocking(string  url){
 	return response;
 }
 
-
-void ofxSimpleHttp::fetchURLToDisk(string url, bool notifyOnSuccess, string dirWhereToSave){
+void ofxSimpleHttp::fetchURLToDisk(string url, string expectedSha1, bool notifyOnSuccess, string dirWhereToSave){
 
 	if (queueLenEstimation >= maxQueueLen){
 		printf( "ofxSimpleHttp::fetchURL can't do that, queue is too long already (%d)!\n", queueLenEstimation );
@@ -256,6 +260,7 @@ void ofxSimpleHttp::fetchURLToDisk(string url, bool notifyOnSuccess, string dirW
 	string savePath = dirWhereToSave == "" ? extractFileFromUrl(url) : ofToDataPath(dirWhereToSave, true) + "/" + extractFileFromUrl(url);
 
 	ofxSimpleHttpResponse *response = new ofxSimpleHttpResponse();
+	response->expectedChecksum = expectedSha1;
 	response->absolutePath = savePath;
 	response->url = url;
 	response->downloadCanceled = false;
@@ -264,12 +269,16 @@ void ofxSimpleHttp::fetchURLToDisk(string url, bool notifyOnSuccess, string dirW
 	response->downloadToDisk = true;
 
 	lock();
-		q.push(response);
+	q.push(response);
 	unlock();
 
 	if ( !isThreadRunning() ){	//if the queue is not running, lets start it
 		startThread(true, false);
 	}
+}
+
+void ofxSimpleHttp::fetchURLToDisk(string url, bool notifyOnSuccess, string dirWhereToSave){
+	fetchURLToDisk(url, "", notifyOnSuccess, dirWhereToSave);
 }
 
 
@@ -341,6 +350,14 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 
 		resp->timeTakenToDownload = ofGetElapsedTimef() - resp->timeTakenToDownload;
 
+		if (resp->expectedChecksum.length()){
+			resp->checksumOK = ofxChecksum::sha1(resp->absolutePath, resp->expectedChecksum);
+			if(!resp->checksumOK){
+				if(verbose) cout << "ofxSimpleHttp downloaded OK but Checksum FAILED" << endl;
+				if(verbose) cout << "SHA1 was meant to be: " << resp->expectedChecksum << endl;
+			}
+		}
+
 		resp->downloadSpeed = 0;
 		resp->session = NULL;
 		if(saveToDisk){
@@ -397,11 +414,15 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 			//enqueue the operation result!
 			if (sendResultThroughEvents ){
 				if ( resp->notifyOnSuccess ){
-					if (timeToStop == false){	//see if we have been destructed! dont forward events if so
-						lock();
-						ofxSimpleHttpResponse tempCopy = *resp;
-						responsesPendingNotification.push(tempCopy);
-						unlock();
+					if (notifyFromMainThread){ //enqueue notifications to release them from main thread
+						if (timeToStop == false){	//see if we have been destructed! dont forward events if so
+							lock();
+							ofxSimpleHttpResponse tempCopy = *resp;
+							responsesPendingNotification.push(tempCopy);
+							unlock();
+						}
+					}else{ //otherwise notify from right here!
+						ofNotifyEvent( httpResponse, *resp, this );
 					}
 				}
 			}

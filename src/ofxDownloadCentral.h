@@ -75,7 +75,25 @@ class ofxDownloadCentral{
 
 		///////////////////////////////////////////////////////////////////////////////
 		template <typename ArgumentsType, class ListenerClass>
+		void downloadResources(	string url,
+								string sha1String,
+							   ListenerClass  * listener,
+							   void (ListenerClass::*listenerMethod)(ArgumentsType&),
+							   string destinationFolder = "ofxDownloadCentral_downloads"
+							   ){
+
+			vector<string> list;
+			vector<string> shas;
+			list.push_back(url);
+			shas.push_back(sha1String);
+			downloadResources(list, shas, listener, listenerMethod, destinationFolder);
+		}
+
+
+		///////////////////////////////////////////////////////////////////////////////
+		template <typename ArgumentsType, class ListenerClass>
 		void downloadResources(	vector<string>urlList,
+								vector<string>sha1List,
 								ListenerClass  * listener,
 								void (ListenerClass::*listenerMethod)(ArgumentsType&),
 								string destinationFolder = "ofxDownloadCentral_downloads"
@@ -83,12 +101,24 @@ class ofxDownloadCentral{
 
 			ofxBatchDownloader * d = new ofxBatchDownloader();
 			d->setDownloadFolder(destinationFolder);
-			d->addResourcesToDownloadList(urlList);
+			d->addResourcesToDownloadList(urlList, sha1List);
 			ofAddListener(d->resourcesDownloadFinished, listener, listenerMethod); //set the notification to hit our original caller
 			downloaders.push_back(d);
 			if (!busy) startQueue();
-
 		}
+
+		///////////////////////////////////////////////////////////////////////////////
+		template <typename ArgumentsType, class ListenerClass>
+		void downloadResources(	vector<string>urlList,
+							   ListenerClass  * listener,
+							   void (ListenerClass::*listenerMethod)(ArgumentsType&),
+							   string destinationFolder = "ofxDownloadCentral_downloads"
+							   ){
+
+			vector<string> shas;
+			downloadResources(urlList, shas, listener, listenerMethod, destinationFolder);
+		}
+
 
 	private:
 

@@ -68,6 +68,8 @@ struct ofxSimpleHttpResponse{
 	bool						downloadCanceled;	// flag to cancel download
 	bool						downloadToDisk;		// user wants bytes on disk; otherwise just return data as string in "responseBody"
 	bool						emptyWholeQueue;
+	bool						checksumOK;
+	string						expectedChecksum;	//sha1
 	int							status; 			// return code for the response ie: 200 = OK
 	int							serverReportedSize;
 	string						reasonForStatus;	// text explaining the status
@@ -85,6 +87,7 @@ struct ofxSimpleHttpResponse{
 
 	ofxSimpleHttpResponse(){
 		downloadToDisk = emptyWholeQueue = false;
+		checksumOK = true;
 		downloadProgress = downloadSpeed = 0.0f;
 		session = NULL;
 		timeTakenToDownload = 0.0;
@@ -97,6 +100,10 @@ struct ofxSimpleHttpResponse{
 			cout << "    server status: " << status << endl;
 			cout << "    server reported size: " << serverReportedSize << endl;
 			cout << "    content type: " << contentType << endl;
+			if(expectedChecksum.length()){
+				cout << "    expected checksum: " << expectedChecksum << endl;
+				cout << "    checksum match: " << string(checksumOK ? "YES" : "NO") << endl;
+			}
 			cout << "    time to download: " << timeTakenToDownload << " seconds" << endl;
 			if (serverReportedSize != -1){
 				cout << "    avg dl speed: " << (serverReportedSize / 1024.f) / timeTakenToDownload << "Kb/sec" << endl;
@@ -128,6 +135,7 @@ class ofxSimpleHttp : public ofThread, public ofBaseDraws{
 
 		//download to Disk
 		void						fetchURLToDisk(string url, bool notifyOnSuccess = false, string outputDir = ".");
+		void						fetchURLToDisk(string url, string expectedSha1, bool notifyOnSuccess = false, string outputDir = ".");
 		ofxSimpleHttpResponse		fetchURLtoDiskBlocking(string url, string outputDir = ".");
 
 		void						update(); //this is mainly used to get notifications in the main thread
@@ -152,8 +160,11 @@ class ofxSimpleHttp : public ofThread, public ofBaseDraws{
 		void						setUserAgent( string newUserAgent );
 		void						setAcceptString( string newAcceptString );
 		void						setMaxQueueLength(int len);
-			
+
+		void						setNotifyFromMainThread(bool mainThread);
+
 		ofEvent<ofxSimpleHttpResponse>		httpResponse;
+
 	
 	private:
 		
@@ -163,6 +174,7 @@ class ofxSimpleHttp : public ofThread, public ofBaseDraws{
 		string extractFileFromUrl(string url);
 			
 		bool							debug;	//should we print lots of stuff?
+		bool							notifyFromMainThread;
 		int								timeOut;
 		string							userAgent;
 		string							acceptString;

@@ -46,13 +46,25 @@ void ofxBatchDownloader::draw(float x, float y){
 	http.draw(x, y);
 }
 
-
 void ofxBatchDownloader::addResourcesToDownloadList( vector<string> _urlList ){
+	vector<string>_sha1List;
+	addResourcesToDownloadList(_urlList, _sha1List);
+}
+
+void ofxBatchDownloader::addResourcesToDownloadList( vector<string> _urlList, vector<string>_sha1List ){
+
+	if ( _sha1List.size() > 0 && (_urlList.size() != _sha1List.size()) ){
+		cout << "ofxBatchDownloader::addResourcesToDownloadList >> urlList & shaList element num missmatch!" << endl;
+		return;
+	}
 
 	if(!busy){
 
 		for(int i = 0; i < _urlList.size(); i++){
 			originalUrlList.push_back(_urlList[i]);
+			if (_sha1List.size()){
+				originalSha1List.push_back(_sha1List[i]);
+			}
 			if(verbose) cout << "ofxBatchDownloader queueing " << _urlList[i] << " for download" << endl;
 		}
 
@@ -82,18 +94,25 @@ void ofxBatchDownloader::startDownloading(){
 		if(verbose) cout << "ofxBatchDownloader starting downloads! " << endl;
 
 		for(int i = 0; i < originalUrlList.size(); i++){
-			http.fetchURLToDisk(originalUrlList[i], true, downloadFolder);
+			string sha = "";
+			if (originalSha1List.size()){
+				sha = originalSha1List[i];
+			}
+			http.fetchURLToDisk(originalUrlList[i], sha, true, downloadFolder);
 		}
 	}
 }
 
 
-//we know this will be called from the main thread!
+//this might or might not be called from the main thread! depending on the ofxSimpleHttp config
 void ofxBatchDownloader::httpResult(ofxSimpleHttpResponse &r){
+
+	int index = okList.size() + failedList.size();
+
 
 	responses.push_back(r);
 
-	if(r.ok){
+	if(r.ok && r.checksumOK){
 		okList.push_back( r.url );
 		if(verbose) cout << "ofxBatchDownloader downloaded OK " << r.url << endl;
 	}else{

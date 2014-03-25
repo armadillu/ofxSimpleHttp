@@ -52,6 +52,7 @@ public:
 	void setDownloadFolder(string f);
 
 	void addResourcesToDownloadList( vector<string>urlList );
+	void addResourcesToDownloadList( vector<string>urlList, vector<string>sha1List );
 	void startDownloading();
 	void cancelBatch();
 
@@ -70,6 +71,7 @@ private:
 	string								downloadFolder;
 
 	vector<string>						originalUrlList;
+	vector<string>						originalSha1List;
 	vector<string>						failedList;
 	vector<string>						okList;
 	vector<ofxSimpleHttpResponse>		responses;
