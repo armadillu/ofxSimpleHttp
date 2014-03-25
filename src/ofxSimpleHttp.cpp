@@ -105,6 +105,10 @@ float ofxSimpleHttp::getCurrentDownloadProgress(){
 
 void ofxSimpleHttp::threadedFunction(){
 
+	#ifdef TARGET_OSX
+	pthread_setname_np("ofxSimpleHttp");
+	#endif
+
 	if (debug) printf("\nofxSimpleHttp >> start threadedFunction\n");
 	queueLenEstimation = 0;
 
