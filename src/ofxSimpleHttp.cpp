@@ -164,10 +164,10 @@ void ofxSimpleHttp::stopCurrentDownload(bool emptyQueue){
 				try{
 					r->emptyWholeQueue = emptyQueue;
 					r->downloadCanceled = true;
-					if ( r->session != NULL ){
+					//if ( r->session != NULL ){
 						//cout << "aboritng session " << r->session << endl;
-						r->session->abort();
-					}
+					//	r->session->abort();
+					//}
 				}catch(Exception& exc){
 					printf( "ofxSimpleHttp::stopCurrentDownload(%s) >> Exception: %s\n", r->fileName.c_str(), exc.displayText().c_str() );
 				}
@@ -321,7 +321,7 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 
 		HTTPClientSession session(uri.getHost(), uri.getPort());
 
-		resp->session = &session;
+		//resp->session = &session;
 
 		HTTPRequest req(HTTPRequest::HTTP_GET, path, HTTPMessage::HTTP_1_1);
 		session.setTimeout( Poco::Timespan(timeOut,0) );
@@ -359,7 +359,7 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 		}
 
 		resp->downloadSpeed = 0;
-		resp->session = NULL;
+		//resp->session = NULL;
 		if(saveToDisk){
 			myfile.close();
 		}

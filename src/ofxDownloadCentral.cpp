@@ -61,7 +61,7 @@ void ofxDownloadCentral::cancelCurrentDownload(){
 	if (busy){
 		if(downloaders.size() > 0){
 			ofxBatchDownloader * bd = downloaders[0];
-			bd->cancelBatch();
+			bd->cancelBatch(true);
 		}
 	}
 	mutex.unlock();
@@ -73,7 +73,7 @@ void ofxDownloadCentral::cancelAllDownloads(){
 	if (busy){
 		if(downloaders.size() > 0){
 			ofxBatchDownloader * bd = downloaders[0];
-			bd->cancelBatch();
+			bd->cancelBatch(true);
 			for(int i = 0; i < downloaders.size(); i++){
 				delete downloaders[0];
 				downloaders.erase(downloaders.begin());

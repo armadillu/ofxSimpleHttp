@@ -67,7 +67,7 @@ struct ofxSimpleHttpResponse{
 	bool						notifyOnSuccess;	// user wants to be notified when download is ready
 	bool						downloadCanceled;	// flag to cancel download
 	bool						downloadToDisk;		// user wants bytes on disk; otherwise just return data as string in "responseBody"
-	bool						emptyWholeQueue;
+	bool						emptyWholeQueue;	//flag
 	bool						checksumOK;
 	string						expectedChecksum;	//sha1
 	int							status; 			// return code for the response ie: 200 = OK
@@ -83,13 +83,13 @@ struct ofxSimpleHttpResponse{
 	string						absolutePath;		//where file was saved
 	float						timeTakenToDownload;//seconds
 
-	HTTPClientSession *			session;			//careful what you do with this! will be NULL if session is finished
+	//HTTPClientSession *			session;			//careful what you do with this! will be NULL if session is finished
 
 	ofxSimpleHttpResponse(){
 		downloadToDisk = emptyWholeQueue = false;
 		checksumOK = true;
 		downloadProgress = downloadSpeed = 0.0f;
-		session = NULL;
+		//session = NULL;
 		timeTakenToDownload = 0.0;
 		serverReportedSize = -1;
 	}

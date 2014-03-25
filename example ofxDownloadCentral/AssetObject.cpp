@@ -40,6 +40,11 @@ void AssetObject::downloadFinished(ofxBatchDownloaderReport &report){
 
 	cout << "#### Object with ID "<< ID << " got report back!!" << endl;
 	cout << "#### " << report.attemptedDownloads.size() << " attempted; " ;
+
+	if(report.wasCanceled){
+		cout << "#### Download Was CANCELED BY USER!" ;
+	}
+
 	cout << report.failedDownloads.size() << " failed, ";
 	cout << report.successfulDownloads.size() << " ok!!" << endl;
 	for(int i = 0; i < report.responses.size(); i++){
@@ -47,7 +52,7 @@ void AssetObject::downloadFinished(ofxBatchDownloaderReport &report){
 		r.print();
 	}
 
-	//load the 1st asset
+	//look through report, look for a good asset
 	bool ok = false;
 	int i = 0;
 	while (!ok && i < report.responses.size()){
@@ -105,35 +110,37 @@ void AssetObject::loadRandomAsset(){
 	vector<string> allURLS;
 	vector<string> allSha1s;
 
-	allURLS.push_back("http://uri.cat/dontlook/localProjects/CWRU/df780aa89408ab095240921d5fa3f7e59ffab412.jpg");
-	allSha1s.push_back("df780aa89408ab095240921d5fa3f7e59ffab412");
+	// GOOD SHA1 TEST //
+//	allURLS.push_back("http://uri.cat/dontlook/localProjects/CWRU/df780aa89408ab095240921d5fa3f7e59ffab412.jpg");
+//	allSha1s.push_back("df780aa89408ab095240921d5fa3f7e59ffab412");
 
+	// BAD SHA1 TEST //
 //	allURLS.push_back("http://uri.cat/dontlook/localProjects/CWRU/71827399.mov");
 //	allSha1s.push_back("whatever dude!");
 
-//	allURLS.push_back("http://uri.cat/dontlook/localProjects/CWRU/chaos.mov");
-//	allURLS.push_back("http://uri.cat/dontlook/localProjects/CWRU/bill.mov");
-//	allURLS.push_back("http://uri.cat/dontlook/localProjects/CWRU/walle.mov");
-//	allURLS.push_back("http://uri.cat/dontlook/localProjects/CWRU/walle2.mov");
-//	allURLS.push_back("http://uri.cat/dontlook/localProjects/CWRU/success.mov");
-//	allURLS.push_back("http://uri.cat/dontlook/localProjects/CWRU/cat.mov");
-//	allURLS.push_back("http://uri.cat/dontlook/localProjects/CWRU/blackboard.mov");
-//	allURLS.push_back("http://uri.cat/dontlook/localProjects/CWRU/after.mov");
-//	allURLS.push_back("http://uri.cat/dontlook/localProjects/CWRU/allpowerful.mov");
-//	allURLS.push_back("http://uri.cat/dontlook/localProjects/CWRU/beep.mov");
-//	allURLS.push_back("http://uri.cat/dontlook/localProjects/CWRU/walle3.mov");
+	allURLS.push_back("http://uri.cat/dontlook/localProjects/CWRU/chaos.mov");
+	allURLS.push_back("http://uri.cat/dontlook/localProjects/CWRU/bill.mov");
+	allURLS.push_back("http://uri.cat/dontlook/localProjects/CWRU/walle.mov");
+	allURLS.push_back("http://uri.cat/dontlook/localProjects/CWRU/walle2.mov");
+	allURLS.push_back("http://uri.cat/dontlook/localProjects/CWRU/success.mov");
+	allURLS.push_back("http://uri.cat/dontlook/localProjects/CWRU/cat.mov");
+	allURLS.push_back("http://uri.cat/dontlook/localProjects/CWRU/blackboard.mov");
+	allURLS.push_back("http://uri.cat/dontlook/localProjects/CWRU/after.mov");
+	allURLS.push_back("http://uri.cat/dontlook/localProjects/CWRU/allpowerful.mov");
+	allURLS.push_back("http://uri.cat/dontlook/localProjects/CWRU/beep.mov");
+	allURLS.push_back("http://uri.cat/dontlook/localProjects/CWRU/walle3.mov");
 
-//	allURLS.push_back("http://farm8.staticflickr.com/7420/10032530563_86ff701d19_o.jpg");
-//	allURLS.push_back("http://farm4.staticflickr.com/3686/9225463176_d0bf83a992_o.jpg");
-//	allURLS.push_back("http://farm8.staticflickr.com/7255/6888724266_158ce261a2_o.jpg");
-//	allURLS.push_back("http://farm8.staticflickr.com/7047/7034809565_5f80871bff_o.jpg");
-//	allURLS.push_back("http://farm8.staticflickr.com/7438/9481688475_e83f92e8b5_o.jpg");
-//	allURLS.push_back("http://farm8.staticflickr.com/7321/9481647489_e73bed28e1_o.jpg");
-//	allURLS.push_back("http://farm8.staticflickr.com/7367/9484432454_9701453c66_o.jpg");
-//	allURLS.push_back("http://farm6.staticflickr.com/5537/9481654243_7b73b87ceb_o.jpg");
-//	allURLS.push_back("http://farm4.staticflickr.com/3740/9481659071_3159d318dc_o.jpg");
-//	allURLS.push_back("http://farm6.staticflickr.com/5346/9484309488_11ee39298e_o.jpg");
-//	allURLS.push_back("http://farm4.staticflickr.com/3802/9484323300_6d3a6a78b5_o.jpg");
+	allURLS.push_back("http://farm8.staticflickr.com/7420/10032530563_86ff701d19_o.jpg");
+	allURLS.push_back("http://farm4.staticflickr.com/3686/9225463176_d0bf83a992_o.jpg");
+	allURLS.push_back("http://farm8.staticflickr.com/7255/6888724266_158ce261a2_o.jpg");
+	allURLS.push_back("http://farm8.staticflickr.com/7047/7034809565_5f80871bff_o.jpg");
+	allURLS.push_back("http://farm8.staticflickr.com/7438/9481688475_e83f92e8b5_o.jpg");
+	allURLS.push_back("http://farm8.staticflickr.com/7321/9481647489_e73bed28e1_o.jpg");
+	allURLS.push_back("http://farm8.staticflickr.com/7367/9484432454_9701453c66_o.jpg");
+	allURLS.push_back("http://farm6.staticflickr.com/5537/9481654243_7b73b87ceb_o.jpg");
+	allURLS.push_back("http://farm4.staticflickr.com/3740/9481659071_3159d318dc_o.jpg");
+	allURLS.push_back("http://farm6.staticflickr.com/5346/9484309488_11ee39298e_o.jpg");
+	allURLS.push_back("http://farm4.staticflickr.com/3802/9484323300_6d3a6a78b5_o.jpg");
 
 	int which = floor(ofRandom(allURLS.size()));
 
@@ -191,7 +198,7 @@ void AssetObject::draw(){
 
 		//draw errors
 		if(failedToLoad){
-			ofDrawBitmapString( "Failed to load!", pos.x, pos.y - 48);
+			ofDrawBitmapString( "Failed to download!", pos.x, pos.y - 48);
 		}
 
 		//red frame around asset

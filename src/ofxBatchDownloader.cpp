@@ -22,7 +22,7 @@ ofxBatchDownloader::ofxBatchDownloader(){
 
 
 ofxBatchDownloader::~ofxBatchDownloader(){
-	cancelBatch();
+	cancelBatch(false /*notify*/);
 }
 
 
@@ -31,8 +31,20 @@ void ofxBatchDownloader::update(){
 }
 
 
-void ofxBatchDownloader::cancelBatch(){
+void ofxBatchDownloader::cancelBatch(bool notify){
 	http.stopCurrentDownload(true);
+
+	if(notify){
+		ofxBatchDownloaderReport report;
+		report.owner = this;
+		report.downloadPath = downloadFolder;
+		report.attemptedDownloads = originalUrlList;
+		report.successfulDownloads = okList;
+		report.failedDownloads = failedList;
+		report.responses = responses;
+		report.wasCanceled = true;
+		ofNotifyEvent( resourcesDownloadFinished, report, this );
+	}
 	busy = false;
 }
 
@@ -123,6 +135,7 @@ void ofxBatchDownloader::httpResult(ofxSimpleHttpResponse &r){
 	if (originalUrlList.size() == failedList.size() + okList.size()){
 		//we are done!
 		ofxBatchDownloaderReport report;
+		report.owner = this;
 		report.downloadPath = downloadFolder;
 		report.attemptedDownloads = originalUrlList;
 		report.successfulDownloads = okList;

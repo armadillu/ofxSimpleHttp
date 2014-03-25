@@ -36,6 +36,10 @@ struct ofxBatchDownloaderReport{
 	vector<string> successfulDownloads;			//this vector contains all the urls that got downloaded correctly
 	vector<string> failedDownloads;				//this vector contains all the urls that failed to download
 	vector<ofxSimpleHttpResponse> responses;	//this vector contains a list of all url responses, with statuses, filenames, etc
+	bool wasCanceled;
+	ofxBatchDownloaderReport(){
+		wasCanceled = false;
+	}
 };
 
 
@@ -54,7 +58,7 @@ public:
 	void addResourcesToDownloadList( vector<string>urlList );
 	void addResourcesToDownloadList( vector<string>urlList, vector<string>sha1List );
 	void startDownloading();
-	void cancelBatch();
+	void cancelBatch(bool notify = false);
 
 	int pendingDownloads();
 	bool isBusy();
