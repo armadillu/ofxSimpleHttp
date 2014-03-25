@@ -15,7 +15,7 @@
 #include "ofxThreadedImage.h"
 #include "ofxThreadedVideoPlayer.h"
 
-#define OBJ_DRAW_SIZE	200
+#define OBJ_DRAW_SIZE	300
 
 static int OBJECT_ID = 0;
 
@@ -36,7 +36,7 @@ public:
 	int ID;
 	ofxDownloadCentral *d;
 
-	ofVec2f pos;
+	ofVec3f pos;
 	float speed;
 
 	ofxThreadedImage * image;
@@ -44,10 +44,9 @@ public:
 	bool isVideo;
 	bool failedToLoad;
 
-	vector<ofxThreadedVideoPlayer*> videosPendingForDeletion;
-	vector<ofxThreadedImage*> imgsPendingForDeletion;
-
 	bool waitingForDownload;
+	string name;
+
 };
 
 

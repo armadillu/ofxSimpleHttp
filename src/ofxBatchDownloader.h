@@ -57,6 +57,7 @@ public:
 
 	int pendingDownloads();
 	bool isBusy();
+	vector<string> pendingURLs();
 
 	ofEvent<ofxBatchDownloaderReport>	resourcesDownloadFinished;
 

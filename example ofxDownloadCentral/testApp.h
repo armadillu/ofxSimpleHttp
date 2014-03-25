@@ -5,7 +5,7 @@
 #include "ofxDownloadCentral.h"
 #include "AssetObject.h"
 
-#define NUM_OBJECTS 5
+#define NUM_OBJECTS 3
 
 
 class testApp : public ofBaseApp{
@@ -19,5 +19,7 @@ class testApp : public ofBaseApp{
 
 	vector<AssetObject*> objects;
 	ofxDownloadCentral downloader;
+
+	ofEasyCam cam;
 
 };

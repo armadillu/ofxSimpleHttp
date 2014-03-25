@@ -1,6 +1,6 @@
 #include "testApp.h"
 
-
+#include <OpenGL/OpenGL.h>
 
 void testApp::setup(){
 
@@ -10,6 +10,12 @@ void testApp::setup(){
 	ofBackground(22);
 	ofSetWindowPosition(20, 20);
 
+	#ifdef TARGET_OSX
+    // Enable the OPEN_GL multi-threading, not sure what this really does! TODO!
+    CGLError err;
+    CGLContextObj ctx = CGLGetCurrentContext();
+    err =  CGLEnable( ctx, kCGLCEMPEngine);
+	#endif
 
 	for(int i = 0 ; i < NUM_OBJECTS; i++){
 		AssetObject * o = new AssetObject();
@@ -17,6 +23,8 @@ void testApp::setup(){
 		objects.push_back(o);
 	}
 
+	//ofSetDrawBitmapMode(OF_BITMAPMODE_MODEL);
+	cam.setDistance(1100);
 }
 
 
@@ -25,8 +33,11 @@ void testApp::update(){
 	downloader.update();
 	for(int i = 0 ; i < NUM_OBJECTS; i++){
 		objects[i]->update();
-		if (ofGetFrameNum()%120 == 1){
-			objects[i]->loadRandomAsset();
+
+		if (ofGetFrameNum()%60 == 1){ //load a random asset every now and then
+			if(ofRandom(1) > 0.5){
+				objects[i]->loadRandomAsset();
+			}
 		}
 	}
 }
@@ -34,23 +45,26 @@ void testApp::update(){
 
 void testApp::draw(){
 
-	downloader.draw(30,30);
 	ofSetColor(255);
 
+	cam.begin();
+	ofEnableDepthTest();
 	for(int i = 0 ; i < NUM_OBJECTS; i++){
 		objects[i]->draw();
 	}
+	ofDisableDepthTest();
+	cam.end();
 
 	//clock hand to see threading in action
 	ofPushMatrix();
-
 	ofTranslate(ofGetWidth() - 60,60, 0);
 	ofRotate( ofGetFrameNum() * 3, 0,0,1);
-    ofSetColor(255,255,255);
+	ofSetColor(255,255,255);
 	float h = 5;
 	ofRect(-h/2,h/2, h,50);
-
 	ofPopMatrix();
+
+	downloader.draw(30,30, true);
 }
 
 

@@ -28,7 +28,11 @@ ofxSimpleHttp::~ofxSimpleHttp(){
 	timeToStop = true;	//lets flag the thread so that it doesnt try access stuff while we delete things around
 	stopCurrentDownload(true);
 
-	waitForThread(false);
+	try{
+		waitForThread(false);
+	}catch(Exception& exc){
+		printf("ofxSimpleHttp::~ofxSimpleHttp >> Exception at waitForThread %s\n", exc.displayText().c_str() );
+	}
 
 	//empty queue
 	while ( getPendingDownloads() > 0 ){

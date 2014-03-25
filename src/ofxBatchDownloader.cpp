@@ -115,6 +115,29 @@ void ofxBatchDownloader::httpResult(ofxSimpleHttpResponse &r){
 }
 
 
+vector<string> ofxBatchDownloader::pendingURLs(){
+
+	vector<string> res;
+	for (int i = 0; i < originalUrlList.size(); i++){
+		bool found = false;
+		for (int j = 0; j < okList.size(); j++){
+			if ( okList[j] == originalUrlList[i] ){
+				found = true;
+				continue;
+			}
+		}
+		for (int j = 0; j < failedList.size(); j++){
+			if ( failedList[j] == originalUrlList[i] ){
+				found = true;
+				continue;
+			}
+		}
+		if (!found) res.push_back(originalUrlList[i]);
+	}
+	return res;
+}
+
+
 void ofxBatchDownloader::reset(){
 	failedList.clear();
 	okList.clear();

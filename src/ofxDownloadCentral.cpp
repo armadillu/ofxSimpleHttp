@@ -85,14 +85,30 @@ void ofxDownloadCentral::cancelAllDownloads(){
 }
 
 
-void ofxDownloadCentral::draw(float x, float y){
+void ofxDownloadCentral::draw(float x, float y, bool drawAllPending){
 
 	if (busy){
+		mutex.lock();
 		if(downloaders.size() > 0){
+			vector<string> allURLs;
 			ofDrawBitmapString("ofxDownloadCentral queue: " + ofToString(downloaders.size()), x + 3, y + 12);
 			ofxBatchDownloader * bd = downloaders[0];
 			bd->draw(x, y + 16);
+			if(drawAllPending){
+				vector<string> allPending;
+				for(int i = 0; i < downloaders.size(); i++){
+					vector<string> pending = downloaders[i]->pendingURLs();
+					for(int j = 0; j < pending.size(); j++){
+						allPending.push_back(pending[j]);
+					}
+				}
+				ofSetColor(0,255,100);
+				for(int i = 0; i < allPending.size(); i++){
+					ofDrawBitmapString( allPending[i], x + 3, y + 100 + 15 * i);
+				}
+			}
 		}
+		mutex.unlock();
 	}
 }
 

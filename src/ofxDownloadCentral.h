@@ -55,7 +55,7 @@ class ofxDownloadCentral{
 		~ofxDownloadCentral();
 
 		void update();
-		void draw(float x, float y);
+		void draw(float x, float y, bool drawAllPending = false);
 
 		void cancelCurrentDownload();
 		void cancelAllDownloads();
