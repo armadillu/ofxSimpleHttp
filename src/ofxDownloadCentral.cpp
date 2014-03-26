@@ -15,12 +15,23 @@ ofxDownloadCentral::ofxDownloadCentral(){
 
 	verbose = true;
 	busy = false;
-
+	onlySkipDownloadIfChecksumMatches = true;
 }
 
 ofxDownloadCentral::~ofxDownloadCentral(){
 	cancelAllDownloads();
 }
+
+
+void ofxDownloadCentral::setVerbose(bool b){
+	verbose = b;
+}
+
+
+void ofxDownloadCentral::setNeedsChecksumMatchToSkipDownload(bool needs){
+	onlySkipDownloadIfChecksumMatches = needs;
+}
+
 
 void ofxDownloadCentral::startQueue(){
 
@@ -111,4 +122,3 @@ void ofxDownloadCentral::draw(float x, float y, bool drawAllPending){
 		mutex.unlock();
 	}
 }
-

@@ -23,6 +23,7 @@ ofxSimpleHttp::ofxSimpleHttp(){
 	userAgent = "ofxSimpleHttp (Poco Powered)";
 	acceptString = "";
 	notifyFromMainThread = true;
+	onlySkipDownloadIfChecksumMatches = false;
 }
 
 ofxSimpleHttp::~ofxSimpleHttp(){
@@ -48,6 +49,10 @@ ofxSimpleHttp::~ofxSimpleHttp(){
 
 void ofxSimpleHttp::setNotifyFromMainThread(bool mainThread){
 	notifyFromMainThread = mainThread;
+}
+
+void ofxSimpleHttp::setNeedsChecksumMatchToSkipDownload(bool needs){
+	onlySkipDownloadIfChecksumMatches = needs;
 }
 
 void ofxSimpleHttp::setTimeOut(int seconds){
@@ -352,6 +357,21 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 				}
 			}
 			f.close();
+		}else{
+			if (!onlySkipDownloadIfChecksumMatches){
+				ofFile f;
+				f.open(resp->absolutePath);
+				if (f.exists() && f.getSize() > 0){
+					resp->checksumOK = false;
+					resp->status = 0;
+					resp->ok = true;
+					resp->fileWasHere = true;
+					fileIsAlreadyHere = true;
+					if(verbose) cout << "ofxSimpleHttp about to download "<< resp->url << " but a file with same name and (size > 0) is already here!" << endl;
+					if(verbose) cout << "skipping download (missing checksum)" << endl;
+				}
+				f.close();
+			}
 		}
 	}
 

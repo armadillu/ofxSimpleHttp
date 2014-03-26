@@ -10,11 +10,14 @@ void testApp::setup(){
 	ofBackground(22);
 	ofSetWindowPosition(20, 20);
 
+	downloader.setNeedsChecksumMatchToSkipDownload(false);
+	downloader.setVerbose(false);
+
 	#ifdef TARGET_OSX
-    // Enable the OPEN_GL multi-threading, not sure what this really does! TODO!
-    CGLError err;
-    CGLContextObj ctx = CGLGetCurrentContext();
-    err =  CGLEnable( ctx, kCGLCEMPEngine);
+//    // Enable the OPEN_GL multi-threading, not sure what this really does! TODO!
+//    CGLError err;
+//    CGLContextObj ctx = CGLGetCurrentContext();
+//    err =  CGLEnable( ctx, kCGLCEMPEngine);
 	#endif
 
 	for(int i = 0 ; i < NUM_OBJECTS; i++){
@@ -25,6 +28,7 @@ void testApp::setup(){
 
 	//ofSetDrawBitmapMode(OF_BITMAPMODE_MODEL);
 	cam.setDistance(1100);
+
 }
 
 
@@ -34,7 +38,7 @@ void testApp::update(){
 	for(int i = 0 ; i < NUM_OBJECTS; i++){
 		objects[i]->update();
 
-		if (ofGetFrameNum()%60 == 1){ //load a random asset every now and then
+		if (ofGetFrameNum()%120 == 1){ //load a random asset every now and then
 			if(ofRandom(1) > 0.5){
 				objects[i]->loadRandomAsset();
 			}

@@ -60,6 +60,9 @@ class ofxDownloadCentral{
 		void cancelCurrentDownload();
 		void cancelAllDownloads();
 
+		void setVerbose(bool b);
+		void setNeedsChecksumMatchToSkipDownload(bool needs);
+
 		///////////////////////////////////////////////////////////////////////////////
 		template <typename ArgumentsType, class ListenerClass>
 		void downloadResources(	string url,
@@ -101,6 +104,8 @@ class ofxDownloadCentral{
 
 			ofxBatchDownloader * d = new ofxBatchDownloader();
 			d->setDownloadFolder(destinationFolder);
+			d->setVerbose(verbose);
+			d->setNeedsChecksumMatchToSkipDownload(onlySkipDownloadIfChecksumMatches);
 			d->addResourcesToDownloadList(urlList, sha1List);
 			ofAddListener(d->resourcesDownloadFinished, listener, listenerMethod); //set the notification to hit our original caller
 			downloaders.push_back(d);
@@ -128,6 +133,7 @@ class ofxDownloadCentral{
 
 		bool								busy;
 		bool								verbose;
+		bool								onlySkipDownloadIfChecksumMatches;
 		ofMutex								mutex;
 
 };

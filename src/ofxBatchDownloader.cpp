@@ -21,6 +21,17 @@ ofxBatchDownloader::ofxBatchDownloader(){
 }
 
 
+void ofxBatchDownloader::setNeedsChecksumMatchToSkipDownload(bool needsChecksum){
+	http.setNeedsChecksumMatchToSkipDownload(needsChecksum); 
+}
+
+
+void ofxBatchDownloader::setVerbose(bool b){
+	http.setVerbose(b);
+	verbose = b;
+}
+
+
 ofxBatchDownloader::~ofxBatchDownloader(){
 	cancelBatch(false /*notify*/);
 }

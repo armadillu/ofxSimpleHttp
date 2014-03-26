@@ -60,6 +60,9 @@ public:
 	void startDownloading();
 	void cancelBatch(bool notify = false);
 
+	void setVerbose(bool b);
+	void setNeedsChecksumMatchToSkipDownload(bool needsChecksum);
+
 	int pendingDownloads();
 	bool isBusy();
 	vector<string> pendingURLs();

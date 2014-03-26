@@ -20,6 +20,7 @@ AssetObject::AssetObject(){
 	ofAddListener(video->videoIsReadyEvent, this, &AssetObject::videoIsReadyCallback);
 
 	image = new ofxThreadedImage();
+	ofAddListener(image->imageReadyEvent, this, &AssetObject::imageIsReadyCallback);
 }
 
 
@@ -38,6 +39,7 @@ void AssetObject::setup(ofxDownloadCentral *downloader){
 
 void AssetObject::downloadFinished(ofxBatchDownloaderReport &report){
 
+	cout << "#################################################" << endl;
 	cout << "#### Object with ID "<< ID << " got report back!!" << endl;
 	cout << "#### [ " << report.attemptedDownloads.size() << " attempted  |  " ;
 
@@ -60,11 +62,13 @@ void AssetObject::downloadFinished(ofxBatchDownloaderReport &report){
 		if (report.responses[i].ok){
 
 			name = report.responses[i].fileName;
+
 			if (report.responses[i].extension == "jpg"){
 
 				isVideo = false;
 				delete image;
 				image = new ofxThreadedImage();
+				ofAddListener(image->imageReadyEvent, this, &AssetObject::imageIsReadyCallback);
 				image->loadImageThreaded(report.responses[i].absolutePath);
 
 			}else{
@@ -91,6 +95,12 @@ void AssetObject::downloadFinished(ofxBatchDownloaderReport &report){
 }
 
 
+//we get notified here when the img is ready for drawing
+void AssetObject::imageIsReadyCallback(ofxThreadedImageEvent &e){
+	cout << "image " << e.image << " is ready!" << endl;
+}
+
+
 //we get notified here when the video is ready for playback
 void AssetObject::videoIsReadyCallback(ofxThreadedVideoPlayerStatus &status){
 	cout << "video at "<< status.path << " is ready for playback!" << endl;
@@ -111,8 +121,8 @@ void AssetObject::loadRandomAsset(){
 	vector<string> allSha1s;
 
 	// GOOD SHA1 TEST //
-	allURLS.push_back("http://uri.cat/dontlook/localProjects/CWRU/df780aa89408ab095240921d5fa3f7e59ffab412.jpg");
-	allSha1s.push_back("df780aa89408ab095240921d5fa3f7e59ffab412");
+//	allURLS.push_back("http://uri.cat/dontlook/localProjects/CWRU/df780aa89408ab095240921d5fa3f7e59ffab412.jpg");
+//	allSha1s.push_back("df780aa89408ab095240921d5fa3f7e59ffab412");
 
 	// BAD SHA1 TEST //
 //	allURLS.push_back("http://uri.cat/dontlook/localProjects/CWRU/71827399.mov");
@@ -129,18 +139,18 @@ void AssetObject::loadRandomAsset(){
 //	allURLS.push_back("http://uri.cat/dontlook/localProjects/CWRU/allpowerful.mov");
 //	allURLS.push_back("http://uri.cat/dontlook/localProjects/CWRU/beep.mov");
 //	allURLS.push_back("http://uri.cat/dontlook/localProjects/CWRU/walle3.mov");
-//
-//	allURLS.push_back("http://farm8.staticflickr.com/7420/10032530563_86ff701d19_o.jpg");
-//	allURLS.push_back("http://farm4.staticflickr.com/3686/9225463176_d0bf83a992_o.jpg");
-//	allURLS.push_back("http://farm8.staticflickr.com/7255/6888724266_158ce261a2_o.jpg");
-//	allURLS.push_back("http://farm8.staticflickr.com/7047/7034809565_5f80871bff_o.jpg");
-//	allURLS.push_back("http://farm8.staticflickr.com/7438/9481688475_e83f92e8b5_o.jpg");
-//	allURLS.push_back("http://farm8.staticflickr.com/7321/9481647489_e73bed28e1_o.jpg");
-//	allURLS.push_back("http://farm8.staticflickr.com/7367/9484432454_9701453c66_o.jpg");
-//	allURLS.push_back("http://farm6.staticflickr.com/5537/9481654243_7b73b87ceb_o.jpg");
-//	allURLS.push_back("http://farm4.staticflickr.com/3740/9481659071_3159d318dc_o.jpg");
-//	allURLS.push_back("http://farm6.staticflickr.com/5346/9484309488_11ee39298e_o.jpg");
-//	allURLS.push_back("http://farm4.staticflickr.com/3802/9484323300_6d3a6a78b5_o.jpg");
+
+	allURLS.push_back("http://farm8.staticflickr.com/7420/10032530563_86ff701d19_o.jpg");
+	allURLS.push_back("http://farm4.staticflickr.com/3686/9225463176_d0bf83a992_o.jpg");
+	allURLS.push_back("http://farm8.staticflickr.com/7255/6888724266_158ce261a2_o.jpg");
+	allURLS.push_back("http://farm8.staticflickr.com/7047/7034809565_5f80871bff_o.jpg");
+	allURLS.push_back("http://farm8.staticflickr.com/7438/9481688475_e83f92e8b5_o.jpg");
+	allURLS.push_back("http://farm8.staticflickr.com/7321/9481647489_e73bed28e1_o.jpg");
+	allURLS.push_back("http://farm8.staticflickr.com/7367/9484432454_9701453c66_o.jpg");
+	allURLS.push_back("http://farm6.staticflickr.com/5537/9481654243_7b73b87ceb_o.jpg");
+	allURLS.push_back("http://farm4.staticflickr.com/3740/9481659071_3159d318dc_o.jpg");
+	allURLS.push_back("http://farm6.staticflickr.com/5346/9484309488_11ee39298e_o.jpg");
+	allURLS.push_back("http://farm4.staticflickr.com/3802/9484323300_6d3a6a78b5_o.jpg");
 
 	int which = floor(ofRandom(allURLS.size()));
 
@@ -152,7 +162,8 @@ void AssetObject::loadRandomAsset(){
 						 allSha1s,							//1:1 list of sha1's for those files
 						 this,								//who will be notified
 						 &AssetObject::downloadFinished,	//callback method
-						 "downloads_" + ofToString(ID)		//destination folder
+						 //"downloads_" + ofToString(ID)	//destination folder
+						 "downloads_"						//destination folder
 						 );
 }
 
@@ -163,7 +174,10 @@ void AssetObject::update(){
 	if(pos.x > ofGetWidth() - OBJ_DRAW_SIZE){
 		pos.x = - ofGetWidth() ;
 	}
+
 	if(video) video->update();
+	if(image) image->update();
+
 }
 
 
@@ -175,7 +189,9 @@ void AssetObject::draw(){
 		if(isVideo){
 			video->draw(pos.x, pos.y, OBJ_DRAW_SIZE, OBJ_DRAW_SIZE * 0.6);
 		}else{
-			image->draw(pos.x, pos.y, OBJ_DRAW_SIZE, OBJ_DRAW_SIZE * 0.6);
+			if(image->isReadyToDraw()){
+				image->draw(pos.x, pos.y, OBJ_DRAW_SIZE, OBJ_DRAW_SIZE * 0.6, false/*fadeIn*/);
+			}
 		}
 
 		ofNoFill();
@@ -188,10 +204,10 @@ void AssetObject::draw(){
 		if(waitingForDownload){
 			string down;
 			switch ( (int)(0.2 * ofGetFrameNum() )%4) {
-				case 0: down = "|"; break;
-				case 1: down = "/"; break;
-				case 2: down = "-"; break;
-				case 3: down = "\\"; break;
+				case 0: down = "."; break;
+				case 1: down = " ."; break;
+				case 2: down = "  ."; break;
+				case 3: down = "   ."; break;
 			}
 			ofDrawBitmapString(down , pos.x, pos.y - 32);
 		}

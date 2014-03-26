@@ -99,7 +99,6 @@ struct ofxSimpleHttpResponse{
 	}
 
 	void print(){
-		cout << "#########################################################" << endl;
 		cout << "#### " << url << endl;
 		if (ok){
 			if (fileWasHere){
@@ -174,6 +173,12 @@ class ofxSimpleHttp : public ofThread, public ofBaseDraws{
 
 		void						setNotifyFromMainThread(bool mainThread);
 
+									//if a download is requested and file already exists on disk,
+									//do we require a checksum match to assume the file is good?
+									//ie, if the user doesnt provide a checksum, what do we do?
+		void						setNeedsChecksumMatchToSkipDownload(bool needs);
+
+
 		ofEvent<ofxSimpleHttpResponse>		httpResponse;
 
 	
@@ -187,6 +192,8 @@ class ofxSimpleHttp : public ofThread, public ofBaseDraws{
 			
 		bool							debug;	//should we print lots of stuff?
 		bool							notifyFromMainThread;
+		bool							onlySkipDownloadIfChecksumMatches;
+
 		int								timeOut;
 		string							userAgent;
 		string							acceptString;

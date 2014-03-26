@@ -32,6 +32,7 @@ public:
 
 	void downloadFinished(ofxBatchDownloaderReport &report);
 	void videoIsReadyCallback(ofxThreadedVideoPlayerStatus &status);
+	void imageIsReadyCallback(ofxThreadedImageEvent &e);
 
 	int ID;
 	ofxDownloadCentral *d;
