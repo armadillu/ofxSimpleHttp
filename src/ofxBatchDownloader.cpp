@@ -133,8 +133,8 @@ void ofxBatchDownloader::httpResult(ofxSimpleHttpResponse &r){
 	int index = okList.size() + failedList.size();
 
 	responses.push_back(r);
-
-	if(r.ok && r.checksumOK){
+	bool checkedOK = r.checksumOK || (!r.checksumOK && r.expectedChecksum.size() == 0);
+	if(r.ok && checkedOK){
 		okList.push_back( r.url );
 		if(verbose) cout << "ofxBatchDownloader downloaded OK " << r.url << endl;
 	}else{
