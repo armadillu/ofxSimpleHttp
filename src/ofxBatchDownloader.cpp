@@ -121,7 +121,6 @@ void ofxBatchDownloader::httpResult(ofxSimpleHttpResponse &r){
 
 	int index = okList.size() + failedList.size();
 
-
 	responses.push_back(r);
 
 	if(r.ok && r.checksumOK){

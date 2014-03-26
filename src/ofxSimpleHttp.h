@@ -53,7 +53,7 @@
 #include <iostream>
 
 
-#define COPY_BUFFER_SIZE				1024 * 50   /*50 Kb buffer size*/
+#define COPY_BUFFER_SIZE				1024 * 25   /*10 Kb buffer size*/
 
 using namespace Poco::Net;
 using namespace Poco;
@@ -67,21 +67,23 @@ struct ofxSimpleHttpResponse{
 	bool						notifyOnSuccess;	// user wants to be notified when download is ready
 	bool						downloadCanceled;	// flag to cancel download
 	bool						downloadToDisk;		// user wants bytes on disk; otherwise just return data as string in "responseBody"
-	bool						emptyWholeQueue;	//flag
-	bool						checksumOK;
-	string						expectedChecksum;	//sha1
+	bool						emptyWholeQueue;	// flag
+	bool						checksumOK;			// SHA1 checksum matches
+	bool						fileWasHere;		// didnt even have to download the file!
+	string						expectedChecksum;	// sha1
 	int							status; 			// return code for the response ie: 200 = OK
 	int							serverReportedSize;
 	string						reasonForStatus;	// text explaining the status
 	string						responseBody;		// the actual response << DATA IS HERE!
 	string						contentType;		// the mime type of the response
 	Poco::Timestamp				timestamp;			// time of the response
-	float						downloadProgress;	//[0..1]
-	float						downloadSpeed;		//kb/sec
+	float						downloadProgress;	// [0..1]
+	float						downloadSpeed;		// kb/sec
 	string						url;
-	string						fileName;			//file + extension, no path
-	string						absolutePath;		//where file was saved
-	float						timeTakenToDownload;//seconds
+	string						fileName;			// file + extension, no path
+	string						extension;			// file extension (no dot)
+	string						absolutePath;		// where file was saved
+	float						timeTakenToDownload;// seconds
 
 	//HTTPClientSession *			session;			//careful what you do with this! will be NULL if session is finished
 
@@ -92,28 +94,37 @@ struct ofxSimpleHttpResponse{
 		//session = NULL;
 		timeTakenToDownload = 0.0;
 		serverReportedSize = -1;
+		status = -1;
+		fileWasHere = false;
 	}
 
 	void print(){
-		cout << "#### " << url << " ########" << endl;
+		cout << "#########################################################" << endl;
+		cout << "#### " << url << endl;
 		if (ok){
-			cout << "    server status: " << status << endl;
-			cout << "    server reported size: " << serverReportedSize << endl;
-			cout << "    content type: " << contentType << endl;
-			if(expectedChecksum.length()){
-				cout << "    expected checksum: " << expectedChecksum << endl;
-				cout << "    checksum match: " << string(checksumOK ? "YES" : "NO") << endl;
-			}
-			cout << "    time to download: " << timeTakenToDownload << " seconds" << endl;
-			if (serverReportedSize != -1){
-				cout << "    avg dl speed: " << (serverReportedSize / 1024.f) / timeTakenToDownload << "Kb/sec" << endl;
-			}
-			if(downloadToDisk){
-				cout << "    saved at: " << absolutePath << endl;
+			if (fileWasHere){
+				cout << "    File was already on disk, no download needed!" << endl;
+				cout << "    File checksum " << expectedChecksum << " matched!" << endl;
+				cout << "    File saved at: " << absolutePath << endl;
+			}else{
+				cout << "    Server Status: " << status << endl;
+				cout << "    Server Reported size: " << serverReportedSize << endl;
+				cout << "    Content Type: " << contentType << endl;
+				if(expectedChecksum.length()){
+					cout << "    Expected Checksum: " << expectedChecksum << endl;
+					cout << "    Checksum Match: " << string(checksumOK ? "YES" : "NO") << endl;
+				}
+				cout << "    Download Time taken: " << timeTakenToDownload << " seconds" << endl;
+				if (serverReportedSize != -1){
+					cout << "    Avg Download Speed: " << (serverReportedSize / 1024.f) / timeTakenToDownload << "Kb/sec" << endl;
+				}
+				if(downloadToDisk){
+					cout << "    File Saved at: " << absolutePath << endl;
+				}
 			}
 		}else{
-			cout << "    download FAILED! " << endl;
-			cout << "    status: " << status << " " << reasonForStatus << endl;
+			cout << "    Download FAILED! " << endl;
+			cout << "    Status: " << status << " - " << reasonForStatus << endl;
 		}
 		cout << endl;
 	}
@@ -168,10 +179,11 @@ class ofxSimpleHttp : public ofThread, public ofBaseDraws{
 	
 	private:
 		
-		bool downloadURL( ofxSimpleHttpResponse * resp, bool sendResultThroughEvents, bool saveToDisk );
+		bool downloadURL( ofxSimpleHttpResponse * resp, bool sendResultThroughEvents, bool beingCalledFromMainThread, bool saveToDisk );
 
 		void threadedFunction();	//the queue runs here
 		string extractFileFromUrl(string url);
+		string extractExtensionFromFileName(string fileName);
 			
 		bool							debug;	//should we print lots of stuff?
 		bool							notifyFromMainThread;

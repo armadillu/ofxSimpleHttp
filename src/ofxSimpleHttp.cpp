@@ -129,7 +129,11 @@ void ofxSimpleHttp::threadedFunction(){
 			ofxSimpleHttpResponse * r = q.front();
 
 		unlock();
-			downloadURL(r, true, r->downloadToDisk);
+			downloadURL(	r,		/*response*/
+							true,	/*sendResultThroughEvents*/
+							false,	/*calling from main thread*/
+							r->downloadToDisk
+						);
 		lock();
 			q.pop();
 			if(r->emptyWholeQueue){
@@ -184,9 +188,15 @@ void ofxSimpleHttp::draw(float x, float y , float w , float h  ){
 	int n = q.size();
 	if( isThreadRunning() && n > 0 ){
 		ofxSimpleHttpResponse * r = q.front();
+		float speed = r->downloadSpeed / 1024.0f;
+		string speedUnit = " Mb/sec";
+		if(speed < 1.0){
+			speed *= 1024.;
+			speedUnit = " Kb/sec";
+		}
 		aux =	"ofxSimpleHttp Now Fetching:\n" + r->url.substr(0, w / 8) + "\n" +
 				"progress: " + ofToString(100.0f * r->downloadProgress, 2) + "\n" +
-				"Download Speed: " + ofToString(r->downloadSpeed / 1024.0f, 2) + "Mb/sec\n" +
+				"Download Speed: " + ofToString(speed, 2) + speedUnit + "\n" +
 				"Queue Size " + ofToString(n) ;
 	}else{
 		aux= "ofxSimpleHttp idle...";
@@ -207,9 +217,15 @@ void ofxSimpleHttp::draw(float x, float y){
 
 
 string ofxSimpleHttp::extractFileFromUrl(string url){
-
 	int found = url.find_last_of("/");
 	string file = url.substr(found + 1);
+	return file;
+}
+
+
+string ofxSimpleHttp::extractExtensionFromFileName(string fileName){
+	int found = fileName.find_last_of(".");
+	string file = fileName.substr(found + 1, fileName.size() - found);
 	return file;
 }
 
@@ -225,6 +241,7 @@ void ofxSimpleHttp::fetchURL(string url, bool notifyOnSuccess){
 	response->url = url;
 	response->downloadCanceled = false;
 	response->fileName = extractFileFromUrl(url);
+	response->extension = extractExtensionFromFileName(response->fileName);
 	response->notifyOnSuccess = notifyOnSuccess;
 
 	lock();
@@ -242,8 +259,13 @@ ofxSimpleHttpResponse ofxSimpleHttp::fetchURLBlocking(string  url){
 	response.url = url;
 	response.downloadCanceled = false;
 	response.fileName = extractFileFromUrl(url);
+	response.extension = extractExtensionFromFileName(response.fileName);
 	response.notifyOnSuccess = true;
-	bool ok = downloadURL(&response, false, false/*to disk*/);
+	bool ok = downloadURL(&response,
+						  false/*send res through events*/,
+						  true/*beingCalledFromMainThread*/,
+						  false/*to disk*/
+						  );
 	return response;
 }
 
@@ -265,6 +287,7 @@ void ofxSimpleHttp::fetchURLToDisk(string url, string expectedSha1, bool notifyO
 	response->url = url;
 	response->downloadCanceled = false;
 	response->fileName = extractFileFromUrl(url);
+	response->extension = extractExtensionFromFileName(response->fileName);
 	response->notifyOnSuccess = notifyOnSuccess;
 	response->downloadToDisk = true;
 
@@ -293,154 +316,189 @@ ofxSimpleHttpResponse ofxSimpleHttp::fetchURLtoDiskBlocking(string  url, string 
 	response.url = url;
 	response.downloadCanceled = false;
 	response.fileName = extractFileFromUrl(url);
+	response.extension = extractExtensionFromFileName(response.fileName);
 	response.notifyOnSuccess = true;
 	response.downloadToDisk = true;
-	bool ok = downloadURL(&response, false, true/*to disk*/);
+	bool ok = downloadURL(&response,
+						  false,/*send result through events*/
+						  true, /*beingCalledFromMainThread*/
+						  true/*to disk*/
+						  );
 	return response;
 }
 
 
-bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThroughEvents, bool saveToDisk){
+bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThroughEvents, bool beingCalledFromMainThread, bool saveToDisk){
 
 	bool ok;
 	ofstream myfile;
+	bool fileIsAlreadyHere = false;
 
 	//create a file to save the stream to
 	if(saveToDisk){
-		myfile.open( resp->absolutePath.c_str(), ios_base::binary );
-		//myfile.open(ofToDataPath(filename).c_str()); //for not binary?
+
+		if (resp->expectedChecksum.length()){ //if user provided a checksum
+			ofFile f;
+			f.open(resp->absolutePath);
+			if (f.exists()){
+				fileIsAlreadyHere = ofxChecksum::sha1(resp->absolutePath, resp->expectedChecksum);
+				if(fileIsAlreadyHere){
+					resp->checksumOK = true;
+					resp->status = 0;
+					resp->ok = true;
+					resp->fileWasHere = true;
+					if(verbose) cout << "ofxSimpleHttp about to download "<< resp->url << " but a file with same name and correct checksum is already here!" << endl;
+					if(verbose) cout << "skipping download (" << resp->expectedChecksum << ")" << endl;
+				}
+			}
+			f.close();
+		}
 	}
 
+	if (!fileIsAlreadyHere){ //if file is not here, download it!
 
-	try {
+		myfile.open( resp->absolutePath.c_str(), ios_base::binary );
+		//myfile.open(ofToDataPath(filename).c_str()); //for not binary?
 
-		ofHttpRequest request(resp->url, resp->url);
-		URI uri(request.url);
-		std::string path(uri.getPathAndQuery());
-		if (path.empty()) path = "/";
+		try {
 
-		HTTPClientSession session(uri.getHost(), uri.getPort());
+			ofHttpRequest request(resp->url, resp->url);
+			URI uri(request.url);
+			std::string path(uri.getPathAndQuery());
+			if (path.empty()) path = "/";
 
-		//resp->session = &session;
+			HTTPClientSession session(uri.getHost(), uri.getPort());
 
-		HTTPRequest req(HTTPRequest::HTTP_GET, path, HTTPMessage::HTTP_1_1);
-		session.setTimeout( Poco::Timespan(timeOut,0) );
-		session.sendRequest(req);
+			//resp->session = &session;
 
-		HTTPResponse res;
-		istream& rs = session.receiveResponse(res);
+			HTTPRequest req(HTTPRequest::HTTP_GET, path, HTTPMessage::HTTP_1_1);
+			session.setTimeout( Poco::Timespan(timeOut,0) );
+			session.sendRequest(req);
 
-		resp->status = res.getStatus();
-		resp->timestamp = res.getDate();
-		resp->reasonForStatus = res.getReasonForStatus( res.getStatus() );
-		resp->contentType = res.getContentType();
-		resp->serverReportedSize = res.getContentLength();
-		resp->timeTakenToDownload = ofGetElapsedTimef();
+			HTTPResponse res;
+			istream& rs = session.receiveResponse(res);
 
-		if (debug) if (resp->serverReportedSize == -1) printf("ofxSimpleHttp::downloadURL(%s) >> Server doesn't report download size...\n", resp->fileName.c_str() );
-		if (debug) printf("ofxSimpleHttp::downloadURL() >> about to start download (%s, %d bytes)\n", resp->fileName.c_str(), res.getContentLength() );
-		if (debug) printf("ofxSimpleHttp::downloadURL() >> server reports request staus: (%d-%s)\n", resp->status, resp->reasonForStatus.c_str() );
+			resp->status = res.getStatus();
+			resp->timestamp = res.getDate();
+			resp->reasonForStatus = res.getReasonForStatus( res.getStatus() );
+			resp->contentType = res.getContentType();
+			resp->serverReportedSize = res.getContentLength();
+			resp->timeTakenToDownload = ofGetElapsedTimef();
 
-		//StreamCopier::copyStream(rs, myfile); //write to file here!
-		if(saveToDisk){
-			streamCopyWithProgress(rs, myfile, resp->serverReportedSize, resp->downloadProgress, resp->downloadSpeed, resp->downloadCanceled);
-		}else{
-			copyToStringWithProgress(rs, resp->responseBody, resp->serverReportedSize, resp->downloadProgress, resp->downloadSpeed, resp->downloadCanceled);
-		}
+			if (debug) if (resp->serverReportedSize == -1) printf("ofxSimpleHttp::downloadURL(%s) >> Server doesn't report download size...\n", resp->fileName.c_str() );
+			if (debug) printf("ofxSimpleHttp::downloadURL() >> about to start download (%s, %d bytes)\n", resp->fileName.c_str(), res.getContentLength() );
+			if (debug) printf("ofxSimpleHttp::downloadURL() >> server reports request staus: (%d-%s)\n", resp->status, resp->reasonForStatus.c_str() );
 
-		resp->timeTakenToDownload = ofGetElapsedTimef() - resp->timeTakenToDownload;
-
-		if (resp->expectedChecksum.length()){
-			resp->checksumOK = ofxChecksum::sha1(resp->absolutePath, resp->expectedChecksum);
-			if(!resp->checksumOK){
-				if(verbose) cout << "ofxSimpleHttp downloaded OK but Checksum FAILED" << endl;
-				if(verbose) cout << "SHA1 was meant to be: " << resp->expectedChecksum << endl;
+			//StreamCopier::copyStream(rs, myfile); //write to file here!
+			if(saveToDisk){
+				streamCopyWithProgress(rs, myfile, resp->serverReportedSize, resp->downloadProgress, resp->downloadSpeed, resp->downloadCanceled);
+			}else{
+				copyToStringWithProgress(rs, resp->responseBody, resp->serverReportedSize, resp->downloadProgress, resp->downloadSpeed, resp->downloadCanceled);
 			}
-		}
 
-		resp->downloadSpeed = 0;
-		//resp->session = NULL;
-		if(saveToDisk){
-			myfile.close();
-		}
+			resp->timeTakenToDownload = ofGetElapsedTimef() - resp->timeTakenToDownload;
 
-		if (resp->downloadCanceled){
-			//delete half-baked download file
-			if (resp->downloadToDisk){
-				ofFile f;
-				if(f.open(resp->absolutePath)){
-					if (f.isFile()){
-						f.remove();
-					}
+			if (resp->expectedChecksum.length()){
+				resp->checksumOK = ofxChecksum::sha1(resp->absolutePath, resp->expectedChecksum);
+				if(!resp->checksumOK){
+					if(verbose) cout << "ofxSimpleHttp downloaded OK but Checksum FAILED" << endl;
+					if(verbose) cout << "SHA1 was meant to be: " << resp->expectedChecksum << endl;
 				}
 			}
 
-		}else{
-
-			if(debug) printf("ofxSimpleHttp::downloadURLtoDiskBlocking() >> downloaded to %s\n", resp->fileName.c_str() );
-
-			int downloadedSize = 0;
-
-			if( saveToDisk ){
-				//ask the filesystem what is the real size of the file
-				ofFile file;
-				file.open(resp->absolutePath.c_str());
-				downloadedSize = file.getSize();
-				file.close();
-			}else{
-				downloadedSize = resp->responseBody.size();
+			resp->downloadSpeed = 0;
+			//resp->session = NULL;
+			if(saveToDisk){
+				myfile.close();
 			}
 
-
-			//check download file size missmatch
-			if ( resp->serverReportedSize > 0 && resp->serverReportedSize !=  downloadedSize) {
-
-				if(debug) printf( "ofxSimpleHttp::downloadURLtoDiskBlocking() >> Download size mismatch (%s) >> Server: %d Downloaded: %d\n",
-								 resp->fileName.c_str(), resp->serverReportedSize, downloadedSize );
-				resp->reasonForStatus = "Download size mismatch!";
-				resp->status = -1;
-				resp->ok = false;
-
-			}else{
-
-				if (resp->status == 200){
-					resp->ok = true;
-				}else{
-					//cout << "ofxSimpleHttp:: downloadURL() >> Response status is Weird ? (" << resp->status << ")" << endl;
-					resp->ok = false;
-				}
-			}
-
-			//enqueue the operation result!
-			if (sendResultThroughEvents ){
-				if ( resp->notifyOnSuccess ){
-					if (notifyFromMainThread){ //enqueue notifications to release them from main thread
-						if (timeToStop == false){	//see if we have been destructed! dont forward events if so
-							lock();
-							ofxSimpleHttpResponse tempCopy = *resp;
-							responsesPendingNotification.push(tempCopy);
-							unlock();
+			if (resp->downloadCanceled){
+				//delete half-baked download file
+				if (resp->downloadToDisk){
+					ofFile f;
+					if(f.open(resp->absolutePath)){
+						if (f.isFile()){
+							f.remove();
 						}
-					}else{ //otherwise notify from right here!
-						ofNotifyEvent( httpResponse, *resp, this );
 					}
 				}
+
+			}else{
+
+				if(debug) printf("ofxSimpleHttp::downloadURLtoDiskBlocking() >> downloaded to %s\n", resp->fileName.c_str() );
+
+				int downloadedSize = 0;
+
+				if( saveToDisk ){
+					//ask the filesystem what is the real size of the file
+					ofFile file;
+					file.open(resp->absolutePath.c_str());
+					downloadedSize = file.getSize();
+					file.close();
+				}else{
+					downloadedSize = resp->responseBody.size();
+				}
+
+
+				//check download file size missmatch
+				if ( resp->serverReportedSize > 0 && resp->serverReportedSize !=  downloadedSize) {
+
+					if(debug) printf( "ofxSimpleHttp::downloadURLtoDiskBlocking() >> Download size mismatch (%s) >> Server: %d Downloaded: %d\n",
+									 resp->fileName.c_str(), resp->serverReportedSize, downloadedSize );
+					resp->reasonForStatus = "Download size mismatch!";
+					resp->status = -1;
+					resp->ok = false;
+
+				}else{
+
+					if (resp->status == 200){
+						resp->ok = true;
+					}else{
+						//cout << "ofxSimpleHttp:: downloadURL() >> Response status is Weird ? (" << resp->status << ")" << endl;
+						resp->ok = false;
+					}
+				}
+
+				if(debug) cout << "download finished! " << resp->url << " !" << endl;
+				ok = TRUE;
+
 			}
 
-			if(debug) cout << "download finished! " << resp->url << " !" << endl;
-			ok = TRUE;
+		}catch(Exception& exc){
 
+			myfile.close();
+			printf("ofxSimpleHttp::downloadURL(%s) >> Exception: %s\n", resp->fileName.c_str(), exc.displayText().c_str() );
+			resp->reasonForStatus = exc.displayText();
+			resp->ok = false;
+			resp->status = -1;
+			ok = false;
+			cout << "failed to download " << resp->url << " !" << endl;
 		}
+	}
 
-	}catch(Exception& exc){
+	//enqueue the operation result!
+	if (sendResultThroughEvents ){
 
-		myfile.close();
-		printf("ofxSimpleHttp::downloadURL(%s) >> Exception: %s\n", resp->fileName.c_str(), exc.displayText().c_str() );
-		resp->reasonForStatus = exc.displayText();
-		resp->ok = false;
-		resp->status = -1;
-		ok = false;
-		cout << "failed to download " << resp->url << " !" << endl;
+		if ( resp->notifyOnSuccess ){
+
+			if (beingCalledFromMainThread){ //we running on main thread, we can just snd the notif from here
+
+				ofNotifyEvent( httpResponse, *resp, this );
+
+			}else{ //we are running from a bg thread
+
+				if (notifyFromMainThread){ //user wants to get notified form main thread, we need to enqueue the notification
+					if (timeToStop == false){	//see if we have been destructed! dont forward events if so
+						lock();
+						ofxSimpleHttpResponse tempCopy = *resp;
+						responsesPendingNotification.push(tempCopy);
+						unlock();
+					}
+				}else{ //user doesnt care about main thread, the notificaiton can come from bg thread so we do it from here
+					ofNotifyEvent( httpResponse, *resp, this );
+				}
+			}
+		}
 	}
 
 	return ok;
@@ -483,7 +541,7 @@ void ofxSimpleHttp::streamCopyWithProgress(std::istream & istr, std::ostream & o
 			progress = float(len) / float(totalBytes);
 			float time = (ofGetElapsedTimef() - t1);
 			float newSpeed = (n / 1024.0f ) / time;
-			avgSpeed = 0.1 * newSpeed + 0.9 * avgSpeed;
+			avgSpeed = 0.5 * newSpeed + 0.5 * avgSpeed;
 			speed = avgSpeed;
 		}
 	}catch(Exception& exc){
@@ -516,7 +574,7 @@ std::streamsize ofxSimpleHttp::copyToStringWithProgress(std::istream& istr, std:
 			progress = float(len) / float(totalBytes);
 			float time = (ofGetElapsedTimef() - t1);
 			float newSpeed = (COPY_BUFFER_SIZE / 1024.0f ) / time ;
-			avgSpeed = 0.1 * newSpeed + 0.9 * avgSpeed;
+			avgSpeed = 0.5 * newSpeed + 0.5 * avgSpeed;
 			speed = avgSpeed;
 
 		}
