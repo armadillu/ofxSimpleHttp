@@ -26,6 +26,11 @@ void ofxBatchDownloader::setNeedsChecksumMatchToSkipDownload(bool needsChecksum)
 }
 
 
+void ofxBatchDownloader::setIdleTimeAfterEachDownload(float seconds){
+	http.setIdleTimeAfterEachDownload( seconds );
+}
+
+
 void ofxBatchDownloader::setVerbose(bool b){
 	http.setVerbose(b);
 	verbose = b;

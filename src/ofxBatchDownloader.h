@@ -62,7 +62,8 @@ public:
 
 	void setVerbose(bool b);
 	void setNeedsChecksumMatchToSkipDownload(bool needsChecksum);
-
+	void setIdleTimeAfterEachDownload(float seconds); //wait a bit before notifying once the dowload is over
+	
 	int pendingDownloads();
 	bool isBusy();
 	vector<string> pendingURLs();

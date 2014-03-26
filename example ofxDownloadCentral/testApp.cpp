@@ -11,6 +11,7 @@ void testApp::setup(){
 	ofSetWindowPosition(20, 20);
 
 	downloader.setNeedsChecksumMatchToSkipDownload(false);
+	downloader.setIdleTimeAfterEachDownload(0.1);
 	downloader.setVerbose(false);
 
 	#ifdef TARGET_OSX
@@ -37,11 +38,8 @@ void testApp::update(){
 	downloader.update();
 	for(int i = 0 ; i < NUM_OBJECTS; i++){
 		objects[i]->update();
-
-		if (ofGetFrameNum()%120 == 1){ //load a random asset every now and then
-			if(ofRandom(1) > 0.5){
-				objects[i]->loadRandomAsset();
-			}
+		if ( 1 == ofGetFrameNum()%(300 + (int)ofRandom(300)) ){ //load a random asset every now and then
+			objects[i]->loadRandomAsset();
 		}
 	}
 }

@@ -33,7 +33,7 @@ void AssetObject::setup(ofxDownloadCentral *downloader){
 	pos.z = ofRandom(-ofGetWidth(), 0);
 	speed = ofRandom(0.5, 2.2);
 
-	loadRandomAsset();
+	//loadRandomAsset();
 };
 
 
@@ -128,17 +128,17 @@ void AssetObject::loadRandomAsset(){
 //	allURLS.push_back("http://uri.cat/dontlook/localProjects/CWRU/71827399.mov");
 //	allSha1s.push_back("whatever dude!");
 
-	allURLS.push_back("http://uri.cat/dontlook/localProjects/CWRU/chaos.mov");
-	allURLS.push_back("http://uri.cat/dontlook/localProjects/CWRU/bill.mov");
-	allURLS.push_back("http://uri.cat/dontlook/localProjects/CWRU/walle.mov");
-	allURLS.push_back("http://uri.cat/dontlook/localProjects/CWRU/walle2.mov");
-	allURLS.push_back("http://uri.cat/dontlook/localProjects/CWRU/success.mov");
-	allURLS.push_back("http://uri.cat/dontlook/localProjects/CWRU/cat.mov");
-	allURLS.push_back("http://uri.cat/dontlook/localProjects/CWRU/blackboard.mov");
-	allURLS.push_back("http://uri.cat/dontlook/localProjects/CWRU/after.mov");
-	allURLS.push_back("http://uri.cat/dontlook/localProjects/CWRU/allpowerful.mov");
-	allURLS.push_back("http://uri.cat/dontlook/localProjects/CWRU/beep.mov");
-	allURLS.push_back("http://uri.cat/dontlook/localProjects/CWRU/walle3.mov");
+//	allURLS.push_back("http://uri.cat/dontlook/localProjects/CWRU/chaos.mov");
+//	allURLS.push_back("http://uri.cat/dontlook/localProjects/CWRU/bill.mov");
+//	allURLS.push_back("http://uri.cat/dontlook/localProjects/CWRU/walle.mov");
+//	allURLS.push_back("http://uri.cat/dontlook/localProjects/CWRU/walle2.mov");
+//	allURLS.push_back("http://uri.cat/dontlook/localProjects/CWRU/success.mov");
+//	allURLS.push_back("http://uri.cat/dontlook/localProjects/CWRU/cat.mov");
+//	allURLS.push_back("http://uri.cat/dontlook/localProjects/CWRU/blackboard.mov");
+//	allURLS.push_back("http://uri.cat/dontlook/localProjects/CWRU/after.mov");
+//	allURLS.push_back("http://uri.cat/dontlook/localProjects/CWRU/allpowerful.mov");
+//	allURLS.push_back("http://uri.cat/dontlook/localProjects/CWRU/beep.mov");
+//	allURLS.push_back("http://uri.cat/dontlook/localProjects/CWRU/walle3.mov");
 
 	allURLS.push_back("http://farm8.staticflickr.com/7420/10032530563_86ff701d19_o.jpg");
 	allURLS.push_back("http://farm4.staticflickr.com/3686/9225463176_d0bf83a992_o.jpg");

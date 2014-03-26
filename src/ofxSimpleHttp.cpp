@@ -24,6 +24,7 @@ ofxSimpleHttp::ofxSimpleHttp(){
 	acceptString = "";
 	notifyFromMainThread = true;
 	onlySkipDownloadIfChecksumMatches = false;
+	idleTimeAfterEachDownload = 0.0;
 }
 
 ofxSimpleHttp::~ofxSimpleHttp(){
@@ -45,6 +46,10 @@ ofxSimpleHttp::~ofxSimpleHttp(){
 			q.pop();
 		unlock();
 	}
+}
+
+void ofxSimpleHttp::setIdleTimeAfterEachDownload(float seconds){
+	idleTimeAfterEachDownload = seconds;
 }
 
 void ofxSimpleHttp::setNotifyFromMainThread(bool mainThread){
@@ -500,6 +505,10 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 	if (sendResultThroughEvents ){
 
 		if ( resp->notifyOnSuccess ){
+
+			if(idleTimeAfterEachDownload > 0.0){
+				ofSleepMillis(idleTimeAfterEachDownload * 1000);
+			}
 
 			if (beingCalledFromMainThread){ //we running on main thread, we can just snd the notif from here
 

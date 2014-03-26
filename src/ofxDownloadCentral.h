@@ -62,6 +62,7 @@ class ofxDownloadCentral{
 
 		void setVerbose(bool b);
 		void setNeedsChecksumMatchToSkipDownload(bool needs);
+		void setIdleTimeAfterEachDownload(float seconds); //wait a bit before notifying once the dowload is over 
 
 		///////////////////////////////////////////////////////////////////////////////
 		template <typename ArgumentsType, class ListenerClass>
@@ -106,6 +107,7 @@ class ofxDownloadCentral{
 			d->setDownloadFolder(destinationFolder);
 			d->setVerbose(verbose);
 			d->setNeedsChecksumMatchToSkipDownload(onlySkipDownloadIfChecksumMatches);
+			d->setIdleTimeAfterEachDownload(idleTimeAfterDownload);
 			d->addResourcesToDownloadList(urlList, sha1List);
 			ofAddListener(d->resourcesDownloadFinished, listener, listenerMethod); //set the notification to hit our original caller
 			downloaders.push_back(d);
@@ -134,6 +136,7 @@ class ofxDownloadCentral{
 		bool								busy;
 		bool								verbose;
 		bool								onlySkipDownloadIfChecksumMatches;
+		float								idleTimeAfterDownload; //float sec
 		ofMutex								mutex;
 
 };

@@ -5,7 +5,7 @@
 #include "ofxDownloadCentral.h"
 #include "AssetObject.h"
 
-#define NUM_OBJECTS 5
+#define NUM_OBJECTS 20
 
 
 class testApp : public ofBaseApp{

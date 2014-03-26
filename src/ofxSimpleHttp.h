@@ -170,6 +170,7 @@ class ofxSimpleHttp : public ofThread, public ofBaseDraws{
 		void						setUserAgent( string newUserAgent );
 		void						setAcceptString( string newAcceptString );
 		void						setMaxQueueLength(int len);
+		void						setIdleTimeAfterEachDownload(float seconds); //wait a bit before notifying once the dowload is over 
 
 		void						setNotifyFromMainThread(bool mainThread);
 
@@ -201,6 +202,7 @@ class ofxSimpleHttp : public ofThread, public ofBaseDraws{
 		bool							timeToStop;
 		int								queueLenEstimation;
 		int								maxQueueLen;
+		float							idleTimeAfterEachDownload;	//seconds
 	
 		ofxSimpleHttpResponse			response;
 

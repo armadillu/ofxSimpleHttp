@@ -27,6 +27,11 @@ void ofxDownloadCentral::setVerbose(bool b){
 	verbose = b;
 }
 
+void ofxDownloadCentral::setIdleTimeAfterEachDownload(float seconds){
+	idleTimeAfterDownload = seconds;
+}
+
+
 
 void ofxDownloadCentral::setNeedsChecksumMatchToSkipDownload(bool needs){
 	onlySkipDownloadIfChecksumMatches = needs;
