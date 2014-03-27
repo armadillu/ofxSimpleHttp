@@ -4,6 +4,7 @@
 #include "ofxBatchDownloader.h"
 #include "ofxDownloadCentral.h"
 #include "AssetObject.h"
+#include "ofxTimeMeasurements.h"
 
 #define NUM_OBJECTS 20
 

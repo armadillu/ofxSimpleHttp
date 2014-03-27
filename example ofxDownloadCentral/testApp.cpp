@@ -10,8 +10,8 @@ void testApp::setup(){
 	ofBackground(22);
 	ofSetWindowPosition(20, 20);
 
-	downloader.setNeedsChecksumMatchToSkipDownload(false);
-	downloader.setIdleTimeAfterEachDownload(0.1);
+	downloader.setNeedsChecksumMatchToSkipDownload(true);
+	downloader.setIdleTimeAfterEachDownload(0.2);
 	downloader.setVerbose(false);
 
 	#ifdef TARGET_OSX
@@ -28,8 +28,9 @@ void testApp::setup(){
 	}
 
 	//ofSetDrawBitmapMode(OF_BITMAPMODE_MODEL);
-	cam.setDistance(1100);
+	cam.setDistance(800);
 
+	TIME_SAMPLE_SET_FRAMERATE(60);
 }
 
 
