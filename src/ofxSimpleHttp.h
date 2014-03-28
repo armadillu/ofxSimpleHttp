@@ -103,7 +103,11 @@ struct ofxSimpleHttpResponse{
 		if (ok){
 			if (fileWasHere){
 				cout << "    File was already on disk, no download needed!" << endl;
-				cout << "    File checksum " << expectedChecksum << " matched!" << endl;
+				if (expectedChecksum.size()){
+					cout << "    File checksum " << expectedChecksum << " matched!" << endl;
+				}else{
+					cout << "    File checksum not supplied, assuming file is the same blindly" << endl;
+				}
 				cout << "    File saved at: " << absolutePath << endl;
 			}else{
 				cout << "    Server Status: " << status << endl;

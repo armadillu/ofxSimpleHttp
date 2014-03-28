@@ -130,42 +130,42 @@ void AssetObject::loadRandomAsset(){
 
 	//small movies set
 	allURLS.push_back("http://uri.cat/dontlook/localProjects/CWRU/movs650/chaos.mov");
-	allURLS.push_back("http://uri.cat/dontlook/localProjects/CWRU/movs650/bill.mov");
-	allURLS.push_back("http://uri.cat/dontlook/localProjects/CWRU/movs650/walle.mov");
-	allURLS.push_back("http://uri.cat/dontlook/localProjects/CWRU/movs650/walle2.mov");
-	allURLS.push_back("http://uri.cat/dontlook/localProjects/CWRU/movs650/success.mov");
-	allURLS.push_back("http://uri.cat/dontlook/localProjects/CWRU/movs650/cat.mov");
-	allURLS.push_back("http://uri.cat/dontlook/localProjects/CWRU/movs650/blackboard.mov");
-	allURLS.push_back("http://uri.cat/dontlook/localProjects/CWRU/movs650/after.mov");
-	allURLS.push_back("http://uri.cat/dontlook/localProjects/CWRU/movs650/allpowerful.mov");
-	allURLS.push_back("http://uri.cat/dontlook/localProjects/CWRU/movs650/beep.mov");
-	allURLS.push_back("http://uri.cat/dontlook/localProjects/CWRU/movs650/walle3.mov");
+//	allURLS.push_back("http://uri.cat/dontlook/localProjects/CWRU/movs650/bill.mov");
+//	allURLS.push_back("http://uri.cat/dontlook/localProjects/CWRU/movs650/walle.mov");
+//	allURLS.push_back("http://uri.cat/dontlook/localProjects/CWRU/movs650/walle2.mov");
+//	allURLS.push_back("http://uri.cat/dontlook/localProjects/CWRU/movs650/success.mov");
+//	allURLS.push_back("http://uri.cat/dontlook/localProjects/CWRU/movs650/cat.mov");
+//	allURLS.push_back("http://uri.cat/dontlook/localProjects/CWRU/movs650/blackboard.mov");
+//	allURLS.push_back("http://uri.cat/dontlook/localProjects/CWRU/movs650/after.mov");
+//	allURLS.push_back("http://uri.cat/dontlook/localProjects/CWRU/movs650/allpowerful.mov");
+//	allURLS.push_back("http://uri.cat/dontlook/localProjects/CWRU/movs650/beep.mov");
+//	allURLS.push_back("http://uri.cat/dontlook/localProjects/CWRU/movs650/walle3.mov");
 
 	//1024 imgs set
-	allURLS.push_back("http://uri.cat/dontlook/localProjects/CWRU/imgs1024/10032530563_86ff701d19_o.jpg");
-	allURLS.push_back("http://uri.cat/dontlook/localProjects/CWRU/imgs1024/9225463176_d0bf83a992_o.jpg");
-	allURLS.push_back("http://uri.cat/dontlook/localProjects/CWRU/imgs1024/6888724266_158ce261a2_o.jpg");
-	allURLS.push_back("http://uri.cat/dontlook/localProjects/CWRU/imgs1024/7034809565_5f80871bff_o.jpg");
-	allURLS.push_back("http://uri.cat/dontlook/localProjects/CWRU/imgs1024/9481688475_e83f92e8b5_o.jpg");
-	allURLS.push_back("http://uri.cat/dontlook/localProjects/CWRU/imgs1024/9481647489_e73bed28e1_o.jpg");
-	allURLS.push_back("http://uri.cat/dontlook/localProjects/CWRU/imgs1024/9484432454_9701453c66_o.jpg");
-	allURLS.push_back("http://uri.cat/dontlook/localProjects/CWRU/imgs1024/9481654243_7b73b87ceb_o.jpg");
-	allURLS.push_back("http://uri.cat/dontlook/localProjects/CWRU/imgs1024/9481659071_3159d318dc_o.jpg");
-	allURLS.push_back("http://uri.cat/dontlook/localProjects/CWRU/imgs1024/9484309488_11ee39298e_o.jpg");
-	allURLS.push_back("http://uri.cat/dontlook/localProjects/CWRU/imgs1024/9484323300_6d3a6a78b5_o.jpg");
+//	allURLS.push_back("http://uri.cat/dontlook/localProjects/CWRU/imgs1024/10032530563_86ff701d19_o.jpg");
+//	allURLS.push_back("http://uri.cat/dontlook/localProjects/CWRU/imgs1024/9225463176_d0bf83a992_o.jpg");
+//	allURLS.push_back("http://uri.cat/dontlook/localProjects/CWRU/imgs1024/6888724266_158ce261a2_o.jpg");
+//	allURLS.push_back("http://uri.cat/dontlook/localProjects/CWRU/imgs1024/7034809565_5f80871bff_o.jpg");
+//	allURLS.push_back("http://uri.cat/dontlook/localProjects/CWRU/imgs1024/9481688475_e83f92e8b5_o.jpg");
+//	allURLS.push_back("http://uri.cat/dontlook/localProjects/CWRU/imgs1024/9481647489_e73bed28e1_o.jpg");
+//	allURLS.push_back("http://uri.cat/dontlook/localProjects/CWRU/imgs1024/9484432454_9701453c66_o.jpg");
+//	allURLS.push_back("http://uri.cat/dontlook/localProjects/CWRU/imgs1024/9481654243_7b73b87ceb_o.jpg");
+//	allURLS.push_back("http://uri.cat/dontlook/localProjects/CWRU/imgs1024/9481659071_3159d318dc_o.jpg");
+//	allURLS.push_back("http://uri.cat/dontlook/localProjects/CWRU/imgs1024/9484309488_11ee39298e_o.jpg");
+//	allURLS.push_back("http://uri.cat/dontlook/localProjects/CWRU/imgs1024/9484323300_6d3a6a78b5_o.jpg");
 
 	//large imgs set
-//	allURLS.push_back("http://farm8.staticflickr.com/7420/10032530563_86ff701d19_o.jpg");
-//	allURLS.push_back("http://farm4.staticflickr.com/3686/9225463176_d0bf83a992_o.jpg");
-//	allURLS.push_back("http://farm8.staticflickr.com/7255/6888724266_158ce261a2_o.jpg");
-//	allURLS.push_back("http://farm8.staticflickr.com/7047/7034809565_5f80871bff_o.jpg");
-//	allURLS.push_back("http://farm8.staticflickr.com/7438/9481688475_e83f92e8b5_o.jpg");
-//	allURLS.push_back("http://farm8.staticflickr.com/7321/9481647489_e73bed28e1_o.jpg");
-//	allURLS.push_back("http://farm8.staticflickr.com/7367/9484432454_9701453c66_o.jpg");
-//	allURLS.push_back("http://farm6.staticflickr.com/5537/9481654243_7b73b87ceb_o.jpg");
-//	allURLS.push_back("http://farm4.staticflickr.com/3740/9481659071_3159d318dc_o.jpg");
-//	allURLS.push_back("http://farm6.staticflickr.com/5346/9484309488_11ee39298e_o.jpg");
-//	allURLS.push_back("http://farm4.staticflickr.com/3802/9484323300_6d3a6a78b5_o.jpg");
+	allURLS.push_back("http://farm8.staticflickr.com/7420/10032530563_86ff701d19_o.jpg");
+	allURLS.push_back("http://farm4.staticflickr.com/3686/9225463176_d0bf83a992_o.jpg");
+	allURLS.push_back("http://farm8.staticflickr.com/7255/6888724266_158ce261a2_o.jpg");
+	allURLS.push_back("http://farm8.staticflickr.com/7047/7034809565_5f80871bff_o.jpg");
+	allURLS.push_back("http://farm8.staticflickr.com/7438/9481688475_e83f92e8b5_o.jpg");
+	allURLS.push_back("http://farm8.staticflickr.com/7321/9481647489_e73bed28e1_o.jpg");
+	allURLS.push_back("http://farm8.staticflickr.com/7367/9484432454_9701453c66_o.jpg");
+	allURLS.push_back("http://farm6.staticflickr.com/5537/9481654243_7b73b87ceb_o.jpg");
+	allURLS.push_back("http://farm4.staticflickr.com/3740/9481659071_3159d318dc_o.jpg");
+	allURLS.push_back("http://farm6.staticflickr.com/5346/9484309488_11ee39298e_o.jpg");
+	allURLS.push_back("http://farm4.staticflickr.com/3802/9484323300_6d3a6a78b5_o.jpg");
 
 
 	int which = floor(ofRandom(allURLS.size()));

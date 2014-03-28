@@ -119,6 +119,7 @@ void testApp::keyPressed(int key){
 	if(key=='r'){
 		for(int i = 0 ; i < NUM_OBJECTS; i++){
 			objects[i]->loadRandomAsset();
+			numAssetLoads++;
 		}
 	}
 

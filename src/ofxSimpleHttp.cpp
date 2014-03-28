@@ -204,12 +204,17 @@ void ofxSimpleHttp::draw(float x, float y , float w , float h  ){
 			speed *= 1024.;
 			speedUnit = " Kb/sec";
 		}
+		string progBar = "                    "; //20 chars for the bar
+		int barW = 20 * r->downloadProgress;
+		for(int i = 0; i < barW; i++){
+			progBar[i] = '#';
+		}
 		aux =	"ofxSimpleHttp Now Fetching:\n" + r->url.substr(0, w / 8) + "\n" +
-				"progress: " + ofToString(100.0f * r->downloadProgress, 2) + "\n" +
+				"Progress: " + progBar + " " + ofToString(100.0f * r->downloadProgress, 2) + "%\n" +
 				"Download Speed: " + ofToString(speed, 2) + speedUnit + "\n" +
 				"Queue Size " + ofToString(n) ;
 	}else{
-		aux= "ofxSimpleHttp idle...";
+		aux = "ofxSimpleHttp idle...";
 	}
 	unlock();
 
