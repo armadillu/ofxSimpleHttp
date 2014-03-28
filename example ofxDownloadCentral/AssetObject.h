@@ -26,6 +26,7 @@ public:
 	AssetObject();
 	void setup(ofxDownloadCentral *downloader);
 	void loadRandomAsset();
+	void unloadAssets();
 
 	void update();
 	void draw();
@@ -42,6 +43,7 @@ public:
 
 	ofxThreadedImage * image;
 	ofxThreadedVideoPlayer* video;
+
 	bool isVideo;
 	bool failedToLoad;
 

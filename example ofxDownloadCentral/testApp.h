@@ -5,8 +5,9 @@
 #include "ofxDownloadCentral.h"
 #include "AssetObject.h"
 #include "ofxTimeMeasurements.h"
+#include "ofxHistoryPlot.h"
 
-#define NUM_OBJECTS 20
+#define NUM_OBJECTS 10
 
 
 class testApp : public ofBaseApp{
@@ -16,11 +17,19 @@ class testApp : public ofBaseApp{
 		void update();
 		void draw();
 
+		void drawClock();
+
 		void keyPressed(int key);
 
-	vector<AssetObject*> objects;
-	ofxDownloadCentral downloader;
+		vector<AssetObject*> objects;
 
-	ofEasyCam cam;
 
+		ofxDownloadCentral downloader;
+
+
+		ofEasyCam cam;
+		ofxHistoryPlot * frameTimePlot;
+		int numAssetLoads;
+
+		bool autoAlloc;
 };

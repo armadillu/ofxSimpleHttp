@@ -135,7 +135,7 @@ void ofxBatchDownloader::startDownloading(){
 //this might or might not be called from the main thread! depending on the ofxSimpleHttp config
 void ofxBatchDownloader::httpResult(ofxSimpleHttpResponse &r){
 
-	int index = okList.size() + failedList.size();
+	//int index = okList.size() + failedList.size();
 
 	responses.push_back(r);
 	bool checkedOK = r.checksumOK || (!r.checksumOK && r.expectedChecksum.size() == 0);
