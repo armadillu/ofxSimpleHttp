@@ -78,7 +78,9 @@ struct ofxSimpleHttpResponse{
 	string						contentType;		// the mime type of the response
 	Poco::Timestamp				timestamp;			// time of the response
 	float						downloadProgress;	// [0..1]
-	float						downloadSpeed;		// kb/sec
+	float						downloadSpeed;		// kb/sec, only >0 when downloading, immediate
+	float						avgDownloadSpeed;	// kb/sec, read after download happened
+	int							downloadedBytes;    
 	string						url;
 	string						fileName;			// file + extension, no path
 	string						extension;			// file extension (no dot)
@@ -90,7 +92,7 @@ struct ofxSimpleHttpResponse{
 	ofxSimpleHttpResponse(){
 		downloadToDisk = emptyWholeQueue = false;
 		checksumOK = true;
-		downloadProgress = downloadSpeed = 0.0f;
+		downloadProgress = downloadSpeed = avgDownloadSpeed = downloadedBytes = 0.0f;
 		//session = NULL;
 		timeTakenToDownload = 0.0;
 		serverReportedSize = -1;

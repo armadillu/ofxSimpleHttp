@@ -449,8 +449,7 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 			}
 
 			resp->timeTakenToDownload = ofGetElapsedTimef() - resp->timeTakenToDownload;
-
-			if (resp->expectedChecksum.length()){
+			if (resp->expectedChecksum.length() > 0){
 				resp->checksumOK = ofxChecksum::sha1(resp->absolutePath, resp->expectedChecksum);
 				if(!resp->checksumOK){
 					if(verbose) cout << "ofxSimpleHttp downloaded OK but Checksum FAILED" << endl;
@@ -459,6 +458,8 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 			}
 
 			resp->downloadSpeed = 0;
+			resp->avgDownloadSpeed = 0;
+			resp->downloadedBytes = 0;
 			//resp->session = NULL;
 			if(saveToDisk){
 				myfile.close();
@@ -479,24 +480,25 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 
 				if(debug) printf("ofxSimpleHttp::downloadURLtoDiskBlocking() >> downloaded to %s\n", resp->fileName.c_str() );
 
-				int downloadedSize = 0;
 
 				if( saveToDisk ){
 					//ask the filesystem what is the real size of the file
 					ofFile file;
 					file.open(resp->absolutePath.c_str());
-					downloadedSize = file.getSize();
+					resp->downloadedBytes = file.getSize();
 					file.close();
 				}else{
-					downloadedSize = resp->responseBody.size();
+					resp->downloadedBytes = resp->responseBody.size();
 				}
+
+				resp->avgDownloadSpeed = (resp->downloadedBytes / 1024.) / resp->timeTakenToDownload; //kb/sec
 
 
 				//check download file size missmatch
-				if ( resp->serverReportedSize > 0 && resp->serverReportedSize !=  downloadedSize) {
+				if ( resp->serverReportedSize > 0 && resp->serverReportedSize !=  resp->downloadedBytes) {
 
 					if(debug) printf( "ofxSimpleHttp::downloadURLtoDiskBlocking() >> Download size mismatch (%s) >> Server: %d Downloaded: %d\n",
-									 resp->fileName.c_str(), resp->serverReportedSize, downloadedSize );
+									 resp->fileName.c_str(), resp->serverReportedSize, resp->downloadedBytes );
 					resp->reasonForStatus = "Download size mismatch!";
 					resp->status = -1;
 					resp->ok = false;
