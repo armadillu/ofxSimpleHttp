@@ -124,7 +124,7 @@ int ofxDownloadCentral::getNumPendingDownloads(){
 
 string ofxDownloadCentral::getDrawableInfo(bool drawAllPending){
 
-	string aux = "## ofxDownloadCentral queued Jobs: " + ofToString(downloaders.size()) + " ###########################\n";
+	string aux = "//// ofxDownloadCentral queued Jobs: " + ofToString(downloaders.size()) + " ///////////////////////////\n";
 	mutex.lock();
 	if(downloaders.size() > 0){
 		vector<string> allURLs;
@@ -134,23 +134,23 @@ string ofxDownloadCentral::getDrawableInfo(bool drawAllPending){
 
 		if(drawAllPending){
 			int c = 0;
-			aux += "## List of Queued Downloads ####################################\n";
+			aux += "//// List of Queued Downloads ////////////////////////////////////\n";
 			vector<string> allPending;
 
 			for(int i = 0; i < downloaders.size(); i++){
 				vector<string> pending = downloaders[i]->pendingURLs();
 				for(int j = 0; j < pending.size(); j++){
 					allPending.push_back(pending[j]);
-					if (c <= maxURLsToList){
-						aux += "#  " + pending[j] + "\n";
+					if (c < maxURLsToList){
+						aux += "//   " + pending[j] + "\n";
+					}
+					if (c == maxURLsToList ){
+						aux += "//   (...)\n";
 					}
 					c++;
-					if (c == maxURLsToList +1){
-						aux += "#  (...)\n";
-					}
 				}
 			}
-			aux += "################################################################";
+			aux += "//////////////////////////////////////////////////////////////////";
 		}
 	}
 	mutex.unlock();

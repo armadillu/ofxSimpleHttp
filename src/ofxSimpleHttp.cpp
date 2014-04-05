@@ -204,21 +204,34 @@ string ofxSimpleHttp::drawableString(){
 			speed *= 1024.0f;
 			speedUnit = " Kb/sec";
 		}
-//		string progBar = "                    "; //20 chars for the bar
-//		int barW = 30 * r->downloadProgress;
-//		for(int i = 0; i < barW; i++){
-//			progBar[i] = '#';
-//		}
-		aux = "## ofxSimpleHttp fetching ######################################\n"
-		"#  \n"
-		"#  " + r->url + "\n" +
-		"#  Progress: " + /*progBar + " " +*/ ofToString(100.0f * r->downloadProgress, 2) + "%\n" +
-		"#  Download Speed: " + ofToString(speed, 2) + speedUnit + "\n" +
-		"#  Queue Size " + ofToString(n) + "\n" +
-		"#  \n";
-		aux += "################################################################\n";
+		float timeSoFar = ofGetElapsedTimef() - r->timeTakenToDownload; //seconds
+		float timeRemaining = 0.0f;
+		if(r->downloadProgress > 0.01){
+			timeRemaining = (timeSoFar / r->downloadProgress) - timeSoFar;
+		}
+		string remtimeUnit = "sec";
+		string soFarTimeUnit = "sec";
+		if (timeRemaining > 60.0){
+			timeRemaining /= 60.0f;
+			remtimeUnit = "min";
+		}
+		if (timeSoFar > 60.0){
+			timeSoFar /= 60.0f;
+			soFarTimeUnit = "min";
+		}
+
+		aux = "//// ofxSimpleHttp fetching //////////////////////////////////////\n"
+		"//\n"
+		"//   " + r->url + "\n" +
+		"//   Progress: " + ofToString(100.0f * r->downloadProgress, 2) + "%\n" +
+		"//   Download Speed: " + ofToString(speed, 2) + speedUnit + "\n" +
+		"//   Time Taken so far: " + ofToString(timeSoFar, 1) + soFarTimeUnit + "\n" +
+		"//   Estimated Remaining Time: " + ofToString(timeRemaining, 1) + remtimeUnit + "\n" +
+		"//   Queue Size: " + ofToString(n) + "\n" +
+		"//  \n";
+		aux += "//////////////////////////////////////////////////////////////////\n";
 	}else{
-		aux = "## ofxSimpleHttp idle... ########################################\n";
+		aux = "//// ofxSimpleHttp idle... ////////////////////////////////////////\n";
 	}
 	unlock();
 	return aux;
@@ -584,7 +597,7 @@ void ofxSimpleHttp::streamCopyWithProgress(std::istream & istr, std::ostream & o
 			progress = float(len) / float(totalBytes);
 			float time = (ofGetElapsedTimef() - t1);
 			float newSpeed = (n / 1024.0f ) / time;
-			avgSpeed = 0.5 * newSpeed + 0.5 * avgSpeed;
+			avgSpeed = 0.1 * newSpeed + 0.9 * avgSpeed;
 			speed = avgSpeed;
 		}
 	}catch(Exception& exc){
