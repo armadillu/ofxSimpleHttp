@@ -56,13 +56,18 @@ class ofxDownloadCentral{
 
 		void update();
 		void draw(float x, float y, bool drawAllPending = false);
+		string getDrawableInfo(bool drawAllPending = false);
 
 		void cancelCurrentDownload();
 		void cancelAllDownloads();
 
+		bool isBusy();
+		int getNumPendingDownloads();
+
 		void setVerbose(bool b);
 		void setNeedsChecksumMatchToSkipDownload(bool needs);
-		void setIdleTimeAfterEachDownload(float seconds); //wait a bit before notifying once the dowload is over 
+		void setIdleTimeAfterEachDownload(float seconds); //wait a bit before notifying once the dowload is over
+		void setMaxURLsToList(int max);
 
 		///////////////////////////////////////////////////////////////////////////////
 		template <typename ArgumentsType, class ListenerClass>
@@ -103,15 +108,17 @@ class ofxDownloadCentral{
 								string destinationFolder = "ofxDownloadCentral_downloads"
 							   ){
 
-			ofxBatchDownloader * d = new ofxBatchDownloader();
-			d->setDownloadFolder(destinationFolder);
-			d->setVerbose(verbose);
-			d->setNeedsChecksumMatchToSkipDownload(onlySkipDownloadIfChecksumMatches);
-			d->setIdleTimeAfterEachDownload(idleTimeAfterDownload);
-			d->addResourcesToDownloadList(urlList, sha1List);
-			ofAddListener(d->resourcesDownloadFinished, listener, listenerMethod); //set the notification to hit our original caller
-			downloaders.push_back(d);
-			if (!busy) startQueue();
+			if (urlList.size() >0 ){
+				ofxBatchDownloader * d = new ofxBatchDownloader();
+				d->setDownloadFolder(destinationFolder);
+				d->setVerbose(verbose);
+				d->setNeedsChecksumMatchToSkipDownload(onlySkipDownloadIfChecksumMatches);
+				d->setIdleTimeAfterEachDownload(idleTimeAfterDownload);
+				d->addResourcesToDownloadList(urlList, sha1List);
+				ofAddListener(d->resourcesDownloadFinished, listener, listenerMethod); //set the notification to hit our original caller
+				downloaders.push_back(d);
+				if (!busy) startQueue();
+			}
 		}
 
 		///////////////////////////////////////////////////////////////////////////////
@@ -126,7 +133,6 @@ class ofxDownloadCentral{
 			downloadResources(urlList, shas, listener, listenerMethod, destinationFolder);
 		}
 
-
 	private:
 
 		void startQueue();
@@ -138,7 +144,7 @@ class ofxDownloadCentral{
 		bool								onlySkipDownloadIfChecksumMatches;
 		float								idleTimeAfterDownload; //float sec
 		ofMutex								mutex;
-
+		int									maxURLsToList;
 };
 
 #endif

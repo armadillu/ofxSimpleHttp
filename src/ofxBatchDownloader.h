@@ -52,6 +52,7 @@ public:
 
 	void update();
 	void draw(float x, float y);
+	string getDrawableString();
 
 	void setDownloadFolder(string f);
 

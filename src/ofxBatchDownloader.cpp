@@ -74,6 +74,10 @@ void ofxBatchDownloader::draw(float x, float y){
 	http.draw(x, y);
 }
 
+string ofxBatchDownloader::getDrawableString(){
+	return http.drawableString();
+}
+
 void ofxBatchDownloader::addResourcesToDownloadList( vector<string> _urlList ){
 	vector<string>_sha1List;
 	addResourcesToDownloadList(_urlList, _sha1List);

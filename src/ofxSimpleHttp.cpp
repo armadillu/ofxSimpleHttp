@@ -191,7 +191,7 @@ void ofxSimpleHttp::stopCurrentDownload(bool emptyQueue){
 }
 
 
-void ofxSimpleHttp::draw(float x, float y , float w , float h  ){
+string ofxSimpleHttp::drawableString(){
 
 	string aux;
 	lock();
@@ -201,27 +201,36 @@ void ofxSimpleHttp::draw(float x, float y , float w , float h  ){
 		float speed = r->downloadSpeed / 1024.0f;
 		string speedUnit = " Mb/sec";
 		if(speed < 1.0){
-			speed *= 1024.;
+			speed *= 1024.0f;
 			speedUnit = " Kb/sec";
 		}
-		string progBar = "                    "; //20 chars for the bar
-		int barW = 20 * r->downloadProgress;
-		for(int i = 0; i < barW; i++){
-			progBar[i] = '#';
-		}
-		aux =	"ofxSimpleHttp Now Fetching:\n" + r->url.substr(0, w / 8) + "\n" +
-				"Progress: " + progBar + " " + ofToString(100.0f * r->downloadProgress, 2) + "%\n" +
-				"Download Speed: " + ofToString(speed, 2) + speedUnit + "\n" +
-				"Queue Size " + ofToString(n) ;
+//		string progBar = "                    "; //20 chars for the bar
+//		int barW = 30 * r->downloadProgress;
+//		for(int i = 0; i < barW; i++){
+//			progBar[i] = '#';
+//		}
+		aux = "## ofxSimpleHttp fetching ######################################\n"
+		"#  \n"
+		"#  " + r->url + "\n" +
+		"#  Progress: " + /*progBar + " " +*/ ofToString(100.0f * r->downloadProgress, 2) + "%\n" +
+		"#  Download Speed: " + ofToString(speed, 2) + speedUnit + "\n" +
+		"#  Queue Size " + ofToString(n) + "\n" +
+		"#  \n";
+		aux += "################################################################\n";
 	}else{
-		aux = "ofxSimpleHttp idle...";
+		aux = "## ofxSimpleHttp idle... ########################################\n";
 	}
 	unlock();
+	return aux;
+}
 
+
+void ofxSimpleHttp::draw(float x, float y , float w , float h  ){
+
+	string aux = drawableString();
 //	for(int i = 0; i < aux.length(); i+= w / 8){	//break up the string with \n to fit in supplied width
 //		aux.insert(i, "\n");
 //	}
-
 	ofSetColor(0,127,255);
 	ofDrawBitmapString(aux, x + 3, y + 12 );
 }

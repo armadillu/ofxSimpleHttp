@@ -156,6 +156,7 @@ class ofxSimpleHttp : public ofThread, public ofBaseDraws{
 
 		void						draw(float x, float y , float w , float h );	//draws a box
 		void						draw(float x, float y );	//draws a box
+		string						drawableString();
 
 		float getHeight(){ if ( isThreadRunning() ) return 18 * 4; else return 18; }
 		float getWidth(){ return 320; }

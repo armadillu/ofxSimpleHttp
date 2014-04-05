@@ -16,10 +16,16 @@ ofxDownloadCentral::ofxDownloadCentral(){
 	verbose = true;
 	busy = false;
 	onlySkipDownloadIfChecksumMatches = true;
+	maxURLsToList = 2;
 }
 
 ofxDownloadCentral::~ofxDownloadCentral(){
 	cancelAllDownloads();
+}
+
+
+void ofxDownloadCentral::setMaxURLsToList(int max){
+	maxURLsToList = max;
 }
 
 
@@ -36,7 +42,6 @@ void ofxDownloadCentral::setIdleTimeAfterEachDownload(float seconds){
 void ofxDownloadCentral::setNeedsChecksumMatchToSkipDownload(bool needs){
 	onlySkipDownloadIfChecksumMatches = needs;
 }
-
 
 void ofxDownloadCentral::startQueue(){
 
@@ -101,29 +106,61 @@ void ofxDownloadCentral::cancelAllDownloads(){
 }
 
 
-void ofxDownloadCentral::draw(float x, float y, bool drawAllPending){
+bool ofxDownloadCentral::isBusy(){
+	return busy;
+}
 
-	if (busy){
-		mutex.lock();
-		if(downloaders.size() > 0){
-			vector<string> allURLs;
-			ofDrawBitmapString("ofxDownloadCentral queue: " + ofToString(downloaders.size()), x + 3, y + 12);
-			ofxBatchDownloader * bd = downloaders[0];
-			bd->draw(x, y + 16);
-			if(drawAllPending){
-				vector<string> allPending;
-				for(int i = 0; i < downloaders.size(); i++){
-					vector<string> pending = downloaders[i]->pendingURLs();
-					for(int j = 0; j < pending.size(); j++){
-						allPending.push_back(pending[j]);
+int ofxDownloadCentral::getNumPendingDownloads(){
+
+	mutex.lock();
+	int c = 0;
+	for(int i = 0; i < downloaders.size(); i++){
+		vector<string> pending = downloaders[i]->pendingURLs();
+		c+= pending.size();
+	}
+	mutex.unlock();
+	return c;
+}
+
+string ofxDownloadCentral::getDrawableInfo(bool drawAllPending){
+
+	string aux = "## ofxDownloadCentral queued Jobs: " + ofToString(downloaders.size()) + " ###########################\n";
+	mutex.lock();
+	if(downloaders.size() > 0){
+		vector<string> allURLs;
+
+		ofxBatchDownloader * bd = downloaders[0];
+		aux += bd->getDrawableString() + "\n";
+
+		if(drawAllPending){
+			int c = 0;
+			aux += "## List of Queued Downloads ####################################\n";
+			vector<string> allPending;
+
+			for(int i = 0; i < downloaders.size(); i++){
+				vector<string> pending = downloaders[i]->pendingURLs();
+				for(int j = 0; j < pending.size(); j++){
+					allPending.push_back(pending[j]);
+					if (c <= maxURLsToList){
+						aux += "#  " + pending[j] + "\n";
+					}
+					c++;
+					if (c == maxURLsToList +1){
+						aux += "#  (...)\n";
 					}
 				}
-				ofSetColor(0,255,100);
-				for(int i = 0; i < allPending.size(); i++){
-					ofDrawBitmapString( allPending[i], x + 3, y + 100 + 15 * i);
-				}
 			}
+			aux += "################################################################";
 		}
-		mutex.unlock();
+	}
+	mutex.unlock();
+	return aux;
+}
+
+
+void ofxDownloadCentral::draw(float x, float y, bool drawAllPending){
+	if (busy){
+		string aux = getDrawableInfo(drawAllPending);
+		ofDrawBitmapString(aux, x, y);
 	}
 }
