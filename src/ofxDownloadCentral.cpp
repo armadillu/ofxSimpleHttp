@@ -16,7 +16,7 @@ ofxDownloadCentral::ofxDownloadCentral(){
 	verbose = true;
 	busy = false;
 	onlySkipDownloadIfChecksumMatches = true;
-	maxURLsToList = 2;
+	maxURLsToList = 10;
 }
 
 ofxDownloadCentral::~ofxDownloadCentral(){
@@ -124,7 +124,7 @@ int ofxDownloadCentral::getNumPendingDownloads(){
 
 string ofxDownloadCentral::getDrawableInfo(bool drawAllPending){
 
-	string aux = "//// ofxDownloadCentral queued Jobs: " + ofToString(downloaders.size()) + " ///////////////////////////\n";
+	string aux = "//// ofxDownloadCentral queued Jobs: " + ofToString(downloaders.size()) + " ///////////////////////////\n\n";
 	mutex.lock();
 	if(downloaders.size() > 0){
 		vector<string> allURLs;
@@ -134,7 +134,7 @@ string ofxDownloadCentral::getDrawableInfo(bool drawAllPending){
 
 		if(drawAllPending){
 			int c = 0;
-			aux += "//// List of Queued Downloads ////////////////////////////////////\n";
+			aux += "//// Remaining Downloads /////////////////////////////////////////\n";
 			vector<string> allPending;
 
 			for(int i = 0; i < downloaders.size(); i++){
