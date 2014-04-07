@@ -596,7 +596,11 @@ void ofxSimpleHttp::streamCopyWithProgress(std::istream & istr, std::ostream & o
 			}else{
 				n = 0;
 			}
-			progress = float(len) / float(totalBytes);
+			if (totalBytes > 0){
+				progress = float(len) / float(totalBytes);
+			}else{
+				progress = 0.0;
+			}
 			float time = (ofGetElapsedTimef() - t1);
 			float newSpeed = (n / 1024.0f ) / time;
 			avgSpeed = 0.1 * newSpeed + 0.9 * avgSpeed;
