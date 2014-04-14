@@ -206,7 +206,7 @@ string ofxSimpleHttp::drawableString(){
 		}
 		float timeSoFar = ofGetElapsedTimef() - r->timeTakenToDownload; //seconds
 		float timeRemaining = 0.0f;
-		if(r->downloadProgress > 0.01){
+		if(r->downloadProgress > 0.001){
 			timeRemaining = (timeSoFar / r->downloadProgress) - timeSoFar;
 		}
 		string remtimeUnit = "sec";
