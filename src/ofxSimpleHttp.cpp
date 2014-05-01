@@ -256,13 +256,22 @@ void ofxSimpleHttp::draw(float x, float y){
 string ofxSimpleHttp::extractFileFromUrl(string url){
 	int found = url.find_last_of("/");
 	string file = url.substr(found + 1);
+	if (file.length() == 0){
+		file = "unnamed.file";
+	}
 	return file;
 }
 
 
 string ofxSimpleHttp::extractExtensionFromFileName(string fileName){
 	int found = fileName.find_last_of(".");
-	string file = fileName.substr(found + 1, fileName.size() - found);
+	string file;
+	if (found > 0){
+		file = fileName.substr(found + 1, fileName.size() - found);
+	}else{
+		file = "";
+	}
+
 	return file;
 }
 
