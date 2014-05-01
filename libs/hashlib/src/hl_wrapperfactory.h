@@ -1,7 +1,7 @@
 /* 
  * hashlib++ - a simple hash library for C++
  * 
- * Copyright (c) 2007-2010 Benjamin Grüdelbach
+ * Copyright (c) 2007-2010 Benjamin GrÃ¼delbach
  * 
  * Redistribution and use in source and binary forms, with or without modification,
  * are permitted provided that the following conditions are met:
@@ -29,48 +29,56 @@
 //----------------------------------------------------------------------	
 
 /**
- *  @file 	hl_types.h
- *  @brief	This file defines some global types
- *  @date 	So 13 Jan 2008
+ *  @file 	hl_wrapperfactory.h
+ *  @brief	This file contains a simple hashwrapper factory
+ *  @date 	DO 13 Oct 2011
  */  
 
 //----------------------------------------------------------------------	
 //include protection
-#ifndef HLTYPES_H
-#define HLTYPES_H
+#ifndef WRAPPERFACTORY_H
+#define WRAPPERFACTORY_H
+
+//---------------------------------------------------------------------- 
+//hashlib++ includes
+#include "hl_hashwrapper.h"
 
 //----------------------------------------------------------------------	
+//enumeration
 
-/**
- * exactly 1 Byte
+/*
+ * definition of the supported hashtypes 
  */
-typedef unsigned char 	hl_uint8;
+enum HL_Wrappertype { HL_MD5, HL_SHA1, HL_SHA256, HL_SHA384, HL_SHA512 };
+
+//---------------------------------------------------------------------- 
 
 /**
- * at least 2 Byte
+ *  @brief	This class represents a simple factory for creating wrappers.
+ *
+ *		U can use this class for dynamicly create wrappers of a given
+ * 		type at runtime. 
  */
-typedef unsigned short int 	hl_uint16;
+class wrapperfactory
+{
+	public:
 
-/**
- * at least 4 Byte
- */
-typedef unsigned int hl_uint32;
+		/**
+		 * @brief	Simple factory-method to create a hashwrapper
+		 * 
+		 * @param	type The type of the hash algorithm to create a wrapper for
+		 * @return	A hashwrapper for the fiven type
+		 */
+		hashwrapper* create(HL_Wrappertype type);
 
-/**
-* at least 8 Byte
-*/
-#ifdef __GNUC__
-	typedef unsigned long long int	hl_uint64;
-#elif __MINGW32__
-	typedef unsigned long long int	hl_uint64;
-#elif _MSC_VER
-	typedef unsigned __int64 hl_uint64;
-#else
-	#error "Unsuppported compiler." \
-               "Please use GCC,MINGW,MSVC " \
-	       " or define hl_uint64 for your compiler in hl_types.h line 62"
-#endif
-
+		/**
+		 * @brief	Simple factory-method to create a hashwrapper
+		 * 
+		 * @param	type the simple name of the type for example "md5"
+		 * @return	A hashwrapper for the fiven type
+		 */
+		hashwrapper* create(std::string type);
+};
 
 //----------------------------------------------------------------------	
 //end of include protection

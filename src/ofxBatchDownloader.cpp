@@ -125,6 +125,8 @@ void ofxBatchDownloader::startDownloading(){
 
 		if(verbose) cout << "ofxBatchDownloader starting downloads! " << endl;
 
+		http.setMaxQueueLength(originalUrlList.size() * 2); //just in case
+
 		for(int i = 0; i < originalUrlList.size(); i++){
 			string sha = "";
 			if (originalSha1List.size()){

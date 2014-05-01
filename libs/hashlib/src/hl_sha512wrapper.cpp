@@ -1,7 +1,7 @@
 /* 
  * hashlib++ - a simple hash library for C++
  * 
- * Copyright (c) 2007,2008 Benjamin Grüdelbach
+ * Copyright (c) 2007-2010 Benjamin Grüdelbach
  * 
  * Redistribution and use in source and binary forms, with or without modification,
  * are permitted provided that the following conditions are met:
@@ -96,6 +96,16 @@ void sha512wrapper::updateContext(unsigned char *data, unsigned int len)
 void sha512wrapper::resetContext(void)
 {
 	sha512->SHA512_Init(&context);
+}
+
+/**
+ * @brief 	This method should return the hash of the
+ * 		test-string "The quick brown fox jumps over the lazy
+ * 		dog"
+ */
+std::string sha512wrapper::getTestHash(void)
+{
+	return "07e547d9586f6a73f73fbac0435ed76951218fb7d0c8d788a309d785436bbb642e93a252a954f23912547d1e8a3b5ed6e1bfd7097821233fa0538f3db854fee6";
 }
 
 //----------------------------------------------------------------------	

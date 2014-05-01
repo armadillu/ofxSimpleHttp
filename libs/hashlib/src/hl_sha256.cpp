@@ -1,7 +1,7 @@
 /* 
  * hashlib++ - a simple hash library for C++
  * 
- * Copyright (c) 2007,2008 Benjamin Grüdelbach
+ * Copyright (c) 2007-2010 Benjamin Grüdelbach
  * 
  * Redistribution and use in source and binary forms, with or without modification,
  * are permitted provided that the following conditions are met:
@@ -133,8 +133,8 @@ static const char *sha2_hex_digits = "0123456789abcdef";
  *  @brief 	Initialize the context
  *  @param	context The context to init.
  */  
-void SHA256::SHA256_Init(SHA256_CTX* context) {
-	if (context == (SHA256_CTX*)0) {
+void SHA256::SHA256_Init(HL_SHA256_CTX* context) {
+	if (context == (HL_SHA256_CTX*)0) {
 		return;
 	}
 	MEMCPY_BCOPY(context->state, sha256_initial_hash_value, SHA256_DIGEST_LENGTH);
@@ -184,7 +184,7 @@ void SHA256::SHA256_Init(SHA256_CTX* context) {
  *  @param	context The context to use
  *  @param	data The data to transform	
  */  
-void SHA256::SHA256_Transform(SHA256_CTX* context, const sha2_word32* data) {
+void SHA256::SHA256_Transform(HL_SHA256_CTX* context, const sha2_word32* data) {
 	sha2_word32	a, b, c, d, e, f, g, h, s0, s1;
 	sha2_word32	T1, *W256;
 	int		j;
@@ -247,7 +247,7 @@ void SHA256::SHA256_Transform(SHA256_CTX* context, const sha2_word32* data) {
  *  @param	context The context to use
  *  @param	data The data to transform	
  */  
-void SHA256::SHA256_Transform(SHA256_CTX* context, const sha2_word32* data) {
+void SHA256::SHA256_Transform(HL_SHA256_CTX* context, const sha2_word32* data) {
 	sha2_word32	a, b, c, d, e, f, g, h, s0, s1;
 	sha2_word32	T1, T2, *W256;
 	int		j;
@@ -333,7 +333,7 @@ void SHA256::SHA256_Transform(SHA256_CTX* context, const sha2_word32* data) {
  *  @param	data The data for updating the context.
  *  @param	len The length of the given data.
  */  
-void SHA256::SHA256_Update(SHA256_CTX* context, const sha2_byte *data, unsigned int len) {
+void SHA256::SHA256_Update(HL_SHA256_CTX* context, const sha2_byte *data, unsigned int len) {
 	unsigned int	freespace, usedspace;
 
 	if (len == 0) {
@@ -342,7 +342,7 @@ void SHA256::SHA256_Update(SHA256_CTX* context, const sha2_byte *data, unsigned 
 	}
 
 	/* Sanity check: */
-	assert(context != (SHA256_CTX*)0 && data != (sha2_byte*)0);
+	assert(context != (HL_SHA256_CTX*)0 && data != (sha2_byte*)0);
 
 	usedspace = (context->bitcount >> 3) % SHA256_BLOCK_LENGTH;
 	if (usedspace > 0) {
@@ -386,12 +386,12 @@ void SHA256::SHA256_Update(SHA256_CTX* context, const sha2_byte *data, unsigned 
  *  @param	digest The digest to finalize the operation with.
  *  @param	context The context to finalize.
  */  
-void SHA256::SHA256_Final(sha2_byte digest[], SHA256_CTX* context) {
+void SHA256::SHA256_Final(sha2_byte digest[], HL_SHA256_CTX* context) {
 	sha2_word32	*d = (sha2_word32*)digest;
 	unsigned int	usedspace;
 
 	/* Sanity check: */
-	assert(context != (SHA256_CTX*)0);
+	assert(context != (HL_SHA256_CTX*)0);
 
 	/* If no digest buffer is passed, we don't bother doing this: */
 	if (digest != (sha2_byte*)0) {
@@ -456,12 +456,12 @@ void SHA256::SHA256_Final(sha2_byte digest[], SHA256_CTX* context) {
  *  @param	buffer This OUT-Parameter contains the created
  *  		hash after ending the operation.
  */  
-char* SHA256::SHA256_End(SHA256_CTX* context, char buffer[]) {
+char* SHA256::SHA256_End(HL_SHA256_CTX* context, char buffer[]) {
 	sha2_byte	digest[SHA256_DIGEST_LENGTH], *d = digest;
 	int		i;
 
 	/* Sanity check: */
-	assert(context != (SHA256_CTX*)0);
+	assert(context != (HL_SHA256_CTX*)0);
 
 	if (buffer != (char*)0) {
 		SHA256_Final(digest, context);

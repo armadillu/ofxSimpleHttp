@@ -1,7 +1,7 @@
 /* 
  * hashlib++ - a simple hash library for C++
  * 
- * Copyright (c) 2007,2008 Benjamin Grüdelbach
+ * Copyright (c) 2007-2010 Benjamin Grüdelbach
  * 
  * Redistribution and use in source and binary forms, with or without modification,
  * are permitted provided that the following conditions are met:
@@ -160,9 +160,9 @@ static const char *sha2_hex_digits = "0123456789abcdef";
  *  @brief 	Initialize the SHA512 context
  *  @param	context The context to init.
  */  
-void SHA2ext::SHA512_Init(SHA512_CTX* context) 
+void SHA2ext::SHA512_Init(HL_SHA512_CTX* context) 
 {
-	if (context == (SHA512_CTX*)0) {
+	if (context == (HL_SHA512_CTX*)0) {
 		return;
 	}
 	MEMCPY_BCOPY(context->state, sha512_initial_hash_value, SHA512_DIGEST_LENGTH);
@@ -211,7 +211,7 @@ void SHA2ext::SHA512_Init(SHA512_CTX* context)
  *  @param	context The context to use
  *  @param	data The data to transform	
  */  
-void SHA2ext::SHA512_Transform(SHA512_CTX* context, const sha2_word64* data) {
+void SHA2ext::SHA512_Transform(HL_SHA512_CTX* context, const sha2_word64* data) {
 	sha2_word64	a, b, c, d, e, f, g, h, s0, s1;
 	sha2_word64	T1, *W512 = (sha2_word64*)context->buffer;
 	int		j;
@@ -271,7 +271,7 @@ void SHA2ext::SHA512_Transform(SHA512_CTX* context, const sha2_word64* data) {
  *  @param	context The context to use
  *  @param	data The data to transform	
  */  
-void SHA2ext::SHA512_Transform(SHA512_CTX* context, const sha2_word64* data) {
+void SHA2ext::SHA512_Transform(HL_SHA512_CTX* context, const sha2_word64* data) {
 	sha2_word64	a, b, c, d, e, f, g, h, s0, s1;
 	sha2_word64	T1, T2, *W512 = (sha2_word64*)context->buffer;
 	int		j;
@@ -348,7 +348,7 @@ void SHA2ext::SHA512_Transform(SHA512_CTX* context, const sha2_word64* data) {
 }
 #endif /* SHA2_UNROLL_TRANSFORM */
 
-void SHA2ext::SHA512_Update(SHA512_CTX* context, const sha2_byte *data, unsigned int len) {
+void SHA2ext::SHA512_Update(HL_SHA512_CTX* context, const sha2_byte *data, unsigned int len) {
 	unsigned int	freespace, usedspace;
 
 	if (len == 0) {
@@ -357,7 +357,7 @@ void SHA2ext::SHA512_Update(SHA512_CTX* context, const sha2_byte *data, unsigned
 	}
 
 	/* Sanity check: */
-	assert(context != (SHA512_CTX*)0 && data != (sha2_byte*)0);
+	assert(context != (HL_SHA512_CTX*)0 && data != (sha2_byte*)0);
 
 	usedspace = (context->bitcount[0] >> 3) % SHA512_BLOCK_LENGTH;
 	if (usedspace > 0) {
@@ -396,7 +396,7 @@ void SHA2ext::SHA512_Update(SHA512_CTX* context, const sha2_byte *data, unsigned
 	usedspace = freespace = 0;
 }
 
-void SHA2ext::SHA512_Last(SHA512_CTX* context) 
+void SHA2ext::SHA512_Last(HL_SHA512_CTX* context) 
 {
 	unsigned int	usedspace;
 
@@ -438,12 +438,12 @@ void SHA2ext::SHA512_Last(SHA512_CTX* context)
 	SHA512_Transform(context, (sha2_word64*)context->buffer);
 }
 
-void SHA2ext::SHA512_Final(sha2_byte digest[], SHA512_CTX* context) 
+void SHA2ext::SHA512_Final(sha2_byte digest[], HL_SHA512_CTX* context) 
 {
 	sha2_word64	*d = (sha2_word64*)digest;
 
 	/* Sanity check: */
-	assert(context != (SHA512_CTX*)0);
+	assert(context != (HL_SHA512_CTX*)0);
 
 	/* If no digest buffer is passed, we don't bother doing this: */
 	if (digest != (sha2_byte*)0) {
@@ -468,13 +468,13 @@ void SHA2ext::SHA512_Final(sha2_byte digest[], SHA512_CTX* context)
 	MEMSET_BZERO(context, sizeof(context));
 }
 
-char* SHA2ext::SHA512_End(SHA512_CTX* context, char buffer[]) 
+char* SHA2ext::SHA512_End(HL_SHA512_CTX* context, char buffer[]) 
 {
 	sha2_byte	digest[SHA512_DIGEST_LENGTH], *d = digest;
 	int		i;
 
 	/* Sanity check: */
-	assert(context != (SHA512_CTX*)0);
+	assert(context != (HL_SHA512_CTX*)0);
 
 	if (buffer != (char*)0) {
 		SHA512_Final(digest, context);
@@ -492,9 +492,9 @@ char* SHA2ext::SHA512_End(SHA512_CTX* context, char buffer[])
 	return buffer;
 }
 
-void SHA2ext::SHA384_Init(SHA384_CTX* context) 
+void SHA2ext::SHA384_Init(HL_SHA_384_CTX* context) 
 {
-	if (context == (SHA384_CTX*)0) {
+	if (context == (HL_SHA_384_CTX*)0) {
 		return;
 	}
 	MEMCPY_BCOPY(context->state, sha384_initial_hash_value, SHA512_DIGEST_LENGTH);
@@ -502,21 +502,21 @@ void SHA2ext::SHA384_Init(SHA384_CTX* context)
 	context->bitcount[0] = context->bitcount[1] = 0;
 }
 
-void SHA2ext::SHA384_Update(SHA384_CTX* context, const sha2_byte* data, unsigned int len) 
+void SHA2ext::SHA384_Update(HL_SHA_384_CTX* context, const sha2_byte* data, unsigned int len) 
 {
-	SHA512_Update((SHA512_CTX*)context, data, len);
+	SHA512_Update((HL_SHA512_CTX*)context, data, len);
 }
 
-void SHA2ext::SHA384_Final(sha2_byte digest[], SHA384_CTX* context) 
+void SHA2ext::SHA384_Final(sha2_byte digest[], HL_SHA_384_CTX* context) 
 {
 	sha2_word64	*d = (sha2_word64*)digest;
 
 	/* Sanity check: */
-	assert(context != (SHA384_CTX*)0);
+	assert(context != (HL_SHA_384_CTX*)0);
 
 	/* If no digest buffer is passed, we don't bother doing this: */
 	if (digest != (sha2_byte*)0) {
-		SHA512_Last((SHA512_CTX*)context);
+		SHA512_Last((HL_SHA512_CTX*)context);
 
 		/* Save the hash data for output: */
 #if BYTE_ORDER == LITTLE_ENDIAN
@@ -537,13 +537,13 @@ void SHA2ext::SHA384_Final(sha2_byte digest[], SHA384_CTX* context)
 	MEMSET_BZERO(context, sizeof(context));
 }
 
-char* SHA2ext::SHA384_End(SHA384_CTX* context, char buffer[]) 
+char* SHA2ext::SHA384_End(HL_SHA_384_CTX* context, char buffer[]) 
 {
 	sha2_byte	digest[SHA384_DIGEST_LENGTH], *d = digest;
 	int		i;
 
 	/* Sanity check: */
-	assert(context != (SHA384_CTX*)0);
+	assert(context != (HL_SHA_384_CTX*)0);
 
 	if (buffer != (char*)0) {
 		SHA384_Final(digest, context);

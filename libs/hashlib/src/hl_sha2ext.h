@@ -1,7 +1,8 @@
 /* 
  * hashlib++ - a simple hash library for C++
  * 
- * Copyright (c) 2007,2008 Benjamin Grüdelbach * 
+ * Copyright (c) 2007-2010 Benjamin Grüdelbach
+ *
  * Redistribution and use in source and binary forms, with or without modification,
  * are permitted provided that the following conditions are met:
  * 
@@ -108,18 +109,18 @@ typedef hl_uint64 sha2_word64;
 /**
  * @brief This struct represents a SHA512-hash context
  */
-typedef struct SHA512_CTX 
+typedef struct HL_SHA512_CTX 
 {
 	hl_uint64       state[8];
 	hl_uint64       bitcount[2];
 	hl_uint8        buffer[SHA512_BLOCK_LENGTH];
-} SHA512_CTX;
+} HL_SHA512_CTX;
 
 
 /**
  * @brief This struct represents a SHA384-hash context
  */
-typedef SHA512_CTX SHA384_CTX;
+typedef HL_SHA512_CTX HL_SHA_384_CTX;
 
 //----------------------------------------------------------------------
 
@@ -143,7 +144,7 @@ class SHA2ext
 		 *  @param	context The context to finalize.
 		 */  
 		void SHA384_Final(hl_uint8 digest[SHA384_DIGEST_LENGTH],
-			          SHA384_CTX* context);
+			          HL_SHA_384_CTX* context);
 
 		/**
 		 *  @brief 	Finalize the sha512 operation
@@ -151,7 +152,7 @@ class SHA2ext
 		 *  @param	context The context to finalize.
 		 */  
 		void SHA512_Final(hl_uint8 digest[SHA512_DIGEST_LENGTH],
-			       	  SHA512_CTX* context);
+			       	  HL_SHA512_CTX* context);
 
 		/**
 		 *  @brief 	Internal method
@@ -160,14 +161,14 @@ class SHA2ext
 		 *  @author	Benjamin Grüdelbach
 		 *  @param	context The context of the operation
 		 */  
-		void SHA512_Last(SHA512_CTX* context);
+		void SHA512_Last(HL_SHA512_CTX* context);
 
 		/**
 		 *  @brief 	Internal data transformation
 		 *  @param	context The context to use
 		 *  @param	data The data to transform	
 		 */  
-		void SHA512_Transform(SHA512_CTX* context,
+		void SHA512_Transform(HL_SHA512_CTX* context,
 			              const sha2_word64* data);
 
 
@@ -177,13 +178,13 @@ class SHA2ext
 		 *  @brief 	Initialize the SHA384 context
 		 *  @param	context The context to init.
 		 */  
-		void SHA384_Init(SHA384_CTX* context);
+		void SHA384_Init(HL_SHA_384_CTX* context);
 
 		/**
 		 *  @brief 	Initialize the SHA512 context
 		 *  @param	context The context to init.
 		 */  
-		void SHA512_Init(SHA512_CTX* context);
+		void SHA512_Init(HL_SHA512_CTX* context);
 
 		/**
 		 *  @brief	Updates the SHA512 context 
@@ -191,7 +192,7 @@ class SHA2ext
 		 *  @param	data The data for updating the context.
 		 *  @param	len The length of the given data.
 		 */  
-		void SHA384_Update(SHA384_CTX* context,
+		void SHA384_Update(HL_SHA_384_CTX* context,
 			           const hl_uint8* data,
 				   unsigned int len);
 
@@ -201,7 +202,7 @@ class SHA2ext
 		 *  @param	data The data for updating the context.
 		 *  @param	len The length of the given data.
 		 */  
-		void SHA512_Update(SHA512_CTX* context,
+		void SHA512_Update(HL_SHA512_CTX* context,
 			           const hl_uint8* data,
 				   unsigned int len);
 
@@ -212,7 +213,7 @@ class SHA2ext
 		 *  @param	buffer This OUT-Parameter contains the created
 		 *  		hash after ending the operation.
 		 */  
-		char* SHA384_End(SHA384_CTX* context,
+		char* SHA384_End(HL_SHA_384_CTX* context,
 			       	 char buffer[SHA384_DIGEST_STRING_LENGTH]);
 
 		/**
@@ -222,7 +223,7 @@ class SHA2ext
 		 *  @param	buffer This OUT-Parameter contains the created
 		 *  		hash after ending the operation.
 		 */  
-		char* SHA512_End(SHA512_CTX* context,
+		char* SHA512_End(HL_SHA512_CTX* context,
 			       	 char buffer[SHA512_DIGEST_STRING_LENGTH]);
 
 };

@@ -1,7 +1,7 @@
 /* 
  * hashlib++ - a simple hash library for C++
  * 
- * Copyright (c) 2007,2008 Benjamin Grüdelbach
+ * Copyright (c) 2007-2010 Benjamin Grüdelbach
  * 
  * Redistribution and use in source and binary forms, with or without modification,
  * are permitted provided that the following conditions are met:
@@ -52,7 +52,10 @@
 typedef enum hlerrors
 {
 	HL_NO_ERROR = 0,
-	HL_FILE_READ_ERROR	
+	HL_FILE_READ_ERROR,
+	HL_VERIFY_TEST_FAILED,
+	HL_UNKNOWN_SEE_MSG,
+	HL_UNKNOWN_HASH_TYPE
 } hlerror;
 
 //----------------------------------------------------------------------
@@ -89,10 +92,20 @@ class hlException
 			}
 
 			/**
+			 *  @brief 	constructor
+			 *  @param	m	Error Message
+			 */  
+			hlException(std::string m)
+			{
+				this->iError = HL_UNKNOWN_SEE_MSG;
+				this->strMessge = m;
+			}
+
+			/**
 			 *  @brief 	returns the error message
 			 *  @return	the error message
 			 */  
-			std::string erro_message(void)
+			std::string error_message(void)
 			{
 				return strMessge;
 			}

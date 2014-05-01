@@ -1,7 +1,7 @@
 /* 
  * hashlib++ - a simple hash library for C++
  * 
- * Copyright (c) 2007,2008 Benjamin Grüdelbach
+ * Copyright (c) 2007-2010 Benjamin Grüdelbach
  * 
  * Redistribution and use in source and binary forms, with or without modification,
  * are permitted provided that the following conditions are met:
@@ -73,7 +73,7 @@ std::string md5wrapper::hashIt(void)
  *  @param 	data The hash-data to covert into HEX
  *  @return	the converted data as std::string
  */  
-std::string md5wrapper::convToString(unsigned char *bytes)
+std::string md5wrapper::convToString(unsigned char *data)
 {
 	/*
 	 * using a ostringstream to convert the hash in a
@@ -95,7 +95,7 @@ std::string md5wrapper::convToString(unsigned char *bytes)
 		/*
 		 * conv to hex
 		 */
-		os << std::hex << static_cast<unsigned int>(bytes[i]);
+		os << std::hex << static_cast<unsigned int>(data[i]);
 	}
 
 	/*
@@ -125,6 +125,16 @@ void md5wrapper::resetContext(void)
 {
 	//init md5
 	md5->MD5Init(&ctx);
+}
+
+/**
+ * @brief 	This method should return the hash of the
+ * 		test-string "The quick brown fox jumps over the lazy
+ * 		dog"
+ */
+std::string md5wrapper::getTestHash(void)
+{
+	return "9e107d9d372bb6826bd81d3542a419d6";
 }
 
 //---------------------------------------------------------------------- 

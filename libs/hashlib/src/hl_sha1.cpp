@@ -1,7 +1,7 @@
 /* 
  * hashlib++ - a simple hash library for C++
  * 
- * Copyright (c) 2007,2008 Benjamin Grüdelbach
+ * Copyright (c) 2007-2010 Benjamin Grüdelbach
  * 
  * Redistribution and use in source and binary forms, with or without modification,
  * are permitted provided that the following conditions are met:
@@ -102,7 +102,7 @@
  *  @param	context The context to padd
  *
  */  
-void SHA1::SHA1PadMessage(SHA1_CTX *context)
+void SHA1::SHA1PadMessage(HL_SHA1_CTX *context)
 {
 	/*
 	 *  Check to see if the current message block is too small to hold
@@ -159,7 +159,7 @@ void SHA1::SHA1PadMessage(SHA1_CTX *context)
  *
  *  @param	context The context to process
  */  
-void SHA1::SHA1ProcessMessageBlock(SHA1_CTX *context)
+void SHA1::SHA1ProcessMessageBlock(HL_SHA1_CTX *context)
 {
 	const hl_uint32 K[] =    {       /* Constants defined in SHA-1   */
 		0x5A827999,
@@ -254,7 +254,7 @@ void SHA1::SHA1ProcessMessageBlock(SHA1_CTX *context)
  *  @param	context The context to reset
  *  @return	0 on succes an error number otherwise
  */  
-int SHA1::SHA1Reset(SHA1_CTX *context)
+int SHA1::SHA1Reset(HL_SHA1_CTX *context)
 {
 	if (!context)
 	{
@@ -287,7 +287,7 @@ int SHA1::SHA1Reset(SHA1_CTX *context)
  *  @param	message_array The data to add
  *  @param	length The length of the data to add
  */  
-int SHA1::SHA1Input(    SHA1_CTX    *context,
+int SHA1::SHA1Input(    HL_SHA1_CTX    *context,
 			const hl_uint8  *message_array,
 			unsigned int   length)
 {
@@ -347,7 +347,7 @@ int SHA1::SHA1Input(    SHA1_CTX    *context,
  *  		contains the hash after the menberfunction returns
  *  @return	0 on succes, an error-code otherwise
  */  
-int SHA1::SHA1Result( SHA1_CTX *context,
+int SHA1::SHA1Result( HL_SHA1_CTX *context,
 		      hl_uint8 	  Message_Digest[SHA1HashSize])
 {
 	int i;

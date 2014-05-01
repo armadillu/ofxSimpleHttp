@@ -1,7 +1,7 @@
 /* 
  * hashlib++ - a simple hash library for C++
  * 
- * Copyright (c) 2007,2008 Benjamin Grüdelbach
+ * Copyright (c) 2007-2010 Benjamin Grüdelbach
  * 
  * Redistribution and use in source and binary forms, with or without modification,
  * are permitted provided that the following conditions are met:
@@ -92,7 +92,7 @@ typedef struct
 
 	/** input buffer */
 	unsigned char buffer[64];
-} MD5_CTX;
+} HL_MD5_CTX;
 
 //---------------------------------------------------------------------- 
 
@@ -163,19 +163,19 @@ class MD5
 		/**
 		 *  @brief 	Initialization begins an operation,
 		 *  		writing a new context
-		 *  @param 	context	The MD5_CTX context to initialize
+		 *  @param 	context	The HL_MD5_CTX context to initialize
 		 */  
-		void MD5Init (MD5_CTX* context);
+		void MD5Init (HL_MD5_CTX* context);
 
 		/**
 		 *  @brief 	Block update operation. Continues an md5
 		 *  		message-digest operation, processing another
 		 *  		message block, and updating the context.
-		 *  @param	context The MD5_CTX context to update
+		 *  @param	context The HL_MD5_CTX context to update
 		 *  @param	input The data to write into the context
 		 *  @param	inputLen The length of the input data
 		 */  
-		void MD5Update (MD5_CTX* context,
+		void MD5Update (HL_MD5_CTX* context,
 			       	unsigned char *input,
 			       	unsigned int inputLen);
 
@@ -187,7 +187,7 @@ class MD5
 		 *  		the created hash after the method returns
 		 *  @param	context The context to finalize
 		 */  
-		void MD5Final (unsigned char digest[16], MD5_CTX* context);
+		void MD5Final (unsigned char digest[16], HL_MD5_CTX* context);
 
 		/**
 		 *  @brief 	default constructor

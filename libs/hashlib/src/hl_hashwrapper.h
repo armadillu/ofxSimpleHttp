@@ -1,7 +1,7 @@
 /* 
  * hashlib++ - a simple hash library for C++
  * 
- * Copyright (c) 2007,2008 Benjamin Grüdelbach
+ * Copyright (c) 2007-2011 Benjamin Grüdelbach
  * 
  * Redistribution and use in source and binary forms, with or without modification,
  * are permitted provided that the following conditions are met:
@@ -32,12 +32,12 @@
 /**
  * @mainpage  hashlib++ source documentation
  *
- * 	      <div align="center"><b>Version 0.3.1</b></div>
+ * 	      <div align="center"><b>Version 0.3.4</b></div>
  * 	      
  *
  * 	      @section intro Introduction
  * 	      hashlib++ a simple hash library for C++  \n
- * 	      Copyright (c) 2007,2008 Benjamin Gr&uuml;delbach
+ * 	      Copyright (c) 2007-2011 Benjamin Gr&uuml;delbach
  *
  *
  *
@@ -78,7 +78,8 @@
 
 //----------------------------------------------------------------------	
 //C includes
-#include <stdio.h>
+//#include <stdio.h>
+#include <fstream>
 
 //----------------------------------------------------------------------	
 //hashlib++ includes
@@ -104,6 +105,9 @@
  */  
 class hashwrapper
 {
+	private:
+		const std::string teststring;
+
 	protected:
 
 		/**
@@ -151,12 +155,46 @@ class hashwrapper
 		 */  
 		virtual void resetContext(void) = 0;
 
+
+		/**
+		 * @brief 	This method should return the hash of the
+		 * 		test-string "The quick brown fox jumps over the lazy
+		 * 		dog"
+		 */
+		virtual std::string getTestHash(void) = 0;
+
 	public:
+
+		/**
+		 * @brief Default Konstruktor
+		 */
+		hashwrapper( void ) 
+			: teststring("The quick brown fox jumps over the lazy dog")
+		{
+		}
 
 		/**
 		 *  @brief 	Default destructor
 		 */  
 		virtual ~hashwrapper ( void ) { };
+
+		/**
+		 * @brief Method for testing the concrete implementation
+		 */
+		virtual void test( void )
+		{
+			std::string hash = this->getHashFromString(teststring);
+			std::string verify = this->getTestHash();
+			if(hash != verify)
+			{
+				throw hlException(HL_VERIFY_TEST_FAILED,
+						  "hashlib test-error: \"" + 
+						  hash +
+						  "\" is not \"" + 
+						  verify + 
+						  "\" as supposed to be.");
+			}
+		}
 
 		/**
 		 *  @brief 	This method creates a hash based on the
@@ -210,7 +248,6 @@ class hashwrapper
 		 */  
 		virtual std::string getHashFromFile(std::string filename)
 		{
-
 			FILE *file;
 			int len;
 			unsigned char buffer[1024];
@@ -223,7 +260,7 @@ class hashwrapper
 			/*
 			 * open the specified file
 			 */
-			if ((file = fopen (filename.c_str(), "rb")) == NULL)
+			if((file = fopen(filename.c_str(), "rb")) == NULL)
 			{
 				throw hlException(HL_FILE_READ_ERROR,
 						  "Cannot read file \"" + 
@@ -235,19 +272,16 @@ class hashwrapper
 			 * read the file in 1024b blocks and
 			 * update the context for every block
 			 */
-			while ( (len = fread (buffer, 1, 1024, file)) )
+			while( (len = fread(buffer,1,1024,file)) )
 			{
 				updateContext(buffer, len);
 			}
 
-			/*
-			 * close the file and 
-			 * return the hash
-			 */
+			//close the file and create the hash
 			fclose(file);
-			return (hashIt());
+			return(hashIt());
 		}
-};
+}; 
 
 //----------------------------------------------------------------------	
 //end of include protection

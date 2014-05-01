@@ -1,7 +1,7 @@
 /* 
  * hashlib++ - a simple hash library for C++
  * 
- * Copyright (c) 2007,2008 Benjamin Grüdelbach  
+ * Copyright (c) 2007-2010 Benjamin Grüdelbach
  *
  * Redistribution and use in source and binary forms, with or without modification,
  * are permitted provided that the following conditions are met:
@@ -105,7 +105,7 @@ typedef hl_uint64 sha2_word64;
 /**
  * @brief This struct represents a SHA256-hash context
  */
-typedef struct SHA256_CTX 
+typedef struct HL_SHA256_CTX 
 {
 	/**
 	 * state 
@@ -121,7 +121,7 @@ typedef struct SHA256_CTX
 	 * message buffer
 	 */
 	hl_uint8		buffer[SHA256_BLOCK_LENGTH];
-} SHA256_CTX;
+} HL_SHA256_CTX;
 
 //----------------------------------------------------------------------
 
@@ -145,14 +145,14 @@ class SHA256
 		 *  @param	context The context to finalize.
 		 */  
 		void SHA256_Final(hl_uint8 digest[SHA256_DIGEST_LENGTH],
-			          SHA256_CTX* context);
+			          HL_SHA256_CTX* context);
 
 		/**
 		 *  @brief 	Internal data transformation
 		 *  @param	context The context to use
 		 *  @param	data The data to transform	
 		 */  
-		void SHA256_Transform(SHA256_CTX* context,
+		void SHA256_Transform(HL_SHA256_CTX* context,
 			              const sha2_word32* data);
 
 	public:
@@ -161,7 +161,7 @@ class SHA256
 		 *  @brief 	Initialize the context
 		 *  @param	context The context to init.
 		 */  
-		void SHA256_Init(SHA256_CTX *context);
+		void SHA256_Init(HL_SHA256_CTX *context);
 
 		/**
 		 *  @brief	Updates the context 
@@ -169,7 +169,7 @@ class SHA256
 		 *  @param	data The data for updating the context.
 		 *  @param	len The length of the given data.
 		 */  
-		void SHA256_Update(SHA256_CTX* context,
+		void SHA256_Update(HL_SHA256_CTX* context,
 			           const hl_uint8* data,
 				   unsigned int len);
 
@@ -180,7 +180,7 @@ class SHA256
 		 *  @param	buffer This OUT-Parameter contains the created
 		 *  		hash after ending the operation.
 		 */  
-		char* SHA256_End(SHA256_CTX* context,
+		char* SHA256_End(HL_SHA256_CTX* context,
 			         char buffer[SHA256_DIGEST_STRING_LENGTH]);
 
 };

@@ -1,7 +1,7 @@
 /* 
  * hashlib++ - a simple hash library for C++
  * 
- * Copyright (c) 2007,2008 Benjamin Grüdelbach
+ * Copyright (c) 2007-2010 Benjamin Grüdelbach
  * 
  * Redistribution and use in source and binary forms, with or without modification,
  * are permitted provided that the following conditions are met:
@@ -308,9 +308,9 @@ void MD5::MD5_memset (POINTER output,int value,unsigned int len)
 /**
  *  @brief 	Initialization begins an operation,
  *  		writing a new context
- *  @param 	context	The MD5_CTX context to initialize
+ *  @param 	context	The HL_MD5_CTX context to initialize
  */  
-void MD5::MD5Init (MD5_CTX *context)
+void MD5::MD5Init (HL_MD5_CTX *context)
 {
 	  context->count[0] = context->count[1] = 0;
 	  context->state[0] = 0x67452301;
@@ -323,11 +323,11 @@ void MD5::MD5Init (MD5_CTX *context)
  *  @brief 	Block update operation. Continues an md5
  *  		message-digest operation, processing another
  *  		message block, and updating the context.
- *  @param	context The MD5_CTX context to update
+ *  @param	context The HL_MD5_CTX context to update
  *  @param	input The data to write into the context
  *  @param	inputLen The length of the input data
  */  
-void MD5::MD5Update (MD5_CTX *context, unsigned char *input, unsigned int inputLen)
+void MD5::MD5Update (HL_MD5_CTX *context, unsigned char *input, unsigned int inputLen)
 {
 	  unsigned int i, index, partLen;
 
@@ -372,7 +372,7 @@ void MD5::MD5Update (MD5_CTX *context, unsigned char *input, unsigned int inputL
  *  		the created hash after the method returns
  *  @param	context The context to finalize
  */  
-void MD5::MD5Final (unsigned char digest[16], MD5_CTX *context)
+void MD5::MD5Final (unsigned char digest[16], HL_MD5_CTX *context)
 {
 	unsigned char bits[8];
 	unsigned int index, padLen;

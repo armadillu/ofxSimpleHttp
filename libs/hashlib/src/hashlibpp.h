@@ -1,7 +1,7 @@
 /* 
  * hashlib++ - a simple hash library for C++
  * 
- * Copyright (c) 2007,2008 Benjamin GrÂ¸delbach
+ * Copyright (c) 2007-2010 Benjamin Grüdelbach
  * 
  * Redistribution and use in source and binary forms, with or without modification,
  * are permitted provided that the following conditions are met:
@@ -39,7 +39,13 @@
 #define HASHLIBPP_H
 
 //----------------------------------------------------------------------
+//current version of hashilb++
+#define _HASHLIBPP_VERSION_ "0.3.4"
 
+//----------------------------------------------------------------------
+
+#include "hl_exception.h"
+#include "hl_wrapperfactory.h"
 #include "hl_hashwrapper.h"
 #include "hl_md5wrapper.h"
 #include "hl_sha1wrapper.h"

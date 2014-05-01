@@ -1,7 +1,7 @@
 /* 
  * hashlib++ - a simple hash library for C++
  * 
- * Copyright (c) 2007,2008 Benjamin Grüdelbach
+ * Copyright (c) 2007-2010 Benjamin Grüdelbach
  * 
  * Redistribution and use in source and binary forms, with or without modification,
  * are permitted provided that the following conditions are met:
@@ -80,7 +80,7 @@ class sha384wrapper : public hashwrapper
 			/**
 			 * SHA384 context
 			 */
-			SHA384_CTX context;
+			HL_SHA_384_CTX context;
 
 			/**
 			 *  @brief 	This method ends the hash process
@@ -114,6 +114,13 @@ class sha384wrapper : public hashwrapper
 			 *  		In other words: It starts a new hash process.
 			 */  
 			virtual void resetContext(void);
+
+			/**
+			 * @brief 	This method should return the hash of the
+			 * 		test-string "The quick brown fox jumps over the lazy
+			 * 		dog"
+			 */
+			virtual std::string getTestHash(void);
 
 	public:
 

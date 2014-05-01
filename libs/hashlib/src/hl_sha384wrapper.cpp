@@ -1,7 +1,7 @@
 /* 
  * hashlib++ - a simple hash library for C++
  * 
- * Copyright (c) 2007,2008 Benjamin Grüdelbach
+ * Copyright (c) 2007-2010 Benjamin Grüdelbach
  * 
  * Redistribution and use in source and binary forms, with or without modification,
  * are permitted provided that the following conditions are met:
@@ -94,6 +94,16 @@ void sha384wrapper::updateContext(unsigned char *data, unsigned int len)
 void sha384wrapper::resetContext(void)
 {
 	sha384->SHA384_Init(&context);
+}
+
+/**
+ * @brief 	This method should return the hash of the
+ * 		test-string "The quick brown fox jumps over the lazy
+ * 		dog"
+ */
+std::string sha384wrapper::getTestHash(void)
+{ 
+	return "ca737f1014a48f4c0b6dd43cb177b0afd9e5169367544c494011e3317dbf9a509cb1e5dc1e85a941bbee3d7f2afbc9b1";
 }
 
 //----------------------------------------------------------------------	
