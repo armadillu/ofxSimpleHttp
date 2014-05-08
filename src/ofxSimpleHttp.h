@@ -52,14 +52,12 @@
 #include "Poco/Exception.h"
 #include <iostream>
 
-
 #define COPY_BUFFER_SIZE				1024 * 50   /*10 Kb buffer size*/
 
 using namespace Poco::Net;
 using namespace Poco;
 using Poco::Exception;
 using Poco::Net::HTTPClientSession;
-
 
 struct ofxSimpleHttpResponse{
 

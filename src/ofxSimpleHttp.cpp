@@ -128,7 +128,7 @@ void ofxSimpleHttp::threadedFunction(){
 	pthread_setname_np("ofxSimpleHttp");
 	#endif
 
-	if (debug) printf("\nofxSimpleHttp >> start threadedFunction\n");
+	if (debug) printf("ofxSimpleHttp >> start threadedFunction\n");
 	queueLenEstimation = 0;
 
 	lock();
@@ -487,15 +487,20 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 
 			}else{
 
-				if(debug) printf("ofxSimpleHttp::downloadURLtoDiskBlocking() >> downloaded to %s\n", resp->fileName.c_str() );
+				if(debug) printf("ofxSimpleHttp::downloadURL() >> downloaded to %s\n", resp->fileName.c_str() );
 
 
 				if( saveToDisk ){
 					//ask the filesystem what is the real size of the file
 					ofFile file;
-					file.open(resp->absolutePath.c_str());
-					resp->downloadedBytes = file.getSize();
-					file.close();
+					try{
+						file.open(resp->absolutePath.c_str());
+						resp->downloadedBytes = file.getSize();
+						file.close();
+					}catch(Exception& exc){
+						printf("ofxSimpleHttp::downloadURL(%s) >> Exception at file.open: %s\n", resp->fileName.c_str(), exc.displayText().c_str() );
+
+					}
 				}else{
 					resp->downloadedBytes = resp->responseBody.size();
 				}
