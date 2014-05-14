@@ -18,7 +18,6 @@ ofxSimpleHttp::ofxSimpleHttp(){
 	timeOut = 10;
 	queueLenEstimation = 0;
 	maxQueueLen = 1000;
-	debug = false;
 	timeToStop = false;
 	userAgent = "ofxSimpleHttp (Poco Powered)";
 	acceptString = "";
@@ -35,7 +34,7 @@ ofxSimpleHttp::~ofxSimpleHttp(){
 	try{
 		waitForThread(false);
 	}catch(Exception& exc){
-		printf("ofxSimpleHttp::~ofxSimpleHttp >> Exception at waitForThread %s\n", exc.displayText().c_str() );
+		ofLogError("ofxSimpleHttp", "Exception at waitForThread %s", exc.displayText().c_str() );
 	}
 
 	//empty queue
@@ -65,9 +64,7 @@ void ofxSimpleHttp::setTimeOut(int seconds){
 }
 
 
-void ofxSimpleHttp::setVerbose(bool verbose){
-	debug = verbose;
-}
+void ofxSimpleHttp::setVerbose(bool verbose){}
 
 
 void ofxSimpleHttp::setUserAgent( string newUserAgent ){
@@ -128,7 +125,7 @@ void ofxSimpleHttp::threadedFunction(){
 	pthread_setname_np("ofxSimpleHttp");
 	#endif
 
-	if (debug) printf("ofxSimpleHttp >> start threadedFunction\n");
+	ofLogVerbose("ofxSimpleHttp", "start threadedFunction");
 	queueLenEstimation = 0;
 
 	lock();
@@ -157,7 +154,7 @@ void ofxSimpleHttp::threadedFunction(){
 	unlock();
 
 	//if no more pending requests, let the thread die...
-	if (debug) printf("ofxSimpleHttp >> exiting threadedFunction (queue len %d)\n", queueLenEstimation);
+	ofLogVerbose("ofxSimpleHttp", "exiting threadedFunction (queue len %d)", queueLenEstimation);
 
 	#if  defined(TARGET_OSX) || defined(TARGET_LINUX) /*I'm not 100% sure of linux*/
 	if (!timeToStop){ //if we are naturally exiting the thread; if TimeToStop==true it means we are being destructed, and the thread will be joined (so no need to detach!)
@@ -174,16 +171,16 @@ void ofxSimpleHttp::stopCurrentDownload(bool emptyQueue){
 		if ( isThreadRunning() && n > 0){
 			ofxSimpleHttpResponse * r = q.front();
 			if (!r->downloadCanceled){ //dont cancel it twice!
-				if (debug) printf( "ofxSimpleHttp::stopCurrentDownload() >> about to stop download of %s...\n", r->fileName.c_str() );
+				ofLogVerbose("ofxSimpleHttp", "stopCurrentDownload() >> about to stop download of %s...", r->fileName.c_str() );
 				try{
 					r->emptyWholeQueue = emptyQueue;
 					r->downloadCanceled = true;
 					//if ( r->session != NULL ){
-						//cout << "aboritng session " << r->session << endl;
+						//cout << "aboritng session " << r->session;
 					//	r->session->abort();
 					//}
 				}catch(Exception& exc){
-					printf( "ofxSimpleHttp::stopCurrentDownload(%s) >> Exception: %s\n", r->fileName.c_str(), exc.displayText().c_str() );
+					ofLogError("ofxSimpleHttp", "stopCurrentDownload(%s) >> Exception: %s", r->fileName.c_str(), exc.displayText().c_str() );
 				}
 			}
 		}
@@ -279,7 +276,7 @@ string ofxSimpleHttp::extractExtensionFromFileName(string fileName){
 void ofxSimpleHttp::fetchURL(string url, bool notifyOnSuccess){
 
 	if (queueLenEstimation >= maxQueueLen){
-		printf( "ofxSimpleHttp::fetchURL can't do that, queue is too long already (%d)!\n", queueLenEstimation );
+		ofLogError("ofxSimpleHttp", "fetchURL can't do that, queue is too long already (%d)!\n", queueLenEstimation );
 		return;
 	}
 
@@ -318,7 +315,7 @@ ofxSimpleHttpResponse ofxSimpleHttp::fetchURLBlocking(string  url){
 void ofxSimpleHttp::fetchURLToDisk(string url, string expectedSha1, bool notifyOnSuccess, string dirWhereToSave){
 
 	if (queueLenEstimation >= maxQueueLen){
-		printf( "ofxSimpleHttp::fetchURL can't do that, queue is too long already (%d)!\n", queueLenEstimation );
+		ofLogError("ofxSimpleHttp", "fetchURL can't do that, queue is too long already (%d)!\n", queueLenEstimation );
 		return;
 	}
 
@@ -393,8 +390,8 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 					resp->status = 0;
 					resp->ok = true;
 					resp->fileWasHere = true;
-					if(verbose) cout << "ofxSimpleHttp about to download "<< resp->url << " but a file with same name and correct checksum is already here!" << endl;
-					if(verbose) cout << "skipping download (" << resp->expectedChecksum << ")" << endl;
+					if(verbose) ofLogVerbose() << "ofxSimpleHttp: about to download "<< resp->url << " but a file with same name and correct checksum is already here!";
+					if(verbose) ofLogVerbose() << "ofxSimpleHttp: skipping download (" << resp->expectedChecksum << ")";
 				}
 			}
 			f.close();
@@ -408,8 +405,8 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 					resp->ok = true;
 					resp->fileWasHere = true;
 					fileIsAlreadyHere = true;
-					if(verbose) cout << "ofxSimpleHttp about to download "<< resp->url << " but a file with same name and (size > 0) is already here!" << endl;
-					if(verbose) cout << "skipping download (missing checksum)" << endl;
+					if(verbose) ofLogVerbose() << "ofxSimpleHttp: about to download "<< resp->url << " but a file with same name and (size > 0) is already here!";
+					if(verbose) ofLogVerbose() << "ofxSimpleHttp: skipping download (missing checksum)";
 				}
 				f.close();
 			}
@@ -446,9 +443,9 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 			resp->serverReportedSize = res.getContentLength();
 			resp->timeTakenToDownload = ofGetElapsedTimef();
 
-			if (debug) if (resp->serverReportedSize == -1) printf("ofxSimpleHttp::downloadURL(%s) >> Server doesn't report download size...\n", resp->fileName.c_str() );
-			if (debug) printf("ofxSimpleHttp::downloadURL() >> about to start download (%s, %d bytes)\n", resp->fileName.c_str(), res.getContentLength() );
-			if (debug) printf("ofxSimpleHttp::downloadURL() >> server reports request staus: (%d-%s)\n", resp->status, resp->reasonForStatus.c_str() );
+			if (resp->serverReportedSize == -1) ofLogWarning("ofxSimpleHttp", "downloadURL(%s) >> Server doesn't report download size...", resp->fileName.c_str() );
+			ofLogVerbose("ofxSimpleHttp", "downloadURL() >> about to start download (%s, %d bytes)", resp->fileName.c_str(), res.getContentLength() );
+			ofLogVerbose("ofxSimpleHttp", "downloadURL() >> server reports request status: (%d-%s)", resp->status, resp->reasonForStatus.c_str() );
 
 			//StreamCopier::copyStream(rs, myfile); //write to file here!
 			if(saveToDisk){
@@ -461,8 +458,8 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 			if (resp->expectedChecksum.length() > 0){
 				resp->checksumOK = ofxChecksum::sha1(resp->absolutePath, resp->expectedChecksum);
 				if(!resp->checksumOK){
-					if(verbose) cout << "ofxSimpleHttp downloaded OK but Checksum FAILED" << endl;
-					if(verbose) cout << "SHA1 was meant to be: " << resp->expectedChecksum << endl;
+					if(verbose) ofLogVerbose() << "ofxSimpleHttp: downloaded OK but Checksum FAILED";
+					if(verbose) ofLogVerbose() << "ofxSimpleHttp: SHA1 was meant to be: " << resp->expectedChecksum;
 				}
 			}
 
@@ -487,7 +484,7 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 
 			}else{
 
-				if(debug) printf("ofxSimpleHttp::downloadURL() >> downloaded to %s\n", resp->fileName.c_str() );
+				ofLogNotice("ofxSimpleHttp", "downloadURL() >> downloaded to %s", resp->fileName.c_str() );
 
 
 				if( saveToDisk ){
@@ -498,7 +495,7 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 						resp->downloadedBytes = file.getSize();
 						file.close();
 					}catch(Exception& exc){
-						printf("ofxSimpleHttp::downloadURL(%s) >> Exception at file.open: %s\n", resp->fileName.c_str(), exc.displayText().c_str() );
+						ofLogError("ofxSimpleHttp", "downloadURL(%s) >> Exception at file.open: %s", resp->fileName.c_str(), exc.displayText().c_str() );
 
 					}
 				}else{
@@ -511,7 +508,7 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 				//check download file size missmatch
 				if ( resp->serverReportedSize > 0 && resp->serverReportedSize !=  resp->downloadedBytes) {
 
-					if(debug) printf( "ofxSimpleHttp::downloadURLtoDiskBlocking() >> Download size mismatch (%s) >> Server: %d Downloaded: %d\n",
+					ofLogWarning("ofxSimpleHttp", "downloadURLtoDiskBlocking() >> Download size mismatch (%s) >> Server: %d Downloaded: %d",
 									 resp->fileName.c_str(), resp->serverReportedSize, resp->downloadedBytes );
 					resp->reasonForStatus = "Download size mismatch!";
 					resp->status = -1;
@@ -522,12 +519,11 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 					if (resp->status == 200){
 						resp->ok = true;
 					}else{
-						//cout << "ofxSimpleHttp:: downloadURL() >> Response status is Weird ? (" << resp->status << ")" << endl;
 						resp->ok = false;
 					}
 				}
 
-				if(debug) cout << "download finished! " << resp->url << " !" << endl;
+				ofLogVerbose() << "ofxSimpleHttp: download finished! " << resp->url << " !";
 				ok = TRUE;
 
 			}
@@ -535,12 +531,12 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 		}catch(Exception& exc){
 
 			myfile.close();
-			printf("ofxSimpleHttp::downloadURL(%s) >> Exception: %s\n", resp->fileName.c_str(), exc.displayText().c_str() );
+			ofLogError("ofxSimpleHttp", "downloadURL(%s) >> Exception: %s", resp->fileName.c_str(), exc.displayText().c_str() );
 			resp->reasonForStatus = exc.displayText();
 			resp->ok = false;
 			resp->status = -1;
 			ok = false;
-			cout << "failed to download " << resp->url << " !" << endl;
+			ofLogError() << "ofxSimpleHttp: failed to download " << resp->url << " !";
 		}
 	}
 
@@ -621,7 +617,7 @@ void ofxSimpleHttp::streamCopyWithProgress(std::istream & istr, std::ostream & o
 			speed = avgSpeed;
 		}
 	}catch(Exception& exc){
-		printf("ofxSimpleHttp::streamCopyWithProgress() >> Exception: %s\n", exc.displayText().c_str() );
+		ofLogError("ofxSimpleHttp", "streamCopyWithProgress() >> Exception: %s", exc.displayText().c_str() );
 	}
 	return len;
 }
@@ -655,7 +651,7 @@ std::streamsize ofxSimpleHttp::copyToStringWithProgress(std::istream& istr, std:
 
 		}
 	}catch(Exception& exc){
-		printf("ofxSimpleHttp::copyToStringWithProgress() >> Exception: %s\n", exc.displayText().c_str() );
+		ofLogError("ofxSimpleHttp", "copyToStringWithProgress() >> Exception: %s", exc.displayText().c_str() );
 	}
 	return len;
 }

@@ -10,12 +10,9 @@
 #include "ofxBatchDownloader.h"
 
 ofxBatchDownloader::ofxBatchDownloader(){
-
-	verbose = false;
 	http.setVerbose(false);
 	busy = false;
 	downloadFolder = "_downloads_";
-
 	//add download listener
 	ofAddListener(http.httpResponse, this, &ofxBatchDownloader::httpResult);
 }
@@ -31,10 +28,7 @@ void ofxBatchDownloader::setIdleTimeAfterEachDownload(float seconds){
 }
 
 
-void ofxBatchDownloader::setVerbose(bool b){
-	http.setVerbose(b);
-	verbose = b;
-}
+void ofxBatchDownloader::setVerbose(bool b){}
 
 
 ofxBatchDownloader::~ofxBatchDownloader(){
@@ -86,7 +80,7 @@ void ofxBatchDownloader::addResourcesToDownloadList( vector<string> _urlList ){
 void ofxBatchDownloader::addResourcesToDownloadList( vector<string> _urlList, vector<string>_sha1List ){
 
 	if ( _sha1List.size() > 0 && (_urlList.size() != _sha1List.size()) ){
-		cout << "ofxBatchDownloader::addResourcesToDownloadList >> urlList & shaList element num missmatch!" << endl;
+		ofLogNotice() << "ofxBatchDownloader::addResourcesToDownloadList >> urlList & shaList element num missmatch!";
 		return;
 	}
 
@@ -97,11 +91,11 @@ void ofxBatchDownloader::addResourcesToDownloadList( vector<string> _urlList, ve
 			if (_sha1List.size()){
 				originalSha1List.push_back(_sha1List[i]);
 			}
-			if(verbose) cout << "ofxBatchDownloader queueing " << _urlList[i] << " for download" << endl;
+			ofLogNotice() << "ofxBatchDownloader queueing " << _urlList[i] << " for download";
 		}
 
 	}else{
-		cout << "ofxBatchDownloader already working, wait for it to finish!" << endl;
+		ofLogNotice() << "ofxBatchDownloader already working, wait for it to finish!";
 	}
 }
 
@@ -123,7 +117,7 @@ void ofxBatchDownloader::startDownloading(){
 		busy = true;
 		reset();
 
-		if(verbose) cout << "ofxBatchDownloader starting downloads! " << endl;
+		ofLogNotice() << "ofxBatchDownloader starting downloads! ";
 
 		http.setMaxQueueLength(originalUrlList.size() * 2); //just in case
 
@@ -147,10 +141,10 @@ void ofxBatchDownloader::httpResult(ofxSimpleHttpResponse &r){
 	bool checkedOK = r.checksumOK || (!r.checksumOK && r.expectedChecksum.size() == 0);
 	if(r.ok && checkedOK){
 		okList.push_back( r.url );
-		if(verbose) cout << "ofxBatchDownloader downloaded OK " << r.url << endl;
+		ofLogNotice() << "ofxBatchDownloader downloaded OK " << r.url;
 	}else{
 		failedList.push_back( r.url );
-		if(verbose) cout << "ofxBatchDownloader FAILED TO download " << r.url << endl;
+		ofLogError() << "ofxBatchDownloader FAILED TO download " << r.url;
 	}
 
 	if (originalUrlList.size() == failedList.size() + okList.size()){

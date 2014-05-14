@@ -61,7 +61,7 @@ public:
 	void startDownloading();
 	void cancelBatch(bool notify = false);
 
-	void setVerbose(bool b);
+	void setVerbose(bool b); //nop
 	void setNeedsChecksumMatchToSkipDownload(bool needsChecksum);
 	void setIdleTimeAfterEachDownload(float seconds); //wait a bit before notifying once the dowload is over
 
@@ -76,7 +76,7 @@ private:
 	ofxSimpleHttp						http;
 	bool								busy;
 	bool								needToStop; //user wants to cancel!
-	bool								verbose;
+	//bool								verbose;
 	string								downloadFolder;
 
 	vector<string>						originalUrlList;

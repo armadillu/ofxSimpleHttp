@@ -99,37 +99,37 @@ struct ofxSimpleHttpResponse{
 	}
 
 	void print(){
-		cout << "#### " << url << endl;
+		ofLogNotice() << "#### " << url << endl;
 		if (ok){
 			if (fileWasHere){
-				cout << "    File was already on disk, no download needed!" << endl;
+				ofLogNotice() << "    File was already on disk, no download needed!" << endl;
 				if (expectedChecksum.size()){
-					cout << "    File checksum " << expectedChecksum << " matched!" << endl;
+					ofLogNotice() << "    File checksum " << expectedChecksum << " matched!" << endl;
 				}else{
-					cout << "    File checksum not supplied, assuming file is the same blindly" << endl;
+					ofLogNotice() << "    File checksum not supplied, assuming file is the same blindly" << endl;
 				}
-				cout << "    File saved at: " << absolutePath << endl;
+				ofLogNotice() << "    File saved at: " << absolutePath << endl;
 			}else{
-				cout << "    Server Status: " << status << endl;
-				cout << "    Server Reported size: " << serverReportedSize << endl;
-				cout << "    Content Type: " << contentType << endl;
+				ofLogNotice() << "    Server Status: " << status << endl;
+				ofLogNotice() << "    Server Reported size: " << serverReportedSize << endl;
+				ofLogNotice() << "    Content Type: " << contentType << endl;
 				if(expectedChecksum.length()){
-					cout << "    Expected Checksum: " << expectedChecksum << endl;
-					cout << "    Checksum Match: " << string(checksumOK ? "YES" : "NO") << endl;
+					ofLogNotice() << "    Expected Checksum: " << expectedChecksum << endl;
+					ofLogNotice() << "    Checksum Match: " << string(checksumOK ? "YES" : "NO") << endl;
 				}
-				cout << "    Download Time taken: " << timeTakenToDownload << " seconds" << endl;
+				ofLogNotice() << "    Download Time taken: " << timeTakenToDownload << " seconds" << endl;
 				if (serverReportedSize != -1){
-					cout << "    Avg Download Speed: " << (serverReportedSize / 1024.f) / timeTakenToDownload << "Kb/sec" << endl;
+					ofLogNotice() << "    Avg Download Speed: " << (serverReportedSize / 1024.f) / timeTakenToDownload << "Kb/sec" << endl;
 				}
 				if(downloadToDisk){
-					cout << "    File Saved at: " << absolutePath << endl;
+					ofLogNotice() << "    File Saved at: " << absolutePath << endl;
 				}
 			}
 		}else{
-			cout << "    Download FAILED! " << endl;
-			cout << "    Status: " << status << " - " << reasonForStatus << endl;
+			ofLogNotice() << "    Download FAILED! " << endl;
+			ofLogNotice() << "    Status: " << status << " - " << reasonForStatus << endl;
 		}
-		cout << endl;
+		ofLogNotice() << endl;
 	}
 };
 
@@ -171,7 +171,7 @@ class ofxSimpleHttp : public ofThread, public ofBaseDraws{
 		// properties //////////////////////////////////////////////////////////
 	
 		void						setTimeOut(int seconds);
-		void						setVerbose(bool verbose);
+		void						setVerbose(bool verbose); //unused
 		void						setUserAgent( string newUserAgent );
 		void						setAcceptString( string newAcceptString );
 		void						setMaxQueueLength(int len);
@@ -196,7 +196,7 @@ class ofxSimpleHttp : public ofThread, public ofBaseDraws{
 		string extractFileFromUrl(string url);
 		string extractExtensionFromFileName(string fileName);
 			
-		bool							debug;	//should we print lots of stuff?
+		//bool							debug;	//should we print lots of stuff?
 		bool							notifyFromMainThread;
 		bool							onlySkipDownloadIfChecksumMatches;
 
