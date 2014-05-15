@@ -484,7 +484,7 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 
 			}else{
 
-				ofLogNotice("ofxSimpleHttp", "downloadURL() >> downloaded to %s", resp->fileName.c_str() );
+				ofLogNotice("ofxSimpleHttp", "downloadURL() downloaded to %s", resp->fileName.c_str() );
 
 
 				if( saveToDisk ){

@@ -80,7 +80,7 @@ void ofxBatchDownloader::addResourcesToDownloadList( vector<string> _urlList ){
 void ofxBatchDownloader::addResourcesToDownloadList( vector<string> _urlList, vector<string>_sha1List ){
 
 	if ( _sha1List.size() > 0 && (_urlList.size() != _sha1List.size()) ){
-		ofLogNotice() << "ofxBatchDownloader::addResourcesToDownloadList >> urlList & shaList element num missmatch!";
+		ofLogWarning() << "ofxBatchDownloader::addResourcesToDownloadList >> urlList & shaList element num missmatch!";
 		return;
 	}
 
@@ -91,11 +91,11 @@ void ofxBatchDownloader::addResourcesToDownloadList( vector<string> _urlList, ve
 			if (_sha1List.size()){
 				originalSha1List.push_back(_sha1List[i]);
 			}
-			ofLogNotice() << "ofxBatchDownloader queueing " << _urlList[i] << " for download";
+			ofLogVerbose() << "ofxBatchDownloader queueing " << _urlList[i] << " for download";
 		}
 
 	}else{
-		ofLogNotice() << "ofxBatchDownloader already working, wait for it to finish!";
+		ofLogWarning() << "ofxBatchDownloader already working, wait for it to finish!";
 	}
 }
 
@@ -117,7 +117,7 @@ void ofxBatchDownloader::startDownloading(){
 		busy = true;
 		reset();
 
-		ofLogNotice() << "ofxBatchDownloader starting downloads! ";
+		ofLogVerbose() << "ofxBatchDownloader starting downloads! ";
 
 		http.setMaxQueueLength(originalUrlList.size() * 2); //just in case
 
