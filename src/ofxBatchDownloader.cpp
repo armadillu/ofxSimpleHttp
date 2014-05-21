@@ -144,7 +144,11 @@ void ofxBatchDownloader::httpResult(ofxSimpleHttpResponse &r){
 		ofLogNotice() << "ofxBatchDownloader downloaded OK " << r.url;
 	}else{
 		failedList.push_back( r.url );
-		ofLogError() << "ofxBatchDownloader FAILED TO download " << r.url;
+		if (!r.checksumOK){
+			ofLogError() << "ofxBatchDownloader checksum missmatch! " << r.url;
+		}else{
+			ofLogError() << "ofxBatchDownloader FAILED TO download " << r.url;
+		}
 	}
 
 	if (originalUrlList.size() == failedList.size() + okList.size()){
