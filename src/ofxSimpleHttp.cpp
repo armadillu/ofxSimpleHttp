@@ -255,7 +255,7 @@ string ofxSimpleHttp::extractFileFromUrl(string url){
 	int found = url.find_last_of("/");
 	string file = url.substr(found + 1);
 	if (file.length() == 0){
-		file = "unnamed.file";
+		file = OFX_SIMPLEHTTP_UNTITLED_FILENAME;
 	}
 	return file;
 }
