@@ -220,8 +220,8 @@ string ofxSimpleHttp::drawableString(){
 		aux = "//// ofxSimpleHttp fetching //////////////////////////////////////\n"
 		"//\n"
 		"//   " + r->url + "\n" +
-		"//   Progress: " + ofToString(100.0f * r->downloadProgress, 2) + "%\n" +
-		"//   Server Reported Size: " + ofToString(r->serverReportedSize / float(1024  * 1024), 1) + "Mb\n" +
+		"//   Progress: " + string((r->downloadProgress >= 0.0) ? ofToString(100.0f * r->downloadProgress, 2) : "") + "%\n" +
+		"//   Server Reported Size: " + string( r->serverReportedSize != -1 ? ofToString(r->serverReportedSize / float(1024  * 1024), 1) : "-" )+ "Mb\n" +
 		"//   Download Speed: " + ofToString(speed, 2) + speedUnit + "\n" +
 		"//   Time Taken so far: " + ofToString(timeSoFar, 1) + soFarTimeUnit + "\n" +
 		"//   Estimated Remaining Time: " + ofToString(timeRemaining, 1) + remtimeUnit + "\n" +
