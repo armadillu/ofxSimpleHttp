@@ -391,8 +391,8 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 					resp->status = 0;
 					resp->ok = true;
 					resp->fileWasHere = true;
-					if(verbose) ofLogVerbose() << "ofxSimpleHttp: about to download "<< resp->url << " but a file with same name and correct checksum is already here!";
-					if(verbose) ofLogVerbose() << "ofxSimpleHttp: skipping download (" << resp->expectedChecksum << ")";
+					ofLogVerbose() << "ofxSimpleHttp: about to download "<< resp->url << " but a file with same name and correct checksum is already here!";
+					ofLogVerbose() << "ofxSimpleHttp: skipping download (" << resp->expectedChecksum << ")";
 				}
 			}
 			f.close();
@@ -406,8 +406,8 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 					resp->ok = true;
 					resp->fileWasHere = true;
 					fileIsAlreadyHere = true;
-					if(verbose) ofLogVerbose() << "ofxSimpleHttp: about to download "<< resp->url << " but a file with same name and (size > 0) is already here!";
-					if(verbose) ofLogVerbose() << "ofxSimpleHttp: skipping download (missing checksum)";
+					ofLogVerbose() << "ofxSimpleHttp: about to download "<< resp->url << " but a file with same name and (size > 0) is already here!";
+					ofLogVerbose() << "ofxSimpleHttp: skipping download (missing checksum)";
 				}
 				f.close();
 			}
@@ -459,8 +459,8 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 			if (resp->expectedChecksum.length() > 0){
 				resp->checksumOK = ofxChecksum::sha1(resp->absolutePath, resp->expectedChecksum);
 				if(!resp->checksumOK){
-					if(verbose) ofLogVerbose() << "ofxSimpleHttp: downloaded OK but Checksum FAILED";
-					if(verbose) ofLogVerbose() << "ofxSimpleHttp: SHA1 was meant to be: " << resp->expectedChecksum;
+					ofLogVerbose() << "ofxSimpleHttp: downloaded OK but Checksum FAILED";
+					ofLogVerbose() << "ofxSimpleHttp: SHA1 was meant to be: " << resp->expectedChecksum;
 				}
 			}
 
