@@ -586,7 +586,7 @@ void ofxSimpleHttp::update(){
 }
 
 
-void ofxSimpleHttp::streamCopyWithProgress(std::istream & istr, std::ostream & out, std::streamsize totalBytes,float & progress, float & speed, const bool &cancel){
+std::streamsize ofxSimpleHttp::streamCopyWithProgress(std::istream & istr, std::ostream & out, std::streamsize totalBytes,float & progress, float & speed, const bool &cancel){
 
 	std::streamsize len = 0;
 

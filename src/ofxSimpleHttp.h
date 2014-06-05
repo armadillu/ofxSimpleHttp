@@ -213,6 +213,6 @@ class ofxSimpleHttp : public ofThread, public ofBaseDraws{
 
 		queue<ofxSimpleHttpResponse>	responsesPendingNotification; //we store here downloads that arrived so that we can notify from main thread
 
-		void streamCopyWithProgress(std::istream & in, std::ostream & out, std::streamsize totalBytes,float & progress, float &speed, const bool &shouldCancel);
+		std::streamsize streamCopyWithProgress(std::istream & in, std::ostream & out, std::streamsize totalBytes,float & progress, float &speed, const bool &shouldCancel);
 		std::streamsize copyToStringWithProgress(std::istream& istr, std::string& str, std::streamsize totalBytes, float & progress, float & speed, const bool &shouldCancel);
 };
