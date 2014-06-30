@@ -53,10 +53,11 @@ void testApp::draw(){
 								"press '3' to download asset to RAM on bg thread\n"
 								"press '4' to download asset to RAM blocking (main thread)\n"
 								"press '5' to download multiple assets to Disk on main thread\n"
+								"press '6' call an https based API, print result on console\n"
 								"press 'c' to cancel current download\n"
 								"press 'C' to cancel current download and empty queue",
 								20,
-								ofGetHeight() - 100
+								ofGetHeight() - 120
 								);
 
 
@@ -68,25 +69,21 @@ void testApp::keyPressed(int key){
 
 	if(key=='1'){
 		string url = downloadList[floor(ofRandom(downloadList.size()))];
-		url = "http://uri.cat/dontlook/snibbe/BugRugArizona.zip";
 		http.fetchURLToDisk(url , true/*notify when done*/, OUTPUT_DIRECTORY);
 	}
 
 	if(key=='2'){
 		string url = downloadList[floor(ofRandom(downloadList.size()))];
-		url = "http://uri.cat/dontlook/snibbe/BugRugArizona.zip";
 		http.fetchURLtoDiskBlocking(url, OUTPUT_DIRECTORY);
 	}
 
 	if(key=='3'){
 		string url = downloadList[floor(ofRandom(downloadList.size()))];
-		url = "http://uri.cat/dontlook/snibbe/BugRugArizona.zip";
 		http.fetchURL(url , true/*notify when done*/);
 	}
 
 	if(key=='4'){
 		string url = downloadList[floor(ofRandom(downloadList.size()))];
-		url = "http://uri.cat/dontlook/snibbe/BugRugArizona.zip";
 		http.fetchURLBlocking(url);
 	}
 
@@ -96,6 +93,13 @@ void testApp::keyPressed(int key){
 			http.fetchURLToDisk(downloadList[i], true/*notify when done*/, OUTPUT_DIRECTORY);
 		}
 	}
+
+	if(key=='6'){
+		http.setUserAgent("My Fake Browser"); //github api requires User Agent string
+		ofxSimpleHttpResponse res = http.fetchURLBlocking("https://api.github.com/users/armadillu/events");
+		cout << res.responseBody << endl;
+	}
+
 
 	if(key=='c'){
 		http.stopCurrentDownload(false);

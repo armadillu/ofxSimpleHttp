@@ -11,8 +11,15 @@
 #include "ofxSimpleHttp.h"
 #include "ofEvents.h"
 #include "poco/Net/HTTPStreamFactory.h"
+#include "Poco/Net/HTTPSStreamFactory.h"
+#include "Poco/Net/HTTPSClientSession.h"
 #include "Poco/Buffer.h"
 #include "ofxChecksum.h"
+#include "Poco/Net/SSLManager.h"
+#include "Poco/Net/KeyConsoleHandler.h"
+#include "Poco/Net/ConsoleCertificateHandler.h"
+
+static bool pocoHttpInited = false;
 
 ofxSimpleHttp::ofxSimpleHttp(){
 	timeOut = 10;
@@ -24,6 +31,15 @@ ofxSimpleHttp::ofxSimpleHttp(){
 	notifyFromMainThread = true;
 	onlySkipDownloadIfChecksumMatches = false;
 	idleTimeAfterEachDownload = 0.0;
+	if (!pocoHttpInited){ //only register once!
+		HTTPStreamFactory::registerFactory();
+		HTTPSStreamFactory::registerFactory();
+		SharedPtr<PrivateKeyPassphraseHandler> pConsoleHandler = new KeyConsoleHandler(false);
+		SharedPtr<InvalidCertificateHandler> pInvalidCertHandler = new ConsoleCertificateHandler(true);
+		Context::Ptr pContext = new Context(Context::CLIENT_USE, "", Context::VERIFY_NONE);
+		SSLManager::instance().initializeClient(pConsoleHandler, pInvalidCertHandler, pContext);
+		pocoHttpInited = true;
+	}
 }
 
 ofxSimpleHttp::~ofxSimpleHttp(){
@@ -426,19 +442,33 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 			std::string path(uri.getPathAndQuery());
 			if (path.empty()) path = "/";
 
-			HTTPClientSession session(uri.getHost(), uri.getPort());
+
+			HTTPClientSession * session;
+
+			if(uri.getScheme()=="https"){
+				session = new HTTPSClientSession(uri.getHost(), uri.getPort());//,context);
+			}else{
+				session = new HTTPClientSession(uri.getHost(), uri.getPort());
+			}
 
 			//resp->session = &session;
 
 			HTTPRequest req(HTTPRequest::HTTP_GET, path, HTTPMessage::HTTP_1_1);
-			session.setTimeout( Poco::Timespan(timeOut,0) );
-			session.sendRequest(req);
+			req.set( "User-Agent", userAgent.c_str() );
+
+			session->setTimeout( Poco::Timespan(timeOut,0) );
+			session->sendRequest(req);
 
 			HTTPResponse res;
-			istream& rs = session.receiveResponse(res);
+			istream& rs = session->receiveResponse(res);
 
 			resp->status = res.getStatus();
-			resp->timestamp = res.getDate();
+			try {
+				resp->timestamp = res.getDate();
+			} catch (Exception& exc) {
+				resp->timestamp = 0;
+			}
+
 			resp->reasonForStatus = res.getReasonForStatus( res.getStatus() );
 			resp->contentType = res.getContentType();
 			resp->serverReportedSize = res.getContentLength();
@@ -468,6 +498,9 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 			resp->avgDownloadSpeed = 0;
 			resp->downloadedBytes = 0;
 			//resp->session = NULL;
+			delete session;
+			session = NULL;
+
 			if(saveToDisk){
 				myfile.close();
 			}
@@ -485,8 +518,9 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 
 			}else{
 
-				ofLogNotice("ofxSimpleHttp", "downloadURL() downloaded to %s", resp->fileName.c_str() );
-
+				if(saveToDisk){
+					ofLogNotice("ofxSimpleHttp", "downloadURL() downloaded to %s", resp->fileName.c_str() );
+				}
 
 				if( saveToDisk ){
 					//ask the filesystem what is the real size of the file
