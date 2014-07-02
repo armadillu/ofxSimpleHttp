@@ -356,7 +356,7 @@ void ofxSimpleHttp::fetchURLToDisk(string url, string expectedSha1, bool notifyO
 	unlock();
 
 	if ( !isThreadRunning() ){	//if the queue is not running, lets start it
-		startThread(true, false);
+		startThread(true);
 	}
 }
 
