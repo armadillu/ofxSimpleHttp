@@ -365,7 +365,7 @@ void ofxSimpleHttp::fetchURLToDisk(string url, bool notifyOnSuccess, string dirW
 }
 
 
-ofxSimpleHttpResponse ofxSimpleHttp::fetchURLtoDiskBlocking(string  url, string dirWhereToSave){
+ofxSimpleHttpResponse ofxSimpleHttp::fetchURLtoDiskBlocking(string  url, string dirWhereToSave, string expectedSha1){
 
 	string savePath = dirWhereToSave == "" ? extractFileFromUrl(url) : ofToDataPath(dirWhereToSave) + "/" + extractFileFromUrl(url);
 
@@ -374,6 +374,7 @@ ofxSimpleHttpResponse ofxSimpleHttp::fetchURLtoDiskBlocking(string  url, string 
 
 	response.absolutePath = savePath;
 	response.url = url;
+	response.expectedChecksum = expectedSha1;
 	response.downloadCanceled = false;
 	response.fileName = extractFileFromUrl(url);
 	response.extension = extractExtensionFromFileName(response.fileName);

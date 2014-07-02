@@ -151,7 +151,7 @@ class ofxSimpleHttp : public ofThread, public ofBaseDraws{
 		//download to Disk
 		void						fetchURLToDisk(string url, bool notifyOnSuccess = false, string outputDir = ".");
 		void						fetchURLToDisk(string url, string expectedSha1, bool notifyOnSuccess = false, string outputDir = ".");
-		ofxSimpleHttpResponse		fetchURLtoDiskBlocking(string url, string outputDir = ".");
+		ofxSimpleHttpResponse		fetchURLtoDiskBlocking(string url, string outputDir = ".", string expectedSha1 = "");
 
 		void						update(); //this is mainly used to get notifications in the main thread
 
