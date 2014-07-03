@@ -237,7 +237,7 @@ string ofxSimpleHttp::drawableString(){
 		"//\n"
 		"//   " + r->url + "\n" +
 		"//   Progress: " + string((r->downloadProgress >= 0.0) ? ofToString(100.0f * r->downloadProgress, 2) : "") + "%\n" +
-		"//   Server Reported Size: " + string( r->serverReportedSize != -1 ? ofToString(r->serverReportedSize / float(1024  * 1024), 1) : "-" )+ "Mb\n" +
+		"//   Server Reported Size: " + string( r->serverReportedSize != -1 ? ofToString(r->serverReportedSize / float(1024 * 1024), 1) + "Mb\n": "\n" ) +
 		"//   Download Speed: " + ofToString(speed, 2) + speedUnit + "\n" +
 		"//   Time Taken so far: " + ofToString(timeSoFar, 1) + soFarTimeUnit + "\n" +
 		"//   Estimated Remaining Time: " + ofToString(timeRemaining, 1) + remtimeUnit + "\n" +
@@ -574,6 +574,8 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 			ok = false;
 			ofLogError() << "ofxSimpleHttp: failed to download " << resp->url << " !";
 		}
+	}else{
+		resp->timeTakenToDownload = ofGetElapsedTimef();
 	}
 
 	//enqueue the operation result!
