@@ -237,7 +237,7 @@ string ofxSimpleHttp::drawableString(){
 		"//\n"
 		"//   " + r->url + "\n" +
 		"//   Progress: " + string((r->downloadProgress >= 0.0) ? ofToString(100.0f * r->downloadProgress, 2) : "") + "%\n" +
-		"//   Server Reported Size: " + string( r->serverReportedSize != -1 ? ofToString(r->serverReportedSize / float(1024  * 1024), 1) : "-" )+ "Mb\n" +
+		"//   Server Reported Size: " + string( r->serverReportedSize != -1 ? ofToString(r->serverReportedSize / float(1024 * 1024), 1) + "Mb\n": "\n" ) +
 		"//   Download Speed: " + ofToString(speed, 2) + speedUnit + "\n" +
 		"//   Time Taken so far: " + ofToString(timeSoFar, 1) + soFarTimeUnit + "\n" +
 		"//   Estimated Remaining Time: " + ofToString(timeRemaining, 1) + remtimeUnit + "\n" +
@@ -365,7 +365,7 @@ void ofxSimpleHttp::fetchURLToDisk(string url, bool notifyOnSuccess, string dirW
 }
 
 
-ofxSimpleHttpResponse ofxSimpleHttp::fetchURLtoDiskBlocking(string  url, string dirWhereToSave){
+ofxSimpleHttpResponse ofxSimpleHttp::fetchURLtoDiskBlocking(string  url, string dirWhereToSave, string expectedSha1){
 
 	string savePath = dirWhereToSave == "" ? extractFileFromUrl(url) : ofToDataPath(dirWhereToSave) + "/" + extractFileFromUrl(url);
 
@@ -374,6 +374,7 @@ ofxSimpleHttpResponse ofxSimpleHttp::fetchURLtoDiskBlocking(string  url, string 
 
 	response.absolutePath = savePath;
 	response.url = url;
+	response.expectedChecksum = expectedSha1;
 	response.downloadCanceled = false;
 	response.fileName = extractFileFromUrl(url);
 	response.extension = extractExtensionFromFileName(response.fileName);
@@ -573,6 +574,8 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 			ok = false;
 			ofLogError() << "ofxSimpleHttp: failed to download " << resp->url << " !";
 		}
+	}else{
+		resp->timeTakenToDownload = ofGetElapsedTimef();
 	}
 
 	//enqueue the operation result!
