@@ -22,6 +22,7 @@
 static bool pocoHttpInited = false;
 
 ofxSimpleHttp::ofxSimpleHttp(){
+	cancelCurrentDownloadOnDestruction = true;
 	timeOut = 10;
 	queueLenEstimation = 0;
 	maxQueueLen = 1000;
@@ -45,7 +46,9 @@ ofxSimpleHttp::ofxSimpleHttp(){
 ofxSimpleHttp::~ofxSimpleHttp(){
 
 	timeToStop = true;	//lets flag the thread so that it doesnt try access stuff while we delete things around
-	stopCurrentDownload(true);
+	if(cancelCurrentDownloadOnDestruction){
+		stopCurrentDownload(true);
+	}
 
 	try{
 		waitForThread(false);
@@ -61,6 +64,11 @@ ofxSimpleHttp::~ofxSimpleHttp(){
 			q.pop();
 		unlock();
 	}
+}
+
+
+void ofxSimpleHttp::setCancelCurrentDownloadOnDestruction(bool doIt){
+	cancelCurrentDownloadOnDestruction = doIt;
 }
 
 void ofxSimpleHttp::setIdleTimeAfterEachDownload(float seconds){
