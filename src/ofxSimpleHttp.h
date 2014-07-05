@@ -100,35 +100,35 @@ struct ofxSimpleHttpResponse{
 	}
 
 	void print(){
-		ofLogNotice() << "#### " << url << endl;
+		ofLogNotice() << "#### " << url;
 		if (ok){
 			if (fileWasHere){
-				ofLogNotice() << "    File was already on disk, no download needed!" << endl;
+				ofLogNotice() << "    File was already on disk, no download needed!";
 				if (expectedChecksum.size()){
-					ofLogNotice() << "    File checksum " << expectedChecksum << " matched!" << endl;
+					ofLogNotice() << "    File checksum " << expectedChecksum << " matched!";
 				}else{
-					ofLogNotice() << "    File checksum not supplied, assuming file is the same blindly" << endl;
+					ofLogNotice() << "    File checksum not supplied, assuming file is the same blindly";
 				}
-				ofLogNotice() << "    File saved at: " << absolutePath << endl;
+				ofLogNotice() << "    File saved at: " << absolutePath;
 			}else{
-				ofLogNotice() << "    Server Status: " << status << endl;
-				ofLogNotice() << "    Server Reported size: " << serverReportedSize << endl;
-				ofLogNotice() << "    Content Type: " << contentType << endl;
+				ofLogNotice() << "    Server Status: " << status;
+				ofLogNotice() << "    Server Reported size: " << serverReportedSize;
+				ofLogNotice() << "    Content Type: " << contentType;
 				if(expectedChecksum.length()){
-					ofLogNotice() << "    Expected Checksum: " << expectedChecksum << endl;
-					ofLogNotice() << "    Checksum Match: " << string(checksumOK ? "YES" : "NO") << endl;
+					ofLogNotice() << "    Expected Checksum: " << expectedChecksum;
+					ofLogNotice() << "    Checksum Match: " << string(checksumOK ? "YES" : "NO");
 				}
-				ofLogNotice() << "    Download Time taken: " << timeTakenToDownload << " seconds" << endl;
+				ofLogNotice() << "    Download Time taken: " << timeTakenToDownload << " seconds";
 				if (serverReportedSize != -1){
-					ofLogNotice() << "    Avg Download Speed: " << (serverReportedSize / 1024.f) / timeTakenToDownload << "Kb/sec" << endl;
+					ofLogNotice() << "    Avg Download Speed: " << (serverReportedSize / 1024.f) / timeTakenToDownload << "Kb/sec";
 				}
 				if(downloadToDisk){
-					ofLogNotice() << "    File Saved at: " << absolutePath << endl;
+					ofLogNotice() << "    File Saved at: " << absolutePath;
 				}
 			}
 		}else{
-			ofLogNotice() << "    Download FAILED! " << endl;
-			ofLogNotice() << "    Status: " << status << " - " << reasonForStatus << endl;
+			ofLogNotice() << "    Download FAILED! ";
+			ofLogNotice() << "    Status: " << status << " - " << reasonForStatus;
 		}
 		ofLogNotice() << endl;
 	}
