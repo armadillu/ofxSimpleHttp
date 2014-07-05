@@ -25,6 +25,11 @@ void testApp::setup(){
 	//add download listener
 	ofAddListener(downloader.resourcesDownloadFinished, this, &testApp::downloadFinished);
 	downloader.setDownloadFolder("tempDownloads");
+	downloader.setNeedsChecksumMatchToSkipDownload(true);
+	downloader.setIdleTimeAfterEachDownload(0.2);
+	downloader.setVerbose(false);
+	downloader.setMaxURLsToList(8);
+
 }
 
 
