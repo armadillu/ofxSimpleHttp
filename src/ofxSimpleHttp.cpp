@@ -483,9 +483,12 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 			resp->serverReportedSize = res.getContentLength();
 			resp->timeTakenToDownload = ofGetElapsedTimef();
 
-			if (resp->serverReportedSize == -1) ofLogWarning("ofxSimpleHttp", "downloadURL(%s) >> Server doesn't report download size...", resp->fileName.c_str() );
-			ofLogVerbose("ofxSimpleHttp", "downloadURL() >> about to start download (%s, %d bytes)", resp->fileName.c_str(), res.getContentLength() );
-			ofLogVerbose("ofxSimpleHttp", "downloadURL() >> server reports request status: (%d-%s)", resp->status, resp->reasonForStatus.c_str() );
+			string msg = "downloadURL(" + resp->fileName + ") >> Server doesn't report download size...";
+			if (resp->serverReportedSize == -1) ofLogWarning("ofxSimpleHttp", msg);
+			msg = "downloadURL() >> about to start download (" + resp->fileName + ", " + ofToString(res.getContentLength()) + " bytes)";
+			ofLogVerbose("ofxSimpleHttp", msg);
+			msg = "downloadURL() >> server reports request status: " +ofToString(resp->status) + " - ", resp->reasonForStatus + ")";
+			ofLogVerbose("ofxSimpleHttp", msg );
 
 			//StreamCopier::copyStream(rs, myfile); //write to file here!
 			if(saveToDisk){
