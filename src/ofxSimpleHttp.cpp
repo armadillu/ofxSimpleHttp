@@ -195,7 +195,8 @@ void ofxSimpleHttp::stopCurrentDownload(bool emptyQueue){
 		if ( isThreadRunning() && n > 0){
 			ofxSimpleHttpResponse * r = q.front();
 			if (!r->downloadCanceled){ //dont cancel it twice!
-				ofLogVerbose("ofxSimpleHttp", "stopCurrentDownload() >> about to stop download of %s...", r->fileName.c_str() );
+				string msg = "stopCurrentDownload() >> about to stop download of " + r->fileName  + " ...";
+				ofLogVerbose("ofxSimpleHttp", msg);
 				try{
 					r->emptyWholeQueue = emptyQueue;
 					r->downloadCanceled = true;
@@ -204,7 +205,7 @@ void ofxSimpleHttp::stopCurrentDownload(bool emptyQueue){
 					//	r->session->abort();
 					//}
 				}catch(Exception& exc){
-					ofLogError("ofxSimpleHttp", "stopCurrentDownload(%s) >> Exception: %s", r->fileName.c_str(), exc.displayText().c_str() );
+					ofLogError("ofxSimpleHttp", "stopCurrentDownload(" + r->fileName + ") >> Exception: " + exc.displayText() );
 				}
 			}
 		}
@@ -416,7 +417,7 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 					resp->status = 0;
 					resp->ok = true;
 					resp->fileWasHere = true;
-					ofLogVerbose() << "ofxSimpleHttp: about to download "<< resp->url << " but a file with same name and correct checksum is already here!";
+					ofLogVerbose() << "ofxSimpleHttp: about to download " << resp->url << " but a file with same name and correct checksum is already here!";
 					ofLogVerbose() << "ofxSimpleHttp: skipping download (" << resp->expectedChecksum << ")";
 				}
 			}
@@ -531,7 +532,8 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 			}else{
 
 				if(saveToDisk){
-					ofLogNotice("ofxSimpleHttp", "downloadURL() downloaded to %s", resp->fileName.c_str() );
+					string msg = "downloadURL() downloaded to " + resp->fileName;
+					ofLogNotice("ofxSimpleHttp", msg);
 				}
 
 				if( saveToDisk ){
@@ -542,7 +544,8 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 						resp->downloadedBytes = file.getSize();
 						file.close();
 					}catch(Exception& exc){
-						ofLogError("ofxSimpleHttp", "downloadURL(%s) >> Exception at file.open: %s", resp->fileName.c_str(), exc.displayText().c_str() );
+						string msg = "downloadURL(" + resp->fileName + ") >> Exception at file.open: " + exc.displayText();
+						ofLogError("ofxSimpleHttp", msg );
 
 					}
 				}else{
@@ -555,8 +558,9 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 				//check download file size missmatch
 				if ( resp->serverReportedSize > 0 && resp->serverReportedSize !=  resp->downloadedBytes) {
 
-					ofLogWarning("ofxSimpleHttp", "downloadURLtoDiskBlocking() >> Download size mismatch (%s) >> Server: %d Downloaded: %d",
-									 resp->fileName.c_str(), resp->serverReportedSize, resp->downloadedBytes );
+					string msg = "downloadURLtoDiskBlocking() >> Download size mismatch (" + resp->fileName + ") >> Server: " +
+					ofToString(resp->serverReportedSize) + " Downloaded: " + ofToString(resp->downloadedBytes);
+					ofLogWarning("ofxSimpleHttp", msg);
 					resp->reasonForStatus = "Download size mismatch!";
 					resp->status = -1;
 					resp->ok = false;
@@ -578,7 +582,8 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 		}catch(Exception& exc){
 
 			myfile.close();
-			ofLogError("ofxSimpleHttp", "downloadURL(%s) >> Exception: %s", resp->fileName.c_str(), exc.displayText().c_str() );
+			string msg = "downloadURL(" + resp->fileName +  ") >> Exception:" + exc.displayText();
+			ofLogError("ofxSimpleHttp", msg );
 			resp->reasonForStatus = exc.displayText();
 			resp->ok = false;
 			resp->status = -1;
