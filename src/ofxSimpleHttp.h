@@ -85,6 +85,7 @@ struct ofxSimpleHttpResponse{
 	string						extension;			// file extension (no dot)
 	string						absolutePath;		// where file was saved
 	float						timeTakenToDownload;// seconds
+	float						timeDowloadStarted; //from ofGetElapsedTimef()
 
 	//HTTPClientSession *			session;			//careful what you do with this! will be NULL if session is finished
 
@@ -97,6 +98,7 @@ struct ofxSimpleHttpResponse{
 		serverReportedSize = -1;
 		status = -1;
 		fileWasHere = false;
+		timeDowloadStarted = ofGetElapsedTimef();
 	}
 
 	void print(){

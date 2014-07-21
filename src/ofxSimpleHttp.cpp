@@ -18,6 +18,7 @@
 #include "Poco/Net/SSLManager.h"
 #include "Poco/Net/KeyConsoleHandler.h"
 #include "Poco/Net/ConsoleCertificateHandler.h"
+#include "Poco/Net/NetException.h"
 
 static bool pocoHttpInited = false;
 
@@ -226,30 +227,43 @@ string ofxSimpleHttp::drawableString(){
 			speed *= 1024.0f;
 			speedUnit = " Kb/sec";
 		}
-		float timeSoFar = ofGetElapsedTimef() - r->timeTakenToDownload; //seconds
+		float timeSoFar = ofGetElapsedTimef() - r->timeDowloadStarted; //seconds
 		float timeRemaining = 0.0f;
-		if(r->downloadProgress > 0.001){
+		if(r->downloadProgress > 0.001f){
 			timeRemaining = (timeSoFar / r->downloadProgress) - timeSoFar;
 		}
 		string remtimeUnit = "sec";
 		string soFarTimeUnit = "sec";
-		if (timeRemaining > 60.0){
+		if (timeRemaining > 60.0f){
 			timeRemaining /= 60.0f;
 			remtimeUnit = "min";
 		}
-		if (timeSoFar > 60.0){
+		if (timeSoFar > 60.0f){
 			timeSoFar /= 60.0f;
 			soFarTimeUnit = "min";
+		}
+
+		string serverSize;
+		if(r->serverReportedSize != -1){
+			if (r->serverReportedSize > (1024 * 1024)){ //if in mb rabge
+				serverSize = ofToString(r->serverReportedSize / float(1024 * 1024), 2) + "Mb";
+			}else{ //kb range
+				serverSize = ofToString(r->serverReportedSize / float(1024), 2) + "Kb";
+			}
+		}else{
+			string anim[] = {"   ", ".  ", ".. ", "...", " ..", "  ."}; //6 anim states
+			serverSize = "waiting for server " + anim[ int(0.2 * ofGetFrameNum())%6 ];
 		}
 
 		aux = "//// ofxSimpleHttp fetching //////////////////////////////////////\n"
 		"//\n"
 		"//   " + r->url + "\n" +
 		"//   Progress: " + string((r->downloadProgress >= 0.0) ? ofToString(100.0f * r->downloadProgress, 2) : "") + "%\n" +
-		"//   Server Reported Size: " + string( r->serverReportedSize != -1 ? ofToString(r->serverReportedSize / float(1024 * 1024), 1) + "Mb\n": "\n" ) +
+		"//   Server Reported Size: " + serverSize + "\n" +
 		"//   Download Speed: " + ofToString(speed, 2) + speedUnit + "\n" +
 		"//   Time Taken so far: " + ofToString(timeSoFar, 1) + soFarTimeUnit + "\n" +
-		"//   Estimated Remaining Time: " + ofToString(timeRemaining, 1) + remtimeUnit + "\n" +
+		"//   Timeout after: " + ofToString(timeOut, 1) + " sec\n" +
+		"//   Estimated Remaining Time: " + ofToString(timeRemaining, 1) + " " + remtimeUnit + "\n" +
 		"//   Queue Size: " + ofToString(n) + "\n" +
 		"//  \n";
 		aux += "//////////////////////////////////////////////////////////////////\n";
@@ -482,7 +496,7 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 			resp->reasonForStatus = res.getReasonForStatus( res.getStatus() );
 			resp->contentType = res.getContentType();
 			resp->serverReportedSize = res.getContentLength();
-			resp->timeTakenToDownload = ofGetElapsedTimef();
+			resp->timeDowloadStarted = ofGetElapsedTimef();
 
 			string msg = "downloadURL(" + resp->fileName + ") >> Server doesn't report download size...";
 			if (resp->serverReportedSize == -1) ofLogWarning("ofxSimpleHttp", msg);
@@ -498,7 +512,7 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 				copyToStringWithProgress(rs, resp->responseBody, resp->serverReportedSize, resp->downloadProgress, resp->downloadSpeed, resp->downloadCanceled);
 			}
 
-			resp->timeTakenToDownload = ofGetElapsedTimef() - resp->timeTakenToDownload;
+			resp->timeTakenToDownload = ofGetElapsedTimef() - resp->timeDowloadStarted;
 			if (resp->expectedChecksum.length() > 0){
 				resp->checksumOK = ofxChecksum::sha1(resp->absolutePath, resp->expectedChecksum);
 				if(!resp->checksumOK){
@@ -557,11 +571,24 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 
 				//check download file size missmatch
 				if ( resp->serverReportedSize > 0 && resp->serverReportedSize !=  resp->downloadedBytes) {
+					string msg;
 
-					string msg = "downloadURLtoDiskBlocking() >> Download size mismatch (" + resp->fileName + ") >> Server: " +
-					ofToString(resp->serverReportedSize) + " Downloaded: " + ofToString(resp->downloadedBytes);
+					if (resp->downloadedBytes == 0){
+						if (resp->timeTakenToDownload > timeOut){
+							msg = "downloadURLtoDiskBlocking() >> TimeOut! (" + resp->fileName + ")";
+							resp->reasonForStatus = "Request TimeOut";
+							resp->status = 408;
+						}else{
+							msg = "downloadURLtoDiskBlocking() >> Download file is 0 bytes  (" + resp->fileName + ")";
+							resp->reasonForStatus = "Download size is 0 bytes!";
+						}
+					}else{
+						msg = "downloadURLtoDiskBlocking() >> Download size mismatch (" + resp->fileName + ") >> Server: " +
+						ofToString(resp->serverReportedSize) + " Downloaded: " + ofToString(resp->downloadedBytes);
+						resp->reasonForStatus = "Download size mismatch";
+					}
+
 					ofLogWarning("ofxSimpleHttp", msg);
-					resp->reasonForStatus = "Download size mismatch!";
 					resp->status = -1;
 					resp->ok = false;
 
@@ -582,16 +609,20 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 		}catch(Exception& exc){
 
 			myfile.close();
-			string msg = "downloadURL(" + resp->fileName +  ") >> Exception:" + exc.displayText();
+			string msg = "downloadURL(" + resp->fileName +  ") >> Exception: " + exc.displayText();
 			ofLogError("ofxSimpleHttp", msg );
 			resp->reasonForStatus = exc.displayText();
 			resp->ok = false;
-			resp->status = -1;
+			if (exc.code() > 0){
+				resp->status = exc.code();
+			}else{
+				resp->status = -1;
+			}
 			ok = false;
 			ofLogError() << "ofxSimpleHttp: failed to download " << resp->url << " !";
 		}
 	}else{
-		resp->timeTakenToDownload = ofGetElapsedTimef();
+		resp->timeTakenToDownload = 0;
 	}
 
 	//enqueue the operation result!
