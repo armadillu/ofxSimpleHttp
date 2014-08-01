@@ -660,13 +660,18 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 
 void ofxSimpleHttp::update(){
 
+	ofxSimpleHttpResponse r;
 	lock();
 	if(responsesPendingNotification.size()){
-		ofxSimpleHttpResponse r = responsesPendingNotification.front();
+		r = responsesPendingNotification.front();
 		responsesPendingNotification.pop();
-		ofNotifyEvent( httpResponse, r, this );
+		unlock();
+		ofNotifyEvent( httpResponse, r, this ); //we want to be able to notify from outside the lock
+												//otherwise we cant start a new download from the callback (deadlock!)
+	}else{
+		unlock();
 	}
-	unlock();
+
 }
 
 
