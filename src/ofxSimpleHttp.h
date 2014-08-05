@@ -52,7 +52,7 @@
 #include "Poco/Exception.h"
 #include <iostream>
 
-#define COPY_BUFFER_SIZE					1024 * 50   /*10 Kb buffer size*/
+#define COPY_BUFFER_SIZE					1024 * 300   /*300 Kb buffer size*/
 #define OFX_SIMPLEHTTP_UNTITLED_FILENAME	"unnamed.file"
 
 using namespace Poco::Net;

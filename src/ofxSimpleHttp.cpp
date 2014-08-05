@@ -702,7 +702,10 @@ std::streamsize ofxSimpleHttp::streamCopyWithProgress(std::istream & istr, std::
 				progress = 0.0;
 			}
 			float time = (ofGetElapsedTimef() - t1);
-			float newSpeed = (n / 1024.0f ) / time;
+			float newSpeed = 0;
+			if(time > 0.0f){
+				newSpeed = (n / 1024.0f ) / time;
+			}
 			avgSpeed = 0.1 * newSpeed + 0.9 * avgSpeed;
 			speed = avgSpeed;
 		}
@@ -735,7 +738,10 @@ std::streamsize ofxSimpleHttp::copyToStringWithProgress(std::istream& istr, std:
 			}
 			progress = float(len) / float(totalBytes);
 			float time = (ofGetElapsedTimef() - t1);
-			float newSpeed = (COPY_BUFFER_SIZE / 1024.0f ) / time ;
+			float newSpeed = 0;
+			if(time > 0.0f){
+				newSpeed = (COPY_BUFFER_SIZE / 1024.0f ) / time ;
+			}
 			avgSpeed = 0.5 * newSpeed + 0.5 * avgSpeed;
 			speed = avgSpeed;
 
