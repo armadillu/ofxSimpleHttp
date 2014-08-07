@@ -54,10 +54,11 @@ void testApp::draw(){
 								"press '4' to download asset to RAM blocking (main thread)\n"
 								"press '5' to download multiple assets to Disk on main thread\n"
 								"press '6' call an https based API, print result on console\n"
+								"press '7' to download (copy) a local file (file:// url)\n"
 								"press 'c' to cancel current download\n"
 								"press 'C' to cancel current download and empty queue",
 								20,
-								ofGetHeight() - 120
+								ofGetHeight() - 133
 								);
 
 
@@ -100,6 +101,10 @@ void testApp::keyPressed(int key){
 		cout << res.responseBody << endl;
 	}
 
+
+	if(key=='7'){ //also supports file:// urls for local filesystem
+		http.fetchURLToDisk("file:///System/Library/Fonts/Optima.ttc", true, OUTPUT_DIRECTORY );
+	}
 
 	if(key=='c'){
 		http.stopCurrentDownload(false);
