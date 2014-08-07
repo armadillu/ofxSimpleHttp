@@ -71,7 +71,7 @@ struct ofxSimpleHttpResponse{
 	bool						fileWasHere;		// didnt even have to download the file!
 	string						expectedChecksum;	// sha1
 	int							status; 			// return code for the response ie: 200 = OK
-	int							serverReportedSize;
+	uint64_t					serverReportedSize;
 	string						reasonForStatus;	// text explaining the status
 	string						responseBody;		// the actual response << DATA IS HERE!
 	string						contentType;		// the mime type of the response
@@ -79,7 +79,7 @@ struct ofxSimpleHttpResponse{
 	float						downloadProgress;	// [0..1]
 	float						downloadSpeed;		// kb/sec, only >0 when downloading, immediate
 	float						avgDownloadSpeed;	// kb/sec, read after download happened
-	int							downloadedBytes;    
+	uint64_t					downloadedBytes;    
 	string						url;
 	string						fileName;			// file + extension, no path
 	string						extension;			// file extension (no dot)
