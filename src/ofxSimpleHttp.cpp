@@ -469,22 +469,33 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 			string srcFile = resp->url.substr(7, resp->url.length() - 7);
 			//ofFile::copyFromTo(srcFile, resp->absolutePath);
 
-			ofFile f; f.open(ofToDataPath(srcFile, true), ofFile::ReadOnly);
-			uint64_t size = f.getSize();
+			ofFile f;
+			bool ok = f.open(ofToDataPath(srcFile, true), ofFile::ReadOnly);
+			if(f.exists()){
+				uint64_t size = f.getSize();
+				resp->serverReportedSize = size;
+				resp->timeDowloadStarted = ofGetElapsedTimef();
+
+				std::ifstream rs (ofToDataPath(srcFile, true).c_str(), std::ifstream::binary);
+				streamCopyWithProgress(rs, myfile, resp->serverReportedSize, resp->downloadProgress, resp->downloadSpeed, resp->downloadCanceled);
+				resp->ok = true;
+				resp->status = 200;
+				resp->timeTakenToDownload = ofGetElapsedTimef() - resp->timeDowloadStarted;
+				resp->downloadSpeed = 0;
+				resp->avgDownloadSpeed = 0;
+				resp->downloadedBytes = 0;
+
+				rs.close();
+			}else{
+				resp->ok = false;
+				resp->status = 404; //assume not found? todo!
+				resp->reasonForStatus = "Can't load File!!";
+				resp->timeTakenToDownload = 0;
+				resp->downloadSpeed = 0;
+				resp->avgDownloadSpeed = 0;
+				resp->downloadedBytes = 0;
+			}
 			f.close();
-			resp->serverReportedSize = size;
-			resp->timeDowloadStarted = ofGetElapsedTimef();
-
-			std::ifstream rs (ofToDataPath(srcFile, true).c_str(), std::ifstream::binary);
-			streamCopyWithProgress(rs, myfile, resp->serverReportedSize, resp->downloadProgress, resp->downloadSpeed, resp->downloadCanceled);
-			resp->ok = true;
-			resp->status = 200;
-			resp->timeTakenToDownload = ofGetElapsedTimef() - resp->timeDowloadStarted;
-			resp->downloadSpeed = 0;
-			resp->avgDownloadSpeed = 0;
-			resp->downloadedBytes = 0;
-
-			rs.close();
 			myfile.close();
 
 		}else{
