@@ -460,20 +460,22 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 
 		string protocol = resp->url.substr(0,7);
 
-		myfile.open( resp->absolutePath.c_str(), ios_base::binary );
+		if(saveToDisk || protocol == "file://"){
+			myfile.open( resp->absolutePath.c_str(), ios_base::binary );
+		}
 
 		if(protocol == "file://"){
 
 			string srcFile = resp->url.substr(7, resp->url.length() - 7);
 			//ofFile::copyFromTo(srcFile, resp->absolutePath);
 
-			ofFile f; f.open(srcFile, ofFile::ReadOnly);
+			ofFile f; f.open(ofToDataPath(srcFile, true), ofFile::ReadOnly);
 			uint64_t size = f.getSize();
 			f.close();
 			resp->serverReportedSize = size;
 			resp->timeDowloadStarted = ofGetElapsedTimef();
 
-			std::ifstream rs (srcFile.c_str(), std::ifstream::binary);
+			std::ifstream rs (ofToDataPath(srcFile, true).c_str(), std::ifstream::binary);
 			streamCopyWithProgress(rs, myfile, resp->serverReportedSize, resp->downloadProgress, resp->downloadSpeed, resp->downloadCanceled);
 			resp->ok = true;
 			resp->status = 200;
