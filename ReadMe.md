@@ -10,7 +10,7 @@ OpenFrameworks add-on to make http downloads easy;
 * checksum checked downloads (sha1)
 * skip download if file is already there and sha1 matches
 * download reports (http status codes, download speed, total time, etc)
-* ofEvents
+* ofEvents from main thread, or bg thread if required
 
 ![img1](https://farm6.staticflickr.com/5556/14785717148_c953b4d82e_z_d.jpg)
 
