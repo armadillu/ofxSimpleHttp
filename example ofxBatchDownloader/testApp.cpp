@@ -28,7 +28,6 @@ void testApp::setup(){
 	downloader.setNeedsChecksumMatchToSkipDownload(true);
 	downloader.setIdleTimeAfterEachDownload(0.2);
 	downloader.setVerbose(false);
-	downloader.setMaxURLsToList(8);
 
 }
 
