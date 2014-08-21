@@ -77,6 +77,7 @@ struct ofxSimpleHttpResponse{
 	string						contentType;		// the mime type of the response
 	Poco::Timestamp				timestamp;			// time of the response
 	float						downloadProgress;	// [0..1]
+	std::streamsize				downloadedSoFar;
 	float						downloadSpeed;		// kb/sec, only >0 when downloading, immediate
 	float						avgDownloadSpeed;	// kb/sec, read after download happened
 	long int					downloadedBytes;
@@ -96,6 +97,7 @@ struct ofxSimpleHttpResponse{
 		//session = NULL;
 		timeTakenToDownload = 0.0;
 		serverReportedSize = -1;
+		downloadedSoFar = 0;
 		status = -1;
 		fileWasHere = false;
 		timeDowloadStarted = ofGetElapsedTimef();
@@ -213,11 +215,18 @@ class ofxSimpleHttp : public ofThread, public ofBaseDraws{
 		int								maxQueueLen;
 		float							idleTimeAfterEachDownload;	//seconds
 		bool							cancelCurrentDownloadOnDestruction;
+
+		string bytesToHumanReadable(long long bytes, int decimalPrecision);
 	
 		ofxSimpleHttpResponse			response;
 
 		queue<ofxSimpleHttpResponse>	responsesPendingNotification; //we store here downloads that arrived so that we can notify from main thread
 
-		std::streamsize streamCopyWithProgress(std::istream & in, std::ostream & out, std::streamsize totalBytes,float & progress, float &speed, const bool &shouldCancel);
-		std::streamsize copyToStringWithProgress(std::istream& istr, std::string& str, std::streamsize totalBytes, float & progress, float & speed, const bool &shouldCancel);
+		std::streamsize streamCopyWithProgress(std::istream & in, std::ostream & out, std::streamsize totalBytes,
+											   std::streamsize &currentBytes,
+											   float & progress, float &speed, const bool &shouldCancel);
+
+		std::streamsize copyToStringWithProgress(std::istream& istr, std::string& str, std::streamsize totalBytes,
+												 std::streamsize &currentBytes,
+												 float & progress, float & speed, const bool &shouldCancel);
 };

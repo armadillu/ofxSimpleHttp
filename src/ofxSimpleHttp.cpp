@@ -247,21 +247,19 @@ string ofxSimpleHttp::drawableString(){
 
 		string serverSize;
 		if(r->serverReportedSize != -1){
-			if (r->serverReportedSize > (1024 * 1024)){ //if in mb rabge
-				serverSize = ofToString(r->serverReportedSize / float(1024 * 1024), 2) + "Mb";
-			}else{ //kb range
-				serverSize = ofToString(r->serverReportedSize / float(1024), 2) + "Kb";
-			}
+			serverSize = bytesToHumanReadable(r->serverReportedSize, 2);
 		}else{
 			string anim[] = {"   ", ".  ", ".. ", "...", " ..", "  ."}; //6 anim states
 			serverSize = "waiting for server " + anim[ int(0.2 * ofGetFrameNum())%6 ];
 		}
+
 
 		aux = "//// ofxSimpleHttp fetching //////////////////////////////////////\n"
 		"//\n"
 		"//   " + r->url + "\n" +
 		"//   Progress: " + string((r->downloadProgress >= 0.0) ? ofToString(100.0f * r->downloadProgress, 2) : "") + "%\n" +
 		"//   Server Reported Size: " + serverSize + "\n" +
+		"//   Downloaded: " + bytesToHumanReadable((long long)r->downloadedSoFar, 2) + "\n" +
 		"//   Download Speed: " + ofToString(speed, 2) + speedUnit + "\n" +
 		"//   Time Taken so far: " + ofToString(timeSoFar, 1) + soFarTimeUnit + "\n" +
 		"//   Timeout after: " + ofToString(timeOut, 1) + " sec\n" +
@@ -274,6 +272,24 @@ string ofxSimpleHttp::drawableString(){
 	}
 	unlock();
 	return aux;
+}
+
+string ofxSimpleHttp::bytesToHumanReadable(long long bytes, int decimalPrecision){
+	string ret;
+	if (bytes < 1024 ){ //if in bytes range
+		ret = ofToString(bytes) + " bytes";
+	}else{
+		if (bytes < 1024 * 1024){ //if in kb range
+			ret = ofToString(bytes / float(1024), decimalPrecision) + " Kb";
+		}else{
+			if (bytes < (1024 * 1024 * 1024)){ //if in Mb range
+				ret = ofToString(bytes / float(1024 * 1024), decimalPrecision) + " Mb";
+			}else{
+				ret = ofToString(bytes / float(1024 * 1024 * 1024), decimalPrecision) + " Gb";
+			}
+		}
+	}
+	return ret;
 }
 
 
@@ -477,7 +493,8 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 				resp->timeDowloadStarted = ofGetElapsedTimef();
 
 				std::ifstream rs (ofToDataPath(srcFile, true).c_str(), std::ifstream::binary);
-				streamCopyWithProgress(rs, myfile, resp->serverReportedSize, resp->downloadProgress, resp->downloadSpeed, resp->downloadCanceled);
+				streamCopyWithProgress(rs, myfile, resp->serverReportedSize, resp->downloadedSoFar,
+									   resp->downloadProgress, resp->downloadSpeed, resp->downloadCanceled);
 				resp->ok = true;
 				resp->status = 200;
 				resp->timeTakenToDownload = ofGetElapsedTimef() - resp->timeDowloadStarted;
@@ -502,6 +519,8 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 
 			//myfile.open(ofToDataPath(filename).c_str()); //for not binary?
 
+			HTTPClientSession * session = NULL;
+
 			try {
 
 				ofHttpRequest request(resp->url, resp->url);
@@ -509,16 +528,11 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 				std::string path(uri.getPathAndQuery());
 				if (path.empty()) path = "/";
 
-
-				HTTPClientSession * session;
-
 				if(uri.getScheme()=="https"){
 					session = new HTTPSClientSession(uri.getHost(), uri.getPort());//,context);
 				}else{
 					session = new HTTPClientSession(uri.getHost(), uri.getPort());
 				}
-
-				//resp->session = &session;
 
 				HTTPRequest req(HTTPRequest::HTTP_GET, path, HTTPMessage::HTTP_1_1);
 				req.set( "User-Agent", userAgent.c_str() );
@@ -549,118 +563,137 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 				ofLogVerbose("ofxSimpleHttp", msg );
 
 				//StreamCopier::copyStream(rs, myfile); //write to file here!
+				int copySize = 0;
 				if(saveToDisk){
-					streamCopyWithProgress(rs, myfile, resp->serverReportedSize, resp->downloadProgress, resp->downloadSpeed, resp->downloadCanceled);
+					copySize = streamCopyWithProgress(rs, myfile, resp->serverReportedSize, resp->downloadedSoFar,
+													  resp->downloadProgress, resp->downloadSpeed, resp->downloadCanceled);
 				}else{
-					copyToStringWithProgress(rs, resp->responseBody, resp->serverReportedSize, resp->downloadProgress, resp->downloadSpeed, resp->downloadCanceled);
+					copySize = copyToStringWithProgress(rs, resp->responseBody, resp->serverReportedSize, resp->downloadedSoFar,
+														resp->downloadProgress, resp->downloadSpeed, resp->downloadCanceled);
 				}
-
-				resp->timeTakenToDownload = ofGetElapsedTimef() - resp->timeDowloadStarted;
-				if (resp->expectedChecksum.length() > 0){
-					resp->checksumOK = ofxChecksum::sha1(resp->absolutePath, resp->expectedChecksum);
-					if(!resp->checksumOK){
-						ofLogVerbose() << "ofxSimpleHttp: downloaded OK but Checksum FAILED";
-						ofLogVerbose() << "ofxSimpleHttp: SHA1 was meant to be: " << resp->expectedChecksum;
-					}
-				}
-
-				resp->downloadSpeed = 0;
-				resp->avgDownloadSpeed = 0;
-				resp->downloadedBytes = 0;
-				//resp->session = NULL;
 				delete session;
 				session = NULL;
 
-				if(saveToDisk){
-					myfile.close();
-				}
+				if (copySize >= 0){
 
-				if (resp->downloadCanceled){
-					//delete half-baked download file
-					if (resp->downloadToDisk){
-						ofFile f;
-						if(f.open(resp->absolutePath)){
-							if (f.isFile()){
-								f.remove();
-							}
+					resp->timeTakenToDownload = ofGetElapsedTimef() - resp->timeDowloadStarted;
+					if (resp->expectedChecksum.length() > 0){
+						resp->checksumOK = ofxChecksum::sha1(resp->absolutePath, resp->expectedChecksum);
+						if(!resp->checksumOK){
+							ofLogVerbose() << "ofxSimpleHttp: downloaded OK but Checksum FAILED";
+							ofLogVerbose() << "ofxSimpleHttp: SHA1 was meant to be: " << resp->expectedChecksum;
 						}
 					}
 
-				}else{
+					resp->downloadSpeed = 0;
+					resp->avgDownloadSpeed = 0;
+					resp->downloadedBytes = 0;
 
 					if(saveToDisk){
-						string msg = "downloadURL() downloaded to " + resp->fileName;
-						ofLogNotice("ofxSimpleHttp", msg);
+						myfile.close();
 					}
 
-					if( saveToDisk ){
-						//ask the filesystem what is the real size of the file
-						ofFile file;
-						try{
-							file.open(resp->absolutePath.c_str());
-							resp->downloadedBytes = file.getSize();
-							file.close();
-						}catch(Exception& exc){
-							string msg = "downloadURL(" + resp->fileName + ") >> Exception at file.open: " + exc.displayText();
-							ofLogError("ofxSimpleHttp", msg );
-
+					if (resp->downloadCanceled){
+						//delete half-baked download file
+						if (resp->downloadToDisk){
+							ofFile f;
+							if(f.open(resp->absolutePath)){
+								if (f.isFile()){
+									f.remove();
+								}
+							}
 						}
+
 					}else{
-						resp->downloadedBytes = resp->responseBody.size();
-					}
 
-					resp->avgDownloadSpeed = (resp->downloadedBytes / 1024.) / resp->timeTakenToDownload; //kb/sec
+						if(saveToDisk){
+							string msg = "downloadURL() downloaded to " + resp->fileName;
+							ofLogNotice("ofxSimpleHttp", msg);
+						}
 
+						if( saveToDisk ){
+							//ask the filesystem what is the real size of the file
+							ofFile file;
+							try{
+								file.open(resp->absolutePath.c_str());
+								resp->downloadedBytes = file.getSize();
+								file.close();
+							}catch(Exception& exc){
+								string msg = "downloadURL(" + resp->fileName + ") >> Exception at file.open: " + exc.displayText();
+								ofLogError("ofxSimpleHttp", msg );
 
-					//check download file size missmatch
-					if ( resp->serverReportedSize > 0 && resp->serverReportedSize !=  resp->downloadedBytes) {
-						string msg;
-
-						if (resp->downloadedBytes == 0){
-							if (resp->timeTakenToDownload > timeOut){
-								msg = "downloadURLtoDiskBlocking() >> TimeOut! (" + resp->fileName + ")";
-								resp->reasonForStatus = "Request TimeOut";
-								resp->status = 408;
-							}else{
-								msg = "downloadURLtoDiskBlocking() >> Download file is 0 bytes  (" + resp->fileName + ")";
-								resp->reasonForStatus = "Download size is 0 bytes!";
 							}
 						}else{
-							msg = "downloadURLtoDiskBlocking() >> Download size mismatch (" + resp->fileName + ") >> Server: " +
-							ofToString(resp->serverReportedSize) + " Downloaded: " + ofToString(resp->downloadedBytes);
-							resp->reasonForStatus = "Download size mismatch";
+							resp->downloadedBytes = resp->responseBody.size();
 						}
 
-						ofLogWarning("ofxSimpleHttp", msg);
-						resp->status = -1;
-						resp->ok = false;
-						
-					}else{
-						
-						if (resp->status == 200){ //mmm
-							resp->ok = true;
-						}else{
+						resp->avgDownloadSpeed = (resp->downloadedBytes / 1024.) / resp->timeTakenToDownload; //kb/sec
+
+
+						//check download file size missmatch
+						if ( resp->serverReportedSize > 0 && resp->serverReportedSize !=  resp->downloadedBytes) {
+							string msg;
+
+							if (resp->downloadedBytes == 0){
+								if (resp->timeTakenToDownload > timeOut){
+									msg = "downloadURLtoDiskBlocking() >> TimeOut! (" + resp->fileName + ")";
+									resp->reasonForStatus = "Request TimeOut";
+									resp->status = 408;
+								}else{
+									msg = "downloadURLtoDiskBlocking() >> Download file is 0 bytes  (" + resp->fileName + ")";
+									resp->reasonForStatus = "Download size is 0 bytes!";
+								}
+							}else{
+								msg = "downloadURLtoDiskBlocking() >> Download size mismatch (" + resp->fileName + ") >> Server: " +
+								ofToString(resp->serverReportedSize) + " Downloaded: " + ofToString(resp->downloadedBytes);
+								resp->reasonForStatus = "Download size mismatch";
+							}
+
+							ofLogWarning("ofxSimpleHttp", msg);
+							resp->status = -1;
 							resp->ok = false;
-						}
-					}
-					
-					ofLogVerbose() << "ofxSimpleHttp: download finished! " << resp->url << " !";
-					ok = TRUE;
-				}
-			}catch(Exception& exc){
 
-				myfile.close();
-				string msg = "downloadURL(" + resp->fileName +  ") >> Exception: " + exc.displayText();
-				ofLogError("ofxSimpleHttp", msg );
-				resp->reasonForStatus = exc.displayText();
-				resp->ok = false;
-				if (exc.code() > 0){
-					resp->status = exc.code();
+						}else{
+
+							if (resp->status == 200){ //mmm
+								resp->ok = true;
+							}else{
+								resp->ok = false;
+							}
+						}
+						
+						ofLogVerbose() << "ofxSimpleHttp: download finished! " << resp->url << " !";
+						ok = TRUE;
+					}
 				}else{
+					resp->ok = false;
+					resp->reasonForStatus = "Unknown exception at streamCopy";
 					resp->status = -1;
 				}
+
+			}catch(Exception& exc){
+
+				if (session) session->reset();
+				myfile.close();
+				string msg = "downloadURL(" + resp->fileName +  ") >> Exception: " + exc.displayText();
+				resp->timeTakenToDownload = ofGetElapsedTimef() - resp->timeDowloadStarted;
+				if (resp->timeTakenToDownload > timeOut){
+					msg = "downloadURLtoDiskBlocking() >> TimeOut! (" + resp->fileName + ")";
+					resp->reasonForStatus = "Request TimeOut";
+					resp->status = 408;
+				}else{
+					resp->reasonForStatus = exc.displayText();
+					if (exc.code() > 0){
+						resp->status = exc.code();
+					}else{
+						resp->status = -1;
+					}
+				}
+				resp->ok = false;
 				ok = false;
-				ofLogError() << "ofxSimpleHttp: failed to download " << resp->url << " !";
+				ofLogError("ofxSimpleHttp", "failed to download " + resp->url );
+				ofLogError("ofxSimpleHttp", msg );
+
 			}
 		}
 	}else{
@@ -717,7 +750,10 @@ void ofxSimpleHttp::update(){
 }
 
 
-std::streamsize ofxSimpleHttp::streamCopyWithProgress(std::istream & istr, std::ostream & out, std::streamsize totalBytes,float & progress, float & speed, const bool &cancel){
+std::streamsize ofxSimpleHttp::streamCopyWithProgress(std::istream & istr, std::ostream & out,
+													  std::streamsize totalBytes,
+													  std::streamsize &currentBytes,
+													  float & progress, float & speed, const bool &cancel){
 
 	std::streamsize len = 0;
 
@@ -730,11 +766,16 @@ std::streamsize ofxSimpleHttp::streamCopyWithProgress(std::istream & istr, std::
 
 		while (n > 0 && !cancel){
 			float t1 = ofGetElapsedTimef();
+			currentBytes = len;
 			len += n;
 			out.write(buffer.begin(), static_cast<std::string::size_type>(n));
 			if (istr){
 				istr.read(buffer.begin(), COPY_BUFFER_SIZE);
 				n = istr.gcount();
+				if (istr.fail() && !istr.eof()){
+					ofLogError("ofxSimpleHttp", "streamCopyWithProgress() >> Fail");
+					return -1;
+				}
 			}else{
 				n = 0;
 			}
@@ -753,12 +794,16 @@ std::streamsize ofxSimpleHttp::streamCopyWithProgress(std::istream & istr, std::
 		}
 	}catch(Exception& exc){
 		ofLogError("ofxSimpleHttp", "streamCopyWithProgress() >> Exception: %s", exc.displayText().c_str() );
+		return -1;
 	}
 	return len;
 }
 
 
-std::streamsize ofxSimpleHttp::copyToStringWithProgress(std::istream& istr, std::string& str,std::streamsize totalBytes, float & progress, float & speed, const bool &cancel){
+std::streamsize ofxSimpleHttp::copyToStringWithProgress(std::istream& istr, std::string& str,
+														std::streamsize totalBytes,
+														std::streamsize &currentBytes,
+														float & progress, float & speed, const bool &cancel){
 
 	Buffer<char> buffer(COPY_BUFFER_SIZE);
 	std::streamsize len = 0;
@@ -770,11 +815,16 @@ std::streamsize ofxSimpleHttp::copyToStringWithProgress(std::istream& istr, std:
 
 		while (n > 0 && !cancel){
 			float t1 = ofGetElapsedTimef();
+			currentBytes = len;
 			len += n;
 			str.append(buffer.begin(), static_cast<std::string::size_type>(n));
 			if (istr){
 				istr.read(buffer.begin(), COPY_BUFFER_SIZE);
 				n = istr.gcount();
+				if (istr.fail() && !istr.eof()){
+					ofLogError("ofxSimpleHttp", "copyToStringWithProgress() >> Fail");
+					return -1;
+				}
 			}else{
 				n = 0;
 			}
@@ -784,12 +834,13 @@ std::streamsize ofxSimpleHttp::copyToStringWithProgress(std::istream& istr, std:
 			if(time > 0.0f){
 				newSpeed = (COPY_BUFFER_SIZE / 1024.0f ) / time ;
 			}
-			avgSpeed = 0.5 * newSpeed + 0.5 * avgSpeed;
+			avgSpeed = 0.1 * newSpeed + 0.9 * avgSpeed;
 			speed = avgSpeed;
 
 		}
 	}catch(Exception& exc){
 		ofLogError("ofxSimpleHttp", "copyToStringWithProgress() >> Exception: %s", exc.displayText().c_str() );
+		return -1;
 	}
 	return len;
 }
