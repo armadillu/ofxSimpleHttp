@@ -178,11 +178,10 @@ class ofxSimpleHttp : public ofThread, public ofBaseDraws{
 		void						setTimeOut(int seconds);
 		void						setVerbose(bool verbose); //unused
 		void						setUserAgent( string newUserAgent );
-		void						setAcceptString( string newAcceptString );
 		void						setMaxQueueLength(int len);
 		void						setIdleTimeAfterEachDownload(float seconds); //wait a bit before notifying once the dowload is over
 		void						setCancelCurrentDownloadOnDestruction(bool doIt);
-
+		void						addCustomHttpHeader(string headerName, string headerContent);
 		void						setNotifyFromMainThread(bool mainThread);
 
 									//if a download is requested and file already exists on disk,
@@ -221,6 +220,7 @@ class ofxSimpleHttp : public ofThread, public ofBaseDraws{
 		ofxSimpleHttpResponse			response;
 
 		queue<ofxSimpleHttpResponse>	responsesPendingNotification; //we store here downloads that arrived so that we can notify from main thread
+		map<string, string>				customHttpHeaders;
 
 		std::streamsize streamCopyWithProgress(std::istream & in, std::ostream & out, std::streamsize totalBytes,
 											   std::streamsize &currentBytes,
