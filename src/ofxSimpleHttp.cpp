@@ -231,28 +231,31 @@ string ofxSimpleHttp::drawableString(){
 		}
 		float timeSoFar = ofGetElapsedTimef() - r->timeDowloadStarted; //seconds
 		float timeRemaining = 0.0f;
-		if(r->downloadProgress > 0.001f){
-			timeRemaining = (timeSoFar / r->downloadProgress) - timeSoFar;
-		}
-		string remtimeUnit = "sec";
 		string soFarTimeUnit = "sec";
-		if (timeRemaining > 60.0f){
-			timeRemaining /= 60.0f;
-			remtimeUnit = "min";
-		}
+
 		if (timeSoFar > 60.0f){
 			timeSoFar /= 60.0f;
 			soFarTimeUnit = "min";
 		}
 
+		if(r->downloadProgress > 0.001f){
+			timeRemaining = (timeSoFar / r->downloadProgress) - timeSoFar;
+		}
+		string remTime;
+
 		string serverSize;
 		if(r->serverReportedSize != -1){
 			serverSize = bytesToHumanReadable(r->serverReportedSize, 2);
+			string remtimeUnit = "sec";
+			if (timeRemaining > 60.0f){
+				timeRemaining /= 60.0f;
+				remtimeUnit = "min";
+			}
+			remTime = ofToString(timeRemaining, 1) + " " + remtimeUnit;
 		}else{
 			string anim[] = {"   ", ".  ", ".. ", "...", " ..", "  ."}; //6 anim states
 			serverSize = "waiting for server " + anim[ int(0.2 * ofGetFrameNum())%6 ];
 		}
-
 
 		aux = "//// ofxSimpleHttp fetching //////////////////////////////////////\n"
 		"//\n"
@@ -263,7 +266,8 @@ string ofxSimpleHttp::drawableString(){
 		"//   Download Speed: " + ofToString(speed, 2) + speedUnit + "\n" +
 		"//   Time Taken so far: " + ofToString(timeSoFar, 1) + soFarTimeUnit + "\n" +
 		"//   Timeout after: " + ofToString(timeOut, 1) + " sec\n" +
-		"//   Estimated Remaining Time: " + ofToString(timeRemaining, 1) + " " + remtimeUnit + "\n" +
+		string((r->serverReportedSize == -1) ? "" :
+		"//   Estimated Remaining Time: " + remTime + "\n") +
 		"//   Queue Size: " + ofToString(n) + "\n" +
 		"//  \n";
 		aux += "//////////////////////////////////////////////////////////////////\n";
