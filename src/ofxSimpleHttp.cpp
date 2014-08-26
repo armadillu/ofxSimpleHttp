@@ -99,16 +99,13 @@ void ofxSimpleHttp::setUserAgent( string newUserAgent ){
 }
 
 
-void ofxSimpleHttp::setAcceptString( string newAcceptString ){
-	acceptString = newAcceptString;
-}
-
-
 void ofxSimpleHttp::setMaxQueueLength(int len){
 	maxQueueLen = len;
 }
 
-
+void ofxSimpleHttp::addCustomHttpHeader(string headerName, string headerContent){
+	customHttpHeaders[headerName] = headerContent;
+}
 
 string ofxSimpleHttp::getCurrentDownloadFileName(){
 
@@ -540,6 +537,13 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 
 				HTTPRequest req(HTTPRequest::HTTP_GET, path, HTTPMessage::HTTP_1_1);
 				req.set( "User-Agent", userAgent.c_str() );
+
+				//add custom headers to the request
+				map<string, string>::iterator it = customHttpHeaders.begin();
+				while(it != customHttpHeaders.end()){
+					req.set( it->first, it->second );
+					++it;
+				}
 
 				session->setTimeout( Poco::Timespan(timeOut,0) );
 				session->sendRequest(req);

@@ -23,6 +23,8 @@ void testApp::setup(){
 	downloadList.push_back("http://farm6.staticflickr.com/5346/9484309488_11ee39298e_o.jpg");
 
 	http.setVerbose(true);
+	
+	http.addCustomHttpHeader("Accept", "*.*"); //you can supply custom headers if you need to
 
 	//add download listener
 	ofAddListener(http.httpResponse, this, &testApp::newResponse);
