@@ -261,7 +261,7 @@ string ofxSimpleHttp::drawableString(){
 		"//   Server Reported Size: " + serverSize + "\n" +
 		"//   Downloaded: " + bytesToHumanReadable((long long)r->downloadedSoFar, 2) + "\n" +
 		"//   Download Speed: " + ofToString(speed, 2) + speedUnit + "\n" +
-		"//   Time Taken so far: " + ofToString(timeSoFar, 1) + soFarTimeUnit + "\n" +
+		"//   Time Taken so far: " + ofToString(timeSoFar, 1) + " " + soFarTimeUnit + "\n" +
 		"//   Timeout after: " + ofToString(timeOut, 1) + " sec\n" +
 		string((r->serverReportedSize == -1) ? "" :
 		"//   Estimated Remaining Time: " + remTime + "\n") +
