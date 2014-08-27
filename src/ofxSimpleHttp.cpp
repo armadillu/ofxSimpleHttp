@@ -38,8 +38,8 @@ ofxSimpleHttp::ofxSimpleHttp(){
 	if (!pocoHttpInited){ //only register once!
 		HTTPStreamFactory::registerFactory();
 		HTTPSStreamFactory::registerFactory();
-		SharedPtr<PrivateKeyPassphraseHandler> pConsoleHandler = new KeyConsoleHandler(false);
-		SharedPtr<InvalidCertificateHandler> pInvalidCertHandler = new ConsoleCertificateHandler(true);
+		PrivateKeyPassphraseHandler* pConsoleHandler = new KeyConsoleHandler(false);
+		InvalidCertificateHandler* pInvalidCertHandler = new ConsoleCertificateHandler(true);
 		Context::Ptr pContext = new Context(Context::CLIENT_USE, "", Context::VERIFY_NONE);
 		SSLManager::instance().initializeClient(pConsoleHandler, pInvalidCertHandler, pContext);
 		pocoHttpInited = true;
@@ -66,6 +66,10 @@ ofxSimpleHttp::~ofxSimpleHttp(){
 			delete r;
 			q.pop();
 		unlock();
+	}
+	if(pocoHttpInited){
+		Poco::Net::uninitializeSSL();
+		pocoHttpInited = false;
 	}
 }
 
@@ -484,10 +488,14 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 		if(protocol == "file://"){
 
 			string srcFile = resp->url.substr(7, resp->url.length() - 7);
+
+			#ifdef TARGET_WIN32
+			ofStringReplace(srcFile, "\\", "/"); //for windows, replace escaped backslashes
+			#endif
 			//ofFile::copyFromTo(srcFile, resp->absolutePath);
 
 			ofFile f;
-			bool ok = f.open(ofToDataPath(srcFile, true), ofFile::ReadOnly);
+			bool openOK = f.open(ofToDataPath(srcFile, true), ofFile::ReadOnly);
 			if(f.exists()){
 				uint64_t size = f.getSize();
 				resp->serverReportedSize = size;
@@ -504,6 +512,7 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 				resp->downloadedBytes = 0;
 
 				rs.close();
+				ok = TRUE;
 			}else{
 				resp->ok = false;
 				resp->status = 404; //assume not found? todo!
@@ -512,6 +521,7 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 				resp->downloadSpeed = 0;
 				resp->avgDownloadSpeed = 0;
 				resp->downloadedBytes = 0;
+				ok = TRUE;
 			}
 			f.close();
 			myfile.close();
@@ -677,6 +687,7 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 					resp->ok = false;
 					resp->reasonForStatus = "Unknown exception at streamCopy";
 					resp->status = -1;
+					ok = FALSE;
 				}
 
 			}catch(Exception& exc){
@@ -706,6 +717,7 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 		}
 	}else{
 		resp->timeTakenToDownload = 0;
+		ok = TRUE;
 	}
 
 	//enqueue the operation result!
