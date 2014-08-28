@@ -24,7 +24,7 @@ void testApp::setup(){
 
 	http.setVerbose(true);
 	
-	http.addCustomHttpHeader("Accept", "*.*"); //you can supply custom headers if you need to
+	http.addCustomHttpHeader("Accept", "application/json"); //you can supply custom headers if you need to
 
 	//add download listener
 	ofAddListener(http.httpResponse, this, &testApp::newResponse);
