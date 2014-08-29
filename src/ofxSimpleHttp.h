@@ -240,7 +240,5 @@ class ofxSimpleHttp : public ofThread, public ofBaseDraws{
 												 float & progress, float & speed, const bool &shouldCancel);
 
 		static int pocoHttpInited;
-		static PrivateKeyPassphraseHandler* pConsoleHandler;
-		static InvalidCertificateHandler* pInvalidCertHandler;
 		static Context::Ptr pContext;
 };

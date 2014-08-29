@@ -24,8 +24,6 @@
 
 
 int ofxSimpleHttp::pocoHttpInited = 0;
-PrivateKeyPassphraseHandler* ofxSimpleHttp::pConsoleHandler = NULL;
-InvalidCertificateHandler* ofxSimpleHttp::pInvalidCertHandler = NULL;
 Context::Ptr ofxSimpleHttp::pContext = NULL;
 
 
@@ -40,21 +38,24 @@ ofxSimpleHttp::ofxSimpleHttp(){
 	notifyFromMainThread = true;
 	onlySkipDownloadIfChecksumMatches = false;
 	idleTimeAfterEachDownload = 0.0;
-	if (pocoHttpInited == 0){ //only register once!
-		try{
-			HTTPStreamFactory::registerFactory();
-		}catch(...){}
-		try{
-			HTTPSStreamFactory::registerFactory();
-		}catch(...){}
 
-		if(!pConsoleHandler) pConsoleHandler = new KeyConsoleHandler(false);
-		if(!pInvalidCertHandler) pInvalidCertHandler = new ConsoleCertificateHandler(true);
+	if (pocoHttpInited == 0){ //only register once!
+//		try{
+//			HTTPStreamFactory::registerFactory();
+//		}catch(...){
+//			ofLogError() << "cant register HTTPStreamFactory";
+//		}
+//		try{
+//			HTTPSStreamFactory::registerFactory();
+//		}catch(...){
+//			ofLogError() << "cant register HTTPSStreamFactory";
+//		}
 		if(!pContext){
 			pContext = new Context(Context::CLIENT_USE, "", Context::VERIFY_NONE);
-			SSLManager::instance().initializeClient(pConsoleHandler, pInvalidCertHandler, pContext);
+			Poco::Net::SSLManager::instance().initializeClient(0, 0, pContext);
 		}
 		pocoHttpInited++;
+		ofLogWarning() << "initing poco https";
 	}
 }
 
@@ -74,14 +75,18 @@ ofxSimpleHttp::~ofxSimpleHttp(){
 	//empty queue
 	while ( getPendingDownloads() > 0 ){
 		lock();
-			ofxSimpleHttpResponse * r = q.front();
-			delete r;
-			q.pop();
+		ofxSimpleHttpResponse * r = q.front();
+		delete r;
+		q.pop();
 		unlock();
 	}
 	pocoHttpInited--;
 	if(pocoHttpInited == 0){
-		SSLManager::instance().shutdown();
+		//HTTPStreamFactory::unregisterFactory();
+		//HTTPSStreamFactory::unregisterFactory();
+		Poco::Net::SSLManager::instance().shutdown();
+		pContext = NULL;
+		ofLogWarning() << "uniniting poco https";
 	}
 }
 
@@ -127,11 +132,11 @@ string ofxSimpleHttp::getCurrentDownloadFileName(){
 
 	string download = "";
 	lock();
-		int n = q.size();
-		if ( isThreadRunning() && n > 0 ){
-			ofxSimpleHttpResponse * r = q.front();
-			download = r->fileName;
-		}
+	int n = q.size();
+	if ( isThreadRunning() && n > 0 ){
+		ofxSimpleHttpResponse * r = q.front();
+		download = r->fileName;
+	}
 	unlock();
 	return download;
 }
@@ -139,7 +144,7 @@ string ofxSimpleHttp::getCurrentDownloadFileName(){
 
 int ofxSimpleHttp::getPendingDownloads(){
 	lock();
-		queueLenEstimation = q.size();
+	queueLenEstimation = q.size();
 	unlock();
 	return queueLenEstimation;
 }
@@ -149,11 +154,11 @@ float ofxSimpleHttp::getCurrentDownloadProgress(){
 
 	float downloadPercent = -1;
 	lock();
-		int n = q.size();
-		if ( isThreadRunning() && n > 0){
-			ofxSimpleHttpResponse * r = q.front();
-			downloadPercent = r->downloadProgress;
-		}
+	int n = q.size();
+	if ( isThreadRunning() && n > 0){
+		ofxSimpleHttpResponse * r = q.front();
+		downloadPercent = r->downloadProgress;
+	}
 	unlock();
 	return downloadPercent;
 }
@@ -161,9 +166,9 @@ float ofxSimpleHttp::getCurrentDownloadProgress(){
 
 void ofxSimpleHttp::threadedFunction(){
 
-	#ifdef TARGET_OSX
+#ifdef TARGET_OSX
 	pthread_setname_np("ofxSimpleHttp");
-	#endif
+#endif
 
 	ofLogVerbose("ofxSimpleHttp", "start threadedFunction");
 	queueLenEstimation = 0;
@@ -173,22 +178,22 @@ void ofxSimpleHttp::threadedFunction(){
 
 	while( queueLenEstimation > 0 && timeToStop == false && isThreadRunning()){
 
-			ofxSimpleHttpResponse * r = q.front();
+		ofxSimpleHttpResponse * r = q.front();
 
 		unlock();
-			downloadURL(	r,		/*response*/
-							true,	/*sendResultThroughEvents*/
-							false,	/*calling from main thread*/
-							r->downloadToDisk
-						);
+		downloadURL(	r,		/*response*/
+					true,	/*sendResultThroughEvents*/
+					false,	/*calling from main thread*/
+					r->downloadToDisk
+					);
 		lock();
-			q.pop();
-			if(r->emptyWholeQueue){
-				queue<ofxSimpleHttpResponse*> tempQ;
-				q = tempQ;
-			}
-			delete r;
-			queueLenEstimation = q.size();
+		q.pop();
+		if(r->emptyWholeQueue){
+			queue<ofxSimpleHttpResponse*> tempQ;
+			q = tempQ;
+		}
+		delete r;
+		queueLenEstimation = q.size();
 	}
 
 	unlock();
@@ -196,35 +201,35 @@ void ofxSimpleHttp::threadedFunction(){
 	//if no more pending requests, let the thread die...
 	ofLogVerbose("ofxSimpleHttp", "exiting threadedFunction (queue len %d)", queueLenEstimation);
 
-	#if  defined(TARGET_OSX) || defined(TARGET_LINUX) /*I'm not 100% sure of linux*/
+#if  defined(TARGET_OSX) || defined(TARGET_LINUX) /*I'm not 100% sure of linux*/
 	if (!timeToStop){ //if we are naturally exiting the thread; if TimeToStop==true it means we are being destructed, and the thread will be joined (so no need to detach!)
 		pthread_detach( pthread_self() ); //this is a workaround for this issue https://github.com/openframeworks/openFrameworks/issues/2506
 	}
-	#endif
+#endif
 }
 
 
 void ofxSimpleHttp::stopCurrentDownload(bool emptyQueue){
 
 	lock();
-		int n = q.size();
-		if ( isThreadRunning() && n > 0){
-			ofxSimpleHttpResponse * r = q.front();
-			if (!r->downloadCanceled){ //dont cancel it twice!
-				string msg = "stopCurrentDownload() >> about to stop download of " + r->fileName  + " ...";
-				ofLogVerbose("ofxSimpleHttp", msg);
-				try{
-					r->emptyWholeQueue = emptyQueue;
-					r->downloadCanceled = true;
-					//if ( r->session != NULL ){
-						//cout << "aboritng session " << r->session;
-					//	r->session->abort();
-					//}
-				}catch(Exception& exc){
-					ofLogError("ofxSimpleHttp", "stopCurrentDownload(" + r->fileName + ") >> Exception: " + exc.displayText() );
-				}
+	int n = q.size();
+	if ( isThreadRunning() && n > 0){
+		ofxSimpleHttpResponse * r = q.front();
+		if (!r->downloadCanceled){ //dont cancel it twice!
+			string msg = "stopCurrentDownload() >> about to stop download of " + r->fileName  + " ...";
+			ofLogVerbose("ofxSimpleHttp", msg);
+			try{
+				r->emptyWholeQueue = emptyQueue;
+				r->downloadCanceled = true;
+				//if ( r->session != NULL ){
+				//cout << "aboritng session " << r->session;
+				//	r->session->abort();
+				//}
+			}catch(Exception& exc){
+				ofLogError("ofxSimpleHttp", "stopCurrentDownload(" + r->fileName + ") >> Exception: " + exc.displayText() );
 			}
 		}
+	}
 	unlock();
 }
 
@@ -280,7 +285,7 @@ string ofxSimpleHttp::drawableString(){
 		"//   Time Taken so far: " + ofToString(timeSoFar, 1) + " " + soFarTimeUnit + "\n" +
 		"//   Timeout after: " + ofToString(timeOut, 1) + " sec\n" +
 		string((r->serverReportedSize == -1) ? "" :
-		"//   Estimated Remaining Time: " + remTime + "\n") +
+			   "//   Estimated Remaining Time: " + remTime + "\n") +
 		"//   Queue Size: " + ofToString(n) + "\n" +
 		"//  \n";
 		aux += "//////////////////////////////////////////////////////////////////\n";
@@ -313,9 +318,9 @@ string ofxSimpleHttp::bytesToHumanReadable(long long bytes, int decimalPrecision
 void ofxSimpleHttp::draw(float x, float y , float w , float h  ){
 
 	string aux = drawableString();
-//	for(int i = 0; i < aux.length(); i+= w / 8){	//break up the string with \n to fit in supplied width
-//		aux.insert(i, "\n");
-//	}
+	//	for(int i = 0; i < aux.length(); i+= w / 8){	//break up the string with \n to fit in supplied width
+	//		aux.insert(i, "\n");
+	//	}
 	ofSetColor(0,127,255);
 	ofDrawBitmapString(aux, x + 3, y + 12 );
 }
@@ -363,7 +368,7 @@ void ofxSimpleHttp::fetchURL(string url, bool notifyOnSuccess){
 	response->notifyOnSuccess = notifyOnSuccess;
 
 	lock();
-		q.push(response);
+	q.push(response);
 	unlock();
 
 	if ( !isThreadRunning() ){	//if the queue is not running, lets start it
@@ -501,9 +506,9 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 
 			string srcFile = resp->url.substr(7, resp->url.length() - 7);
 
-			#ifdef TARGET_WIN32
+#ifdef TARGET_WIN32
 			ofStringReplace(srcFile, "\\", "/"); //for windows, replace escaped backslashes
-			#endif
+#endif
 			//ofFile::copyFromTo(srcFile, resp->absolutePath);
 
 			ofFile f;
@@ -691,7 +696,7 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 								resp->ok = false;
 							}
 						}
-						
+
 						ofLogVerbose() << "ofxSimpleHttp: download finished! " << resp->url << " !";
 						ok = TRUE;
 					}
@@ -774,7 +779,7 @@ void ofxSimpleHttp::update(){
 		responsesPendingNotification.pop();
 		unlock();
 		ofNotifyEvent( httpResponse, r, this ); //we want to be able to notify from outside the lock
-												//otherwise we cant start a new download from the callback (deadlock!)
+		//otherwise we cant start a new download from the callback (deadlock!)
 	}else{
 		unlock();
 	}
@@ -868,7 +873,7 @@ std::streamsize ofxSimpleHttp::copyToStringWithProgress(std::istream& istr, std:
 			}
 			avgSpeed = 0.1 * newSpeed + 0.9 * avgSpeed;
 			speed = avgSpeed;
-
+			
 		}
 	}catch(Exception& exc){
 		ofLogError("ofxSimpleHttp", "copyToStringWithProgress() >> Exception: %s", exc.displayText().c_str() );
