@@ -97,8 +97,6 @@ struct ofxSimpleHttpResponse{
 	float						timeTakenToDownload;// seconds
 	float						timeDowloadStarted; //from ofGetElapsedTimef()
 
-	//HTTPClientSession *			session;			//careful what you do with this! will be NULL if session is finished
-
 	ofxSimpleHttpResponse(){
 		downloadToDisk = emptyWholeQueue = false;
 		checksumOK = true;
@@ -140,8 +138,8 @@ struct ofxSimpleHttpResponse{
 				}
 			}
 		}else{
-			ofLogNotice() << "    Download FAILED! ";
-			ofLogNotice() << "    Status: " << status << " - " << reasonForStatus;
+			ofLogError() << "    Download FAILED! ";
+			ofLogError() << "    Status: " << status << " - " << reasonForStatus;
 		}
 		ofLogNotice() << endl;
 	}
@@ -180,8 +178,7 @@ class ofxSimpleHttp : public ofThread, public ofBaseDraws{
 		int							getPendingDownloads();
 		float						getCurrentDownloadProgress();	//retuns [0..1] how complete is the download
 		string						getCurrentDownloadFileName();
-		//ofxSimpleHttpResponse*		getCurrentDownloadResponse(){ return &response;}	//get this to read progress from another thread, might return NULL if no download is running
-	
+
 		// properties //////////////////////////////////////////////////////////
 	
 		void						setTimeOut(int seconds);
@@ -198,10 +195,8 @@ class ofxSimpleHttp : public ofThread, public ofBaseDraws{
 									//ie, if the user doesnt provide a checksum, what do we do?
 		void						setNeedsChecksumMatchToSkipDownload(bool needs);
 
-
 		ofEvent<ofxSimpleHttpResponse>		httpResponse;
 
-	
 	private:
 		
 		bool downloadURL( ofxSimpleHttpResponse * resp, bool sendResultThroughEvents, bool beingCalledFromMainThread, bool saveToDisk );

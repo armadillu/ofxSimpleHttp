@@ -55,7 +55,7 @@ ofxSimpleHttp::ofxSimpleHttp(){
 			Poco::Net::SSLManager::instance().initializeClient(0, 0, pContext);
 		}
 		pocoHttpInited++;
-		ofLogWarning() << "initing poco https";
+		ofLogVerbose() << "initing poco https";
 	}
 }
 
@@ -86,7 +86,7 @@ ofxSimpleHttp::~ofxSimpleHttp(){
 		//HTTPSStreamFactory::unregisterFactory();
 		Poco::Net::SSLManager::instance().shutdown();
 		pContext = NULL;
-		ofLogWarning() << "uniniting poco https";
+		ofLogVerbose() << "uniniting poco https";
 	}
 }
 
