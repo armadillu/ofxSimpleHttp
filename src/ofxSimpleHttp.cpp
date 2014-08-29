@@ -22,7 +22,12 @@
 #include <iostream>     // std::cout
 #include <fstream>      // std::ifstream
 
-static bool pocoHttpInited = false;
+
+int ofxSimpleHttp::pocoHttpInited = 0;
+PrivateKeyPassphraseHandler* ofxSimpleHttp::pConsoleHandler = NULL;
+InvalidCertificateHandler* ofxSimpleHttp::pInvalidCertHandler = NULL;
+Context::Ptr ofxSimpleHttp::pContext = NULL;
+
 
 ofxSimpleHttp::ofxSimpleHttp(){
 	cancelCurrentDownloadOnDestruction = true;
@@ -35,14 +40,21 @@ ofxSimpleHttp::ofxSimpleHttp(){
 	notifyFromMainThread = true;
 	onlySkipDownloadIfChecksumMatches = false;
 	idleTimeAfterEachDownload = 0.0;
-	if (!pocoHttpInited){ //only register once!
-		HTTPStreamFactory::registerFactory();
-		HTTPSStreamFactory::registerFactory();
-		PrivateKeyPassphraseHandler* pConsoleHandler = new KeyConsoleHandler(false);
-		InvalidCertificateHandler* pInvalidCertHandler = new ConsoleCertificateHandler(true);
-		Context::Ptr pContext = new Context(Context::CLIENT_USE, "", Context::VERIFY_NONE);
-		SSLManager::instance().initializeClient(pConsoleHandler, pInvalidCertHandler, pContext);
-		pocoHttpInited = true;
+	if (pocoHttpInited == 0){ //only register once!
+		try{
+			HTTPStreamFactory::registerFactory();
+		}catch(...){}
+		try{
+			HTTPSStreamFactory::registerFactory();
+		}catch(...){}
+
+		if(!pConsoleHandler) pConsoleHandler = new KeyConsoleHandler(false);
+		if(!pInvalidCertHandler) pInvalidCertHandler = new ConsoleCertificateHandler(true);
+		if(!pContext){
+			pContext = new Context(Context::CLIENT_USE, "", Context::VERIFY_NONE);
+			SSLManager::instance().initializeClient(pConsoleHandler, pInvalidCertHandler, pContext);
+		}
+		pocoHttpInited++;
 	}
 }
 
@@ -67,9 +79,9 @@ ofxSimpleHttp::~ofxSimpleHttp(){
 			q.pop();
 		unlock();
 	}
-	if(pocoHttpInited){
-		Poco::Net::uninitializeSSL();
-		pocoHttpInited = false;
+	pocoHttpInited--;
+	if(pocoHttpInited == 0){
+		SSLManager::instance().shutdown();
 	}
 }
 

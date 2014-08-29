@@ -46,6 +46,15 @@
 #include "Poco/Net/HTTPClientSession.h"
 #include "Poco/Net/HTTPRequest.h"
 #include "Poco/Net/HTTPResponse.h"
+#include "poco/Net/HTTPStreamFactory.h"
+#include "Poco/Net/HTTPSStreamFactory.h"
+#include "Poco/Net/HTTPSClientSession.h"
+#include "Poco/Buffer.h"
+#include "ofxChecksum.h"
+#include "Poco/Net/SSLManager.h"
+#include "Poco/Net/KeyConsoleHandler.h"
+#include "Poco/Net/ConsoleCertificateHandler.h"
+#include "Poco/Net/NetException.h"
 #include "Poco/StreamCopier.h"
 #include "Poco/Path.h"
 #include "Poco/URI.h"
@@ -229,4 +238,9 @@ class ofxSimpleHttp : public ofThread, public ofBaseDraws{
 		std::streamsize copyToStringWithProgress(std::istream& istr, std::string& str, std::streamsize totalBytes,
 												 std::streamsize &currentBytes,
 												 float & progress, float & speed, const bool &shouldCancel);
+
+		static int pocoHttpInited;
+		static PrivateKeyPassphraseHandler* pConsoleHandler;
+		static InvalidCertificateHandler* pInvalidCertHandler;
+		static Context::Ptr pContext;
 };
