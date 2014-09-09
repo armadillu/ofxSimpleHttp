@@ -256,7 +256,7 @@ string ofxSimpleHttp::drawableString(){
 			soFarTimeUnit = "min";
 		}
 
-		if(r->downloadProgress > 0.001f){
+		if(r->downloadedSoFar > 100){
 			timeRemaining = (timeSoFar / r->downloadProgress) - timeSoFar;
 		}
 		string remTime;
@@ -271,15 +271,19 @@ string ofxSimpleHttp::drawableString(){
 			}
 			remTime = ofToString(timeRemaining, 1) + " " + remtimeUnit;
 		}else{
-			string anim[] = {"   ", ".  ", ".. ", "...", " ..", "  ."}; //6 anim states
-			serverSize = "waiting for server " + anim[ int(0.2 * ofGetFrameNum())%6 ];
+			if (r->downloadedSoFar == 0){
+				string anim[] = {"   ", ".  ", ".. ", "...", " ..", "  ."}; //6 anim states
+				serverSize = "waiting for server " + anim[ int(0.2 * ofGetFrameNum())%6 ];
+			}else{
+				serverSize = "";
+			}
 		}
 
 		aux = "//// ofxSimpleHttp fetching //////////////////////////////////////\n"
 		"//\n"
-		"//   " + r->url + "\n" +
-		"//   Progress: " + string((r->downloadProgress >= 0.0) ? ofToString(100.0f * r->downloadProgress, 2) : "") + "%\n" +
-		"//   Server Reported Size: " + serverSize + "\n" +
+		"//   url: " + r->url + "\n" +
+		string(serverSize.length() ? "//   Progress: " + string((r->downloadProgress >= 0.0) ? ofToString(100.0f * r->downloadProgress, 2) : "") + "%\n" : "") +
+		string(serverSize.length() ? "//   Server Reported Size: " + serverSize + "\n" : "")+
 		"//   Downloaded: " + bytesToHumanReadable((long long)r->downloadedSoFar, 2) + "\n" +
 		"//   Download Speed: " + ofToString(speed, 2) + speedUnit + "\n" +
 		"//   Time Taken so far: " + ofToString(timeSoFar, 1) + " " + soFarTimeUnit + "\n" +
