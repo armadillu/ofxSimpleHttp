@@ -595,11 +595,19 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 				resp->timeDowloadStarted = ofGetElapsedTimef();
 
 				string msg = "downloadURL(" + resp->fileName + ") >> Server doesn't report download size...";
-				if (resp->serverReportedSize == -1) ofLogWarning("ofxSimpleHttp", msg);
+				if (resp->serverReportedSize == -1){
+					ofLogWarning("ofxSimpleHttp", msg);
+				}
+
+				if (resp->serverReportedSize == 0){
+					ofLogWarning("ofxSimpleHttp", "Server reports file size 0 bytes!");
+				}
 				msg = "downloadURL() >> about to start download (" + resp->fileName + ", " + ofToString(res.getContentLength()) + " bytes)";
 				ofLogVerbose("ofxSimpleHttp", msg);
 				msg = "downloadURL() >> server reports request status: " +ofToString(resp->status) + " - ", resp->reasonForStatus + ")";
 				ofLogVerbose("ofxSimpleHttp", msg );
+
+
 
 				//StreamCopier::copyStream(rs, myfile); //write to file here!
 				int copySize = 0;
@@ -615,6 +623,11 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 
 				if (copySize >= 0){
 
+					if(saveToDisk){
+						myfile.close();
+					}
+
+
 					resp->timeTakenToDownload = ofGetElapsedTimef() - resp->timeDowloadStarted;
 					if (resp->expectedChecksum.length() > 0){
 						resp->checksumOK = ofxChecksum::sha1(resp->absolutePath, resp->expectedChecksum);
@@ -627,10 +640,6 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 					resp->downloadSpeed = 0;
 					resp->avgDownloadSpeed = 0;
 					resp->downloadedBytes = 0;
-
-					if(saveToDisk){
-						myfile.close();
-					}
 
 					if (resp->downloadCanceled){
 						//delete half-baked download file
@@ -648,9 +657,6 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 						if(saveToDisk){
 							string msg = "downloadURL() downloaded to " + resp->fileName;
 							ofLogNotice("ofxSimpleHttp", msg);
-						}
-
-						if( saveToDisk ){
 							//ask the filesystem what is the real size of the file
 							ofFile file;
 							try{
@@ -660,7 +666,6 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 							}catch(Exception& exc){
 								string msg = "downloadURL(" + resp->fileName + ") >> Exception at file.open: " + exc.displayText();
 								ofLogError("ofxSimpleHttp", msg );
-
 							}
 						}else{
 							resp->downloadedBytes = resp->responseBody.size();
@@ -670,7 +675,7 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 
 
 						//check download file size missmatch
-						if ( resp->serverReportedSize > 0 && resp->serverReportedSize !=  resp->downloadedBytes) {
+						if ( resp->serverReportedSize > 0 && resp->serverReportedSize != resp->downloadedBytes) {
 							string msg;
 
 							if (resp->downloadedBytes == 0){
@@ -704,6 +709,13 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 						ofLogVerbose() << "ofxSimpleHttp: download finished! " << resp->url << " !";
 						ok = TRUE;
 					}
+
+					if (copySize == 0){
+						ofLogError() << "downloaded file is empty!";
+						resp->ok = false;
+						resp->reasonForStatus += " / server file is empty!";
+					}
+
 				}else{
 					resp->ok = false;
 					resp->reasonForStatus = "Unknown exception at streamCopy";
@@ -814,7 +826,7 @@ std::streamsize ofxSimpleHttp::streamCopyWithProgress(std::istream & istr, std::
 				istr.read(buffer.begin(), COPY_BUFFER_SIZE);
 				n = istr.gcount();
 				if (istr.fail() && !istr.eof()){
-					ofLogError("ofxSimpleHttp", "streamCopyWithProgress() >> Fail");
+					ofLogError("ofxSimpleHttp", "streamCopyWithProgress() >> iostream Fail!");
 					return -1;
 				}
 			}else{
