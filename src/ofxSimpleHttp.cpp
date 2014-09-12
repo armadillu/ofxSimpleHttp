@@ -458,7 +458,7 @@ ofxSimpleHttpResponse ofxSimpleHttp::fetchURLtoDiskBlocking(string  url, string 
 
 bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThroughEvents, bool beingCalledFromMainThread, bool saveToDisk){
 
-	bool ok;
+	bool ok = FALSE;
 	ofstream myfile;
 	bool fileIsAlreadyHere = false;
 
