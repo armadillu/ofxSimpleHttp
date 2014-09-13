@@ -36,6 +36,7 @@
  
  */
 
+#include <Poco/SHA1Engine.h>
 
 #pragma once
 
