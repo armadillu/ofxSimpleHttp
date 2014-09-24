@@ -168,11 +168,13 @@ string ofxDownloadCentral::getDrawableInfo(bool drawAllPending){
 	if (numProcessed > 0){
 		timeLeft = numQueuedJobs * elapsedTime / float(numProcessed);
 	}
+
+	string spa = "     ";
 	string header = "//// ofxDownloadCentral queued Jobs: " + ofToString(numQueuedJobs) + " ///////////////////////////\n"
-	"//// Jobs executed: " + ofToString(numProcessed) + "\n" +
-	"//// Total Downloads Left: " + ofToString(total) + "\n" +
-	"//// Elapsed Time: " + ofxSimpleHttp::secondsToHumanReadable(elapsedTime, 1) + "\n" +
-	"//// Estimated Time Left (very rough): " + ofxSimpleHttp::secondsToHumanReadable(timeLeft, 1)
+	"//// Jobs executed:        " + spa + ofToString(numProcessed) + "\n" +
+	"//// Total Downloads Left: " + spa + ofToString(total) + "\n" +
+	"//// Elapsed Time:         " + spa + ofxSimpleHttp::secondsToHumanReadable(elapsedTime, 1) + "\n" +
+	"//// Estimated Time Left:  " + spa + ofxSimpleHttp::secondsToHumanReadable(timeLeft, 1)
 	+ "\n\n";
 
 	return header + aux;

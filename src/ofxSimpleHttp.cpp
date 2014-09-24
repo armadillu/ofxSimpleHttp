@@ -273,19 +273,22 @@ string ofxSimpleHttp::drawableString(){
 				serverSize = "";
 			}
 		}
+		string spa = "      ";
 
-		aux = "//// ofxSimpleHttp fetching //////////////////////////////////////\n"
+		aux = "//// ofxSimpleHttp now fetching //////////////////////////////////\n"
 		"//\n"
 		"//   URL: " + r->url + "\n" +
-		string(serverSize.length() ? "//   Progress: " + string((r->downloadProgress >= 0.0) ? ofToString(100.0f * r->downloadProgress, 2) : "") + "%\n" : "") +
-		string(serverSize.length() ? "//   Server Reported Size: " + serverSize + "\n" : "")+
-		"//   Downloaded: " + bytesToHumanReadable((long long)r->downloadedSoFar, 2) + "\n" +
-		"//   Download Speed: " + ofToString(speed, 2) + speedUnit + "\n" +
-		"//   Time Taken so far: " + secondsToHumanReadable(timeSoFar, 1) + "\n" +
-		"//   Timeout after: " + secondsToHumanReadable(timeOut, 1) + " sec\n" +
+		string(serverSize.length() ?
+		"//   Progress:                 " + spa + string((r->downloadProgress >= 0.0) ? ofToString(100.0f * r->downloadProgress, 2) : "") + "%\n" : "") +
+		string(serverSize.length() ?
+		"//   Server Reported Size:     " + spa + serverSize + "\n" : "")+
+		"//   Downloaded:               " + spa + bytesToHumanReadable((long long)r->downloadedSoFar, 2) + "\n" +
+		"//   Download Speed:           " + spa + ofToString(speed, 2) + speedUnit + "\n" +
+		"//   Time Taken so far:        " + spa + secondsToHumanReadable(timeSoFar, 1) + "\n" +
+		"//   Timeout after:            " + spa + secondsToHumanReadable(timeOut, 1) + "\n" +
 		string((r->serverReportedSize == -1) ? "" :
-			   "//   Estimated Remaining Time: " + remTime + "\n") +
-		"//   Queue Size: " + ofToString(n) + "\n" +
+		"//   Estimated Remaining Time: " + spa + remTime + "\n") +
+		"//   Queue Size:               " + spa + ofToString(n) + "\n" +
 		"//  \n";
 		aux += "//////////////////////////////////////////////////////////////////\n";
 	}else{
