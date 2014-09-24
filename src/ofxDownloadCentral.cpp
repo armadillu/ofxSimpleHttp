@@ -47,6 +47,7 @@ void ofxDownloadCentral::startQueue(){
 
 	if (!busy){
 		if(downloaders.size() > 0){
+			busy = true;
 			ofxBatchDownloader * bd = downloaders[0];
 			bd->startDownloading();
 		}

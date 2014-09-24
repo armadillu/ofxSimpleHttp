@@ -121,6 +121,8 @@ class ofxDownloadCentral{
 				ofAddListener(d->resourcesDownloadFinished, listener, listenerMethod); //set the notification to hit our original caller
 				if(downloaders.size() == 0){
 					downloadStartTime = ofGetElapsedTimef();
+				}else{
+					downloadStartJobsNumber++;
 				}
 				downloaders.push_back(d);
 			}

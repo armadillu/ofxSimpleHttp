@@ -106,6 +106,7 @@ void testApp::keyPressed(int key){
 									 &testApp::downloadFinished,	//callback method
 									 "downloads_"					//destination folder
 									 );
+		downloader.startDownloading();
 	}
 
 	if(key == 'c'){
