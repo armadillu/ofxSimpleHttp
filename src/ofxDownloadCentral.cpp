@@ -46,7 +46,6 @@ void ofxDownloadCentral::setNeedsChecksumMatchToSkipDownload(bool needs){
 void ofxDownloadCentral::startQueue(){
 
 	if (!busy){
-		busy = true;
 		if(downloaders.size() > 0){
 			ofxBatchDownloader * bd = downloaders[0];
 			bd->startDownloading();
