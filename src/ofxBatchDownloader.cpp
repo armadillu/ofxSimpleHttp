@@ -109,6 +109,9 @@ bool ofxBatchDownloader::isBusy(){
 	return busy;
 };
 
+int ofxBatchDownloader::getNumSuppliedUrls(){
+	return originalUrlList.size();
+}
 
 void ofxBatchDownloader::startDownloading(){
 

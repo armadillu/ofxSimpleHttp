@@ -264,12 +264,7 @@ string ofxSimpleHttp::drawableString(){
 		string serverSize;
 		if(r->serverReportedSize != -1){
 			serverSize = bytesToHumanReadable(r->serverReportedSize, 2);
-			string remtimeUnit = "sec";
-			if (timeRemaining > 60.0f){
-				timeRemaining /= 60.0f;
-				remtimeUnit = "min";
-			}
-			remTime = ofToString(timeRemaining, 1) + " " + remtimeUnit;
+			remTime = secondsToHumanReadable(timeRemaining, 1);
 		}else{
 			if (r->downloadedSoFar == 0){
 				string anim[] = {"   ", ".  ", ".. ", "...", " ..", "  ."}; //6 anim states
@@ -281,13 +276,13 @@ string ofxSimpleHttp::drawableString(){
 
 		aux = "//// ofxSimpleHttp fetching //////////////////////////////////////\n"
 		"//\n"
-		"//   url: " + r->url + "\n" +
+		"//   URL: " + r->url + "\n" +
 		string(serverSize.length() ? "//   Progress: " + string((r->downloadProgress >= 0.0) ? ofToString(100.0f * r->downloadProgress, 2) : "") + "%\n" : "") +
 		string(serverSize.length() ? "//   Server Reported Size: " + serverSize + "\n" : "")+
 		"//   Downloaded: " + bytesToHumanReadable((long long)r->downloadedSoFar, 2) + "\n" +
 		"//   Download Speed: " + ofToString(speed, 2) + speedUnit + "\n" +
-		"//   Time Taken so far: " + ofToString(timeSoFar, 1) + " " + soFarTimeUnit + "\n" +
-		"//   Timeout after: " + ofToString(timeOut, 1) + " sec\n" +
+		"//   Time Taken so far: " + secondsToHumanReadable(timeSoFar, 1) + "\n" +
+		"//   Timeout after: " + secondsToHumanReadable(timeOut, 1) + " sec\n" +
 		string((r->serverReportedSize == -1) ? "" :
 			   "//   Estimated Remaining Time: " + remTime + "\n") +
 		"//   Queue Size: " + ofToString(n) + "\n" +
@@ -317,6 +312,26 @@ string ofxSimpleHttp::bytesToHumanReadable(long long bytes, int decimalPrecision
 	}
 	return ret;
 }
+
+
+string ofxSimpleHttp::secondsToHumanReadable(float secs, int decimalPrecision){
+	string ret;
+	if (secs < 60.0f ){ //if in seconds
+		ret = ofToString(secs, decimalPrecision) + " seconds";
+	}else{
+		if (secs < 3600.0f){ //if in min range
+			ret = ofToString(secs / 60.0f, decimalPrecision) + " minutes";
+		}else{ //hours or days
+			if (secs < 86400.0f){ // hours
+				ret = ofToString(secs / 3600.0f, decimalPrecision) + " hours";
+			}else{ //days
+				ret = ofToString(secs / 86400.0f, decimalPrecision) + " days";
+			}
+		}
+	}
+	return ret;
+}
+
 
 
 void ofxSimpleHttp::draw(float x, float y , float w , float h  ){

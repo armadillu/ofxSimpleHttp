@@ -198,6 +198,9 @@ class ofxSimpleHttp : public ofThread, public ofBaseDraws{
 
 		ofEvent<ofxSimpleHttpResponse>		httpResponse;
 
+		static string				bytesToHumanReadable(long long bytes, int decimalPrecision);
+		static string				secondsToHumanReadable(float sec, int decimalPrecision);
+
 	private:
 		
 		bool downloadURL( ofxSimpleHttpResponse * resp, bool sendResultThroughEvents, bool beingCalledFromMainThread, bool saveToDisk );
@@ -219,8 +222,6 @@ class ofxSimpleHttp : public ofThread, public ofBaseDraws{
 		int								maxQueueLen;
 		float							idleTimeAfterEachDownload;	//seconds
 		bool							cancelCurrentDownloadOnDestruction;
-
-		string bytesToHumanReadable(long long bytes, int decimalPrecision);
 	
 		ofxSimpleHttpResponse			response;
 

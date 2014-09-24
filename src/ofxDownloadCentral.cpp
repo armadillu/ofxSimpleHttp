@@ -124,8 +124,15 @@ int ofxDownloadCentral::getNumPendingDownloads(){
 
 string ofxDownloadCentral::getDrawableInfo(bool drawAllPending){
 
-	string aux = "//// ofxDownloadCentral queued Jobs: " + ofToString(downloaders.size()) + " ///////////////////////////\n\n";
 	mutex.lock();
+	int total = 0;
+	for(int i = 0; i < downloaders.size(); i++){
+		total += downloaders[i]->getNumSuppliedUrls();
+	}
+
+	string aux;
+	int numQueuedJobs = downloaders.size();
+	
 	if(downloaders.size() > 0){
 		vector<string> allURLs;
 
@@ -154,7 +161,21 @@ string ofxDownloadCentral::getDrawableInfo(bool drawAllPending){
 		}
 	}
 	mutex.unlock();
-	return aux;
+
+	float elapsedTime = ofGetElapsedTimef() - downloadStartTime;
+	float timeLeft = 0.0f;
+	int numProcessed = downloadStartJobsNumber - numQueuedJobs;
+	if (numProcessed > 0){
+		timeLeft = numQueuedJobs * elapsedTime / float(numProcessed);
+	}
+	string header = "//// ofxDownloadCentral queued Jobs: " + ofToString(numQueuedJobs) + " ///////////////////////////\n"
+	"//// Jobs executed: " + ofToString(numProcessed) + "\n" +
+	"//// Total Downloads Left: " + ofToString(total) + "\n" +
+	"//// Elapsed Time: " + ofxSimpleHttp::secondsToHumanReadable(elapsedTime, 1) + "\n" +
+	"//// Estimated Time Left (very rough): " + ofxSimpleHttp::secondsToHumanReadable(timeLeft, 1)
+	+ "\n\n";
+
+	return header + aux;
 }
 
 

@@ -37,13 +37,16 @@
  3 - fill in a list of url with assets you need downloaded
 	vector<string> urlList;
  
- 4 - start the download
+ 4 - supply a list the download
  
 	dlc.downloadResources( urlList, this, &myClass::downloadsFinished, destinationFolder );
 
 	it will all will be downloaded in a bg thread
 	you will be notified from the main thread when they are done
 	you will get a report
+ 
+ 4 - start the download
+ dlc.start
 
  */
 
@@ -116,8 +119,10 @@ class ofxDownloadCentral{
 				d->setIdleTimeAfterEachDownload(idleTimeAfterDownload);
 				d->addResourcesToDownloadList(urlList, sha1List);
 				ofAddListener(d->resourcesDownloadFinished, listener, listenerMethod); //set the notification to hit our original caller
+				if(downloaders.size() == 0){
+					downloadStartTime = ofGetElapsedTimef();
+				}
 				downloaders.push_back(d);
-				if (!busy) startQueue();
 			}
 		}
 
@@ -133,6 +138,13 @@ class ofxDownloadCentral{
 			downloadResources(urlList, shas, listener, listenerMethod, destinationFolder);
 		}
 
+		void startDownloading(){
+			if (!busy){
+				downloadStartJobsNumber = downloaders.size();
+				startQueue();
+			}
+		}
+
 	private:
 
 		void startQueue();
@@ -143,6 +155,8 @@ class ofxDownloadCentral{
 		bool								verbose;
 		bool								onlySkipDownloadIfChecksumMatches;
 		float								idleTimeAfterDownload; //float sec
+		float								downloadStartTime;
+		int									downloadStartJobsNumber;
 		ofMutex								mutex;
 		int									maxURLsToList;
 };

@@ -65,6 +65,7 @@ public:
 	void setNeedsChecksumMatchToSkipDownload(bool needsChecksum);
 	void setIdleTimeAfterEachDownload(float seconds); //wait a bit before notifying once the dowload is over
 
+	int getNumSuppliedUrls();
 	int pendingDownloads();
 	bool isBusy();
 	vector<string> pendingURLs();
