@@ -337,9 +337,9 @@ string ofxSimpleHttp::secondsToHumanReadable(float secs, int decimalPrecision){
 
 
 
-void ofxSimpleHttp::draw(float x, float y , float w , float h  ) const {
+void ofxSimpleHttp::draw(float x, float y , float w , float h  )  {
 	// drawableString is not const, which is freaking out the windows compiler
-	string aux = "[DISABLED]"; //drawableString();
+	string aux = drawableString();
 	//	for(int i = 0; i < aux.length(); i+= w / 8){	//break up the string with \n to fit in supplied width
 	//		aux.insert(i, "\n");
 	//	}
@@ -347,7 +347,7 @@ void ofxSimpleHttp::draw(float x, float y , float w , float h  ) const {
 	ofDrawBitmapString(aux, x + 3, y + 12 );
 }
 
-void ofxSimpleHttp::draw(float x, float y) const {
+void ofxSimpleHttp::draw(float x, float y) {
 	draw(x,y, ofGetWidth() -x, 100);
 }
 

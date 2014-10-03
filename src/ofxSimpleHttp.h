@@ -147,7 +147,7 @@ struct ofxSimpleHttpResponse{
 };
 
 
-class ofxSimpleHttp : public ofThread, public ofBaseDraws{
+class ofxSimpleHttp : public ofThread{
 	
 	public:
 
@@ -167,12 +167,12 @@ class ofxSimpleHttp : public ofThread, public ofBaseDraws{
 
 		void						update(); //this is mainly used to get notifications in the main thread
 
-		void						draw(float x, float y , float w , float h ) const;	//draws a box
-		void						draw(float x, float y ) const;	//draws a box
+		void						draw(float x, float y , float w , float h);	//draws a box
+		void						draw(float x, float y);	//draws a box
 		string						drawableString();
 
-		float getHeight() const { if ( isThreadRunning() ) return 18 * 4; else return 18; }
-		float getWidth() const { return 320; }
+		float getHeight() { if ( isThreadRunning() ) return 18 * 4; else return 18; }
+		float getWidth() { return 320; }
 	
 		void						stopCurrentDownload(bool emptyQueue); //if there's more downloads on queue, next will start immediatelly
 
