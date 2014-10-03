@@ -337,17 +337,19 @@ string ofxSimpleHttp::secondsToHumanReadable(float secs, int decimalPrecision){
 
 
 
-void ofxSimpleHttp::draw(float x, float y , float w , float h  ){
-
+void ofxSimpleHttp::draw(float x, float y , float w , float h  ) const {
+#ifndef TARGET_WIN32
+	// drawableString is not const, which is freaking out the windows compiler
 	string aux = drawableString();
 	//	for(int i = 0; i < aux.length(); i+= w / 8){	//break up the string with \n to fit in supplied width
 	//		aux.insert(i, "\n");
 	//	}
 	ofSetColor(0,127,255);
 	ofDrawBitmapString(aux, x + 3, y + 12 );
+#endif
 }
 
-void ofxSimpleHttp::draw(float x, float y){
+void ofxSimpleHttp::draw(float x, float y) const {
 	draw(x,y, ofGetWidth() -x, 100);
 }
 
