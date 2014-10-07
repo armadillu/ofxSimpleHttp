@@ -241,12 +241,6 @@ string ofxSimpleHttp::drawableString(){
 	int n = q.size();
 	if( isThreadRunning() && n > 0 ){
 		ofxSimpleHttpResponse * r = q.front();
-		float speed = r->downloadSpeed / 1024.0f;
-		string speedUnit = " Mb/sec";
-		if(speed < 1.0){
-			speed *= 1024.0f;
-			speedUnit = " Kb/sec";
-		}
 		float timeSoFar = ofGetElapsedTimef() - r->timeDowloadStarted; //seconds
 		float timeRemaining = 0.0f;
 		string soFarTimeUnit = "sec";
@@ -283,7 +277,7 @@ string ofxSimpleHttp::drawableString(){
 		string(serverSize.length() ?
 		"//   Server Reported Size:     " + spa + serverSize + "\n" : "")+
 		"//   Downloaded:               " + spa + bytesToHumanReadable((long long)r->downloadedSoFar, 2) + "\n" +
-		"//   Download Speed:           " + spa + ofToString(speed, 2) + speedUnit + "\n" +
+		"//   Download Speed:           " + spa + bytesToHumanReadable((long long)r->downloadSpeed * 1024.0f, 2) + "/sec\n" +
 		"//   Time Taken so far:        " + spa + secondsToHumanReadable(timeSoFar, 1) + "\n" +
 		"//   Timeout after:            " + spa + secondsToHumanReadable(timeOut, 1) + "\n" +
 		string((r->serverReportedSize == -1) ? "" :
