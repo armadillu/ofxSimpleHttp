@@ -298,12 +298,12 @@ string ofxSimpleHttp::bytesToHumanReadable(long long bytes, int decimalPrecision
 		ret = ofToString(bytes) + " bytes";
 	}else{
 		if (bytes < 1024 * 1024){ //if in kb range
-			ret = ofToString(bytes / float(1024), decimalPrecision) + " Kb";
+			ret = ofToString(bytes / float(1024), decimalPrecision) + " KB";
 		}else{
 			if (bytes < (1024 * 1024 * 1024)){ //if in Mb range
-				ret = ofToString(bytes / float(1024 * 1024), decimalPrecision) + " Mb";
+				ret = ofToString(bytes / float(1024 * 1024), decimalPrecision) + " MB";
 			}else{
-				ret = ofToString(bytes / float(1024 * 1024 * 1024), decimalPrecision) + " Gb";
+				ret = ofToString(bytes / float(1024 * 1024 * 1024), decimalPrecision) + " GB";
 			}
 		}
 	}
