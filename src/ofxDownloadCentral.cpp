@@ -139,6 +139,8 @@ string ofxDownloadCentral::getDrawableInfo(bool drawAllPending){
 		ofxBatchDownloader * bd = downloaders[0];
 		aux += bd->getDrawableString() + "\n";
 
+		total -= bd->getNumSuppliedUrls() - bd->pendingDownloads();
+
 		if(drawAllPending){
 			int c = 0;
 			aux += "//// Remaining Downloads /////////////////////////////////////////\n";
