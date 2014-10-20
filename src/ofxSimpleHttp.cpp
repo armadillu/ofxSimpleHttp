@@ -272,7 +272,7 @@ string ofxSimpleHttp::drawableString(){
 		aux = "//// ofxSimpleHttp now fetching //////////////////////////////////\n"
 		"//\n"
 		"//   URL: " + r->url + "\n" +
-		"//   To: " + r->absolutePath + "\n" +
+		string( r->downloadToDisk ? "//   Save To: " + r->absolutePath + "\n" : "") +
 		string(serverSize.length() ?
 		"//   Progress:                 " + spa + string((r->downloadProgress >= 0.0) ? ofToString(100.0f * r->downloadProgress, 2) : "") + "%\n" : "") +
 		string(serverSize.length() ?
