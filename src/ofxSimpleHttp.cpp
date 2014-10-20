@@ -272,6 +272,7 @@ string ofxSimpleHttp::drawableString(){
 		aux = "//// ofxSimpleHttp now fetching //////////////////////////////////\n"
 		"//\n"
 		"//   URL: " + r->url + "\n" +
+		"//   To: " + r->absolutePath + "\n" +
 		string(serverSize.length() ?
 		"//   Progress:                 " + spa + string((r->downloadProgress >= 0.0) ? ofToString(100.0f * r->downloadProgress, 2) : "") + "%\n" : "") +
 		string(serverSize.length() ?
@@ -345,10 +346,20 @@ void ofxSimpleHttp::draw(float x, float y) {
 	draw(x,y, ofGetWidth() -x, 100);
 }
 
+string removeInvalidCharacters(string input){
+	static char invalidChars[] = {'?', '\\', '/', '*', '<', '>', '"', ':' };
+	int howMany = sizeof(invalidChars) / sizeof(invalidChars[0]);
+	char replacementChar = '_';
+	for(int i = 0; i < howMany; i++){
+		std::replace( input.begin(), input.end(), invalidChars[i], replacementChar);
+	}
+	return input;
+}
 
 string ofxSimpleHttp::extractFileFromUrl(string url){
 	int found = url.find_last_of("/");
 	string file = url.substr(found + 1);
+	file = removeInvalidCharacters(file);
 	if (file.length() == 0){
 		file = OFX_SIMPLEHTTP_UNTITLED_FILENAME;
 	}
