@@ -10,6 +10,8 @@
 #include "ofxDownloadCentral.h"
 #include "ofEvents.h"
 #include "ofEventUtils.h"
+#include "Poco/LocalDateTime.h"
+#include "Poco/DateTimeFormatter.h"
 
 ofxDownloadCentral::ofxDownloadCentral(){
 
@@ -175,8 +177,15 @@ string ofxDownloadCentral::getDrawableInfo(bool drawAllPending){
 	float elapsedTime = ofGetElapsedTimef() - downloadStartTime;
 	float timeLeft = 0.0f;
 	int numProcessed = downloadStartJobsNumber - numQueuedJobs;
+	string estFinish;
 	if (numProcessed > 0){
 		timeLeft = numQueuedJobs * elapsedTime / float(numProcessed);
+		Poco::Timespan timeToAdd;
+		timeToAdd.assign(timeLeft, 0);
+		string timeFormat = "%H:%M on %w %e, %b %Y";
+		Poco::LocalDateTime now;
+		now += timeToAdd;
+		estFinish = Poco::DateTimeFormatter::format(now, timeFormat);
 	}
 
 	string spa = "     ";
@@ -184,7 +193,8 @@ string ofxDownloadCentral::getDrawableInfo(bool drawAllPending){
 	"//// Jobs executed:        " + spa + ofToString(numProcessed) + "\n" +
 	"//// Total Downloads Left: " + spa + ofToString(total) + "\n" +
 	"//// Elapsed Time:         " + spa + ofxSimpleHttp::secondsToHumanReadable(elapsedTime, 1) + "\n" +
-	"//// Estimated Time Left:  " + spa + ofxSimpleHttp::secondsToHumanReadable(timeLeft, 1) + "\n" +
+	"//// Estimated Time Left:  " + spa + ofxSimpleHttp::secondsToHumanReadable(timeLeft, 1) + + "\n"
+	"//// Estimated Completion: " + spa + estFinish + "\n" +
 	"//// Avg Download Speed:   " + spa + ofxSimpleHttp::bytesToHumanReadable(avgSpeed, 1) + "/sec" +
 	"\n\n";
 	return header + aux;
