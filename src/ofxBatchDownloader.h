@@ -68,6 +68,7 @@ public:
 	int getNumSuppliedUrls();
 	int pendingDownloads();
 	bool isBusy();
+	float getAverageSpeed(); //bytes/sec
 	vector<string> pendingURLs();
 
 	ofEvent<ofxBatchDownloaderReport>	resourcesDownloadFinished;

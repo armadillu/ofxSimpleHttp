@@ -38,6 +38,7 @@ ofxSimpleHttp::ofxSimpleHttp(){
 	notifyFromMainThread = true;
 	onlySkipDownloadIfChecksumMatches = false;
 	idleTimeAfterEachDownload = 0.0;
+	avgDownloadSpeed = 0.0f;
 
 	if (pocoHttpInited == 0){ //only register once!
 //		try{
@@ -233,6 +234,23 @@ void ofxSimpleHttp::stopCurrentDownload(bool emptyQueue){
 	unlock();
 }
 
+float ofxSimpleHttp::getCurrentDownloadSpeed(){
+	float downloadSpeed = 0.0f;
+	lock();
+	int n = q.size();
+	if ( isThreadRunning() && n > 0){
+		ofxSimpleHttpResponse * r = q.front();
+		downloadSpeed = r->downloadSpeed;
+	}
+	unlock();
+	return downloadSpeed;
+}
+
+
+float ofxSimpleHttp::getAvgDownloadSpeed(){
+	return avgDownloadSpeed;
+}
+
 
 string ofxSimpleHttp::drawableString(){
 
@@ -254,12 +272,13 @@ string ofxSimpleHttp::drawableString(){
 			timeRemaining = (timeSoFar / r->downloadProgress) - timeSoFar;
 		}
 		string remTime;
-
 		string serverSize;
+
 		if(r->serverReportedSize != -1){
 			serverSize = bytesToHumanReadable(r->serverReportedSize, 2);
 			remTime = secondsToHumanReadable(timeRemaining, 1);
 		}else{
+			remTime = "unknown";
 			if (r->downloadedSoFar == 0){
 				string anim[] = {"   ", ".  ", ".. ", "...", " ..", "  ."}; //6 anim states
 				serverSize = "waiting for server " + anim[ int(0.2 * ofGetFrameNum())%6 ];
@@ -278,11 +297,10 @@ string ofxSimpleHttp::drawableString(){
 		string(serverSize.length() ?
 		"//   Server Reported Size:     " + spa + serverSize + "\n" : "")+
 		"//   Downloaded:               " + spa + bytesToHumanReadable((long long)r->downloadedSoFar, 2) + "\n" +
-		"//   Download Speed:           " + spa + bytesToHumanReadable((long long)r->downloadSpeed * 1024.0f, 2) + "/sec\n" +
+		"//   Download Speed:           " + spa + bytesToHumanReadable((long long)r->downloadSpeed, 2) + "/sec\n" +
 		"//   Time Taken so far:        " + spa + secondsToHumanReadable(timeSoFar, 1) + "\n" +
 		"//   Timeout after:            " + spa + secondsToHumanReadable(timeOut, 1) + "\n" +
-		string((r->serverReportedSize == -1) ? "" :
-		"//   Estimated Remaining Time: " + spa + remTime + "\n") +
+		"//   Estimated Remaining Time: " + spa + remTime + "\n" +
 		"//   Queue Size:               " + spa + ofToString(n) + "\n" +
 		"//  \n";
 		aux += "//////////////////////////////////////////////////////////////////\n";
@@ -540,6 +558,8 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 
 			ofFile f;
 			bool openOK = f.open(ofToDataPath(srcFile, true), ofFile::ReadOnly);
+			resp->downloadSpeed = 0;
+			resp->downloadedBytes = 0;
 			if(f.exists()){
 				uint64_t size = f.getSize();
 				resp->serverReportedSize = size;
@@ -551,10 +571,6 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 				resp->ok = true;
 				resp->status = 200;
 				resp->timeTakenToDownload = ofGetElapsedTimef() - resp->timeDowloadStarted;
-				resp->downloadSpeed = 0;
-				resp->avgDownloadSpeed = 0;
-				resp->downloadedBytes = 0;
-
 				rs.close();
 				ok = TRUE;
 			}else{
@@ -562,9 +578,6 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 				resp->status = 404; //assume not found? todo!
 				resp->reasonForStatus = "Can't load File!!";
 				resp->timeTakenToDownload = 0;
-				resp->downloadSpeed = 0;
-				resp->avgDownloadSpeed = 0;
-				resp->downloadedBytes = 0;
 				ok = TRUE;
 			}
 			f.close();
@@ -630,9 +643,6 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 				msg = "downloadURL() >> server reports request status: " +ofToString(resp->status) + " - ", resp->reasonForStatus + ")";
 				ofLogVerbose("ofxSimpleHttp", msg );
 
-
-
-				//StreamCopier::copyStream(rs, myfile); //write to file here!
 				int copySize = 0;
 				if(saveToDisk){
 					copySize = streamCopyWithProgress(rs, myfile, resp->serverReportedSize, resp->downloadedSoFar,
@@ -650,7 +660,6 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 						myfile.close();
 					}
 
-
 					resp->timeTakenToDownload = ofGetElapsedTimef() - resp->timeDowloadStarted;
 					if (resp->expectedChecksum.length() > 0){
 						resp->checksumOK = ofxChecksum::sha1(resp->absolutePath, resp->expectedChecksum);
@@ -661,7 +670,6 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 					}
 
 					resp->downloadSpeed = 0;
-					resp->avgDownloadSpeed = 0;
 					resp->downloadedBytes = 0;
 
 					if (resp->downloadCanceled){
@@ -694,8 +702,12 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 							resp->downloadedBytes = resp->responseBody.size();
 						}
 
-						resp->avgDownloadSpeed = (resp->downloadedBytes / 1024.) / resp->timeTakenToDownload; //kb/sec
-
+						resp->avgDownloadSpeed = (resp->downloadedBytes ) / resp->timeTakenToDownload; //kb/sec
+						if (avgDownloadSpeed == 0.0f){
+							avgDownloadSpeed = resp->avgDownloadSpeed;
+						}else{
+							avgDownloadSpeed = avgDownloadSpeed * 0.75f + 0.25f * resp->avgDownloadSpeed;
+						}
 
 						//check download file size missmatch
 						if ( resp->serverReportedSize > 0 && resp->serverReportedSize != resp->downloadedBytes) {
@@ -728,7 +740,6 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 								resp->ok = false;
 							}
 						}
-
 						ofLogVerbose() << "ofxSimpleHttp: download finished! " << resp->url << " !";
 						ok = TRUE;
 					}
@@ -781,7 +792,7 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 
 		if ( resp->notifyOnSuccess ){
 
-			if(idleTimeAfterEachDownload > 0.0){
+			if(idleTimeAfterEachDownload > 0.0f){
 				ofSleepMillis(idleTimeAfterEachDownload * 1000);
 			}
 
@@ -863,7 +874,7 @@ std::streamsize ofxSimpleHttp::streamCopyWithProgress(std::istream & istr, std::
 			float time = (ofGetElapsedTimef() - t1);
 			float newSpeed = 0;
 			if(time > 0.0f){
-				newSpeed = (n / 1024.0f ) / time;
+				newSpeed = (n) / time;
 			}
 			avgSpeed = 0.1 * newSpeed + 0.9 * avgSpeed;
 			speed = avgSpeed;
@@ -908,7 +919,7 @@ std::streamsize ofxSimpleHttp::copyToStringWithProgress(std::istream& istr, std:
 			float time = (ofGetElapsedTimef() - t1);
 			float newSpeed = 0;
 			if(time > 0.0f){
-				newSpeed = (COPY_BUFFER_SIZE / 1024.0f ) / time ;
+				newSpeed = (COPY_BUFFER_SIZE ) / time ;
 			}
 			avgSpeed = 0.1 * newSpeed + 0.9 * avgSpeed;
 			speed = avgSpeed;

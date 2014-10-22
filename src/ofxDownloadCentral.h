@@ -159,6 +159,7 @@ class ofxDownloadCentral{
 		float								idleTimeAfterDownload; //float sec
 		float								downloadStartTime;
 		int									downloadStartJobsNumber;
+		float								avgSpeed;	 //bytes/sec
 		ofMutex								mutex;
 		int									maxURLsToList;
 };

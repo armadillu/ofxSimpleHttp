@@ -88,8 +88,8 @@ struct ofxSimpleHttpResponse{
 	Poco::Timestamp				timestamp;			// time of the response
 	float						downloadProgress;	// [0..1]
 	std::streamsize				downloadedSoFar;
-	float						downloadSpeed;		// kb/sec, only >0 when downloading, immediate
-	float						avgDownloadSpeed;	// kb/sec, read after download happened
+	float						downloadSpeed;		// bytes/sec, only >0 when downloading, immediate
+	float						avgDownloadSpeed;	// bytes/sec, read after download happened
 	long int					downloadedBytes;
 	string						url;
 	string						fileName;			// file + extension, no path
@@ -171,14 +171,16 @@ class ofxSimpleHttp : public ofThread{
 		void						draw(float x, float y);	//draws a box
 		string						drawableString();
 
-		float getHeight() { if ( isThreadRunning() ) return 18 * 4; else return 18; }
+		float getHeight() { if ( isThreadRunning() ) return 18 * 4; else return 18; } //TODO!
 		float getWidth() { return 320; }
 	
 		void						stopCurrentDownload(bool emptyQueue); //if there's more downloads on queue, next will start immediatelly
 
 		int							getPendingDownloads();
 		float						getCurrentDownloadProgress();	//retuns [0..1] how complete is the download
-		string						getCurrentDownloadFileName();
+		string						getCurrentDownloadFileName();	//only while downloading
+		float						getCurrentDownloadSpeed();		// kb/sec - only whilde downloading will be > 0!
+		float						getAvgDownloadSpeed();			// kb/sec - also when not download
 
 		// properties //////////////////////////////////////////////////////////
 	
@@ -221,6 +223,7 @@ class ofxSimpleHttp : public ofThread{
 		int								queueLenEstimation;
 		int								maxQueueLen;
 		float							idleTimeAfterEachDownload;	//seconds
+		float							avgDownloadSpeed;
 		bool							cancelCurrentDownloadOnDestruction;
 	
 		ofxSimpleHttpResponse			response;

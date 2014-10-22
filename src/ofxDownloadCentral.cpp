@@ -17,6 +17,8 @@ ofxDownloadCentral::ofxDownloadCentral(){
 	busy = false;
 	onlySkipDownloadIfChecksumMatches = true;
 	maxURLsToList = 10;
+	idleTimeAfterDownload = 0.0f;
+	avgSpeed = 0.0f;
 }
 
 ofxDownloadCentral::~ofxDownloadCentral(){
@@ -63,8 +65,13 @@ void ofxDownloadCentral::update(){
 			ofxBatchDownloader * bd = downloaders[0];
 			bd->update();
 			if (!bd->isBusy()){ //this one is over! start the next one!
-				//ofRemoveEvent??? mmm... TODO!
 				downloaders.erase(downloaders.begin());
+				if(avgSpeed == 0.0f){
+					avgSpeed = bd->getAverageSpeed();
+				}else{
+					avgSpeed = avgSpeed * 0.75 + 0.25 * bd->getAverageSpeed();
+				}
+
 				delete bd;
 				busy = false;
 				if (downloaders.size()){
@@ -132,7 +139,6 @@ string ofxDownloadCentral::getDrawableInfo(bool drawAllPending){
 
 	string aux;
 	int numQueuedJobs = downloaders.size();
-	
 	if(downloaders.size() > 0){
 		vector<string> allURLs;
 
@@ -145,7 +151,7 @@ string ofxDownloadCentral::getDrawableInfo(bool drawAllPending){
 			int c = 0;
 			aux += "//// Remaining Downloads /////////////////////////////////////////\n";
 			vector<string> allPending;
-
+			bool done = false;
 			for(int i = 0; i < downloaders.size(); i++){
 				vector<string> pending = downloaders[i]->pendingURLs();
 				for(int j = 0; j < pending.size(); j++){
@@ -154,10 +160,12 @@ string ofxDownloadCentral::getDrawableInfo(bool drawAllPending){
 						aux += "//   " + pending[j] + "\n";
 					}
 					if (c == maxURLsToList ){
-						aux += "//   (...)\n";
+						aux += "//   ...\n";
+						done = true;
 					}
 					c++;
 				}
+				if (done ) break;
 			}
 			aux += "//////////////////////////////////////////////////////////////////";
 		}
@@ -176,9 +184,9 @@ string ofxDownloadCentral::getDrawableInfo(bool drawAllPending){
 	"//// Jobs executed:        " + spa + ofToString(numProcessed) + "\n" +
 	"//// Total Downloads Left: " + spa + ofToString(total) + "\n" +
 	"//// Elapsed Time:         " + spa + ofxSimpleHttp::secondsToHumanReadable(elapsedTime, 1) + "\n" +
-	"//// Estimated Time Left:  " + spa + ofxSimpleHttp::secondsToHumanReadable(timeLeft, 1)
-	+ "\n\n";
-
+	"//// Estimated Time Left:  " + spa + ofxSimpleHttp::secondsToHumanReadable(timeLeft, 1) + "\n" +
+	"//// Avg Download Speed:   " + spa + ofxSimpleHttp::bytesToHumanReadable(avgSpeed, 1) + "/sec" +
+	"\n\n";
 	return header + aux;
 }
 

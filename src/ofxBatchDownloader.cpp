@@ -169,6 +169,11 @@ void ofxBatchDownloader::httpResult(ofxSimpleHttpResponse &r){
 }
 
 
+float ofxBatchDownloader::getAverageSpeed(){
+	return http.getAvgDownloadSpeed();
+}
+
+
 vector<string> ofxBatchDownloader::pendingURLs(){
 
 	vector<string> res;
