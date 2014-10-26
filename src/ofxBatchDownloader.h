@@ -65,6 +65,7 @@ public:
 	void setNeedsChecksumMatchToSkipDownload(bool needsChecksum);
 	void setIdleTimeAfterEachDownload(float seconds); //wait a bit before notifying once the dowload is over
 
+	unsigned long int getDownloadedBytesSoFar(){ return downloadedSoFar;}
 	int getNumSuppliedUrls();
 	int pendingDownloads();
 	bool isBusy();
@@ -89,7 +90,9 @@ private:
 
 	void httpResult(ofxSimpleHttpResponse &response);
 	void reset();
-	
+	unsigned long int					downloadedSoFar; //bytes
+
+
 };
 
 #endif

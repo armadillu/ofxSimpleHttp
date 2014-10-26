@@ -121,6 +121,7 @@ class ofxDownloadCentral{
 				ofAddListener(d->resourcesDownloadFinished, listener, listenerMethod); //set the notification to hit our original caller
 				if(downloaders.size() == 0){
 					downloadStartTime = ofGetElapsedTimef();
+					downloadedSoFar = 0;
 				}else{
 					downloadStartJobsNumber++;
 				}
@@ -158,6 +159,7 @@ class ofxDownloadCentral{
 		bool								onlySkipDownloadIfChecksumMatches;
 		float								idleTimeAfterDownload; //float sec
 		float								downloadStartTime;
+		unsigned long int					downloadedSoFar; //bytes
 		int									downloadStartJobsNumber;
 		float								avgSpeed;	 //bytes/sec
 		ofMutex								mutex;

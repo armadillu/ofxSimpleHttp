@@ -13,6 +13,7 @@ ofxBatchDownloader::ofxBatchDownloader(){
 	http.setVerbose(false);
 	busy = false;
 	downloadFolder = "_downloads_";
+	downloadedSoFar = 0;
 	//add download listener
 	ofAddListener(http.httpResponse, this, &ofxBatchDownloader::httpResult);
 }
@@ -153,6 +154,8 @@ void ofxBatchDownloader::httpResult(ofxSimpleHttpResponse &r){
 			ofLogError() << "ofxBatchDownloader FAILED TO download " << r.url;
 		}
 	}
+
+	downloadedSoFar += r.downloadedBytes;
 
 	if (originalUrlList.size() == failedList.size() + okList.size()){
 		//we are done!

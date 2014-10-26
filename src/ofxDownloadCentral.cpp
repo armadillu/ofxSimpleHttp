@@ -73,6 +73,7 @@ void ofxDownloadCentral::update(){
 				}else{
 					avgSpeed = avgSpeed * 0.75 + 0.25 * bd->getAverageSpeed();
 				}
+				downloadedSoFar += bd->getDownloadedBytesSoFar();
 
 				delete bd;
 				busy = false;
@@ -193,9 +194,10 @@ string ofxDownloadCentral::getDrawableInfo(bool drawAllPending){
 	"//// Jobs executed:        " + spa + ofToString(numProcessed) + "\n" +
 	"//// Total Downloads Left: " + spa + ofToString(total) + "\n" +
 	"//// Elapsed Time:         " + spa + ofxSimpleHttp::secondsToHumanReadable(elapsedTime, 1) + "\n" +
-	"//// Estimated Time Left:  " + spa + ofxSimpleHttp::secondsToHumanReadable(timeLeft, 1) + + "\n"
+	"//// Estimated Time Left:  " + spa + ofxSimpleHttp::secondsToHumanReadable(timeLeft, 1) + "\n"
 	"//// Estimated Completion: " + spa + estFinish + "\n" +
-	"//// Avg Download Speed:   " + spa + ofxSimpleHttp::bytesToHumanReadable(avgSpeed, 1) + "/sec" +
+	"//// Avg Download Speed:   " + spa + ofxSimpleHttp::bytesToHumanReadable(avgSpeed, 1) + "/sec\n" +
+	"//// Downloaded So Far:    " + spa + ofxSimpleHttp::bytesToHumanReadable(downloadedSoFar, 1) +
 	"\n\n";
 	return header + aux;
 }
