@@ -28,6 +28,8 @@ Context::Ptr ofxSimpleHttp::pContext = NULL;
 
 
 ofxSimpleHttp::ofxSimpleHttp(){
+
+	COPY_BUFFER_SIZE = 1024 * 128; // 128 kb buffer size
 	cancelCurrentDownloadOnDestruction = true;
 	timeOut = 10;
 	queueLenEstimation = 0;
@@ -91,6 +93,10 @@ ofxSimpleHttp::~ofxSimpleHttp(){
 	}
 }
 
+
+void ofxSimpleHttp::setCopyBufferSize(int KB){
+	COPY_BUFFER_SIZE = KB * 1024;
+}
 
 void ofxSimpleHttp::setCancelCurrentDownloadOnDestruction(bool doIt){
 	cancelCurrentDownloadOnDestruction = doIt;
@@ -252,6 +258,31 @@ float ofxSimpleHttp::getAvgDownloadSpeed(){
 }
 
 
+string ofxSimpleHttp::minimalDrawableString(){
+
+	string msg = "ofxSimpleHttp: ";
+	lock();
+	int n = q.size();
+	if( isThreadRunning() && n > 0 ){
+		ofxSimpleHttpResponse * r = q.front();
+		char aux[10];
+		sprintf(aux, "% 3d%%", (int)(r->downloadProgress * 100.0f));
+		msg += string(aux) + " [";
+		float barLen = 12;
+		float numFill =  r->downloadProgress * barLen;
+		for(int i = 0; i < barLen; i++){
+			msg += string(i < numFill ? "*" : " ");
+		}
+		msg += "] ";
+		msg += string( r->downloadToDisk ? ofFilePath::getFileName(r->absolutePath) : "");
+	}else{
+		msg += "idle";
+	}
+	unlock();
+	return msg;
+}
+
+
 string ofxSimpleHttp::drawableString(){
 
 	string aux;
@@ -351,18 +382,25 @@ string ofxSimpleHttp::secondsToHumanReadable(float secs, int decimalPrecision){
 
 
 void ofxSimpleHttp::draw(float x, float y , float w , float h  )  {
-	// drawableString is not const, which is freaking out the windows compiler
 	string aux = drawableString();
-	//	for(int i = 0; i < aux.length(); i+= w / 8){	//break up the string with \n to fit in supplied width
-	//		aux.insert(i, "\n");
-	//	}
-	ofSetColor(0,127,255);
 	ofDrawBitmapString(aux, x + 3, y + 12 );
 }
+
 
 void ofxSimpleHttp::draw(float x, float y) {
 	draw(x,y, ofGetWidth() -x, 100);
 }
+
+
+void ofxSimpleHttp::drawMinimal(float x, float y, bool withBg, ofColor fontColor, ofColor bgColor) {
+	string aux = minimalDrawableString();
+	if(withBg){
+		ofDrawBitmapStringHighlight(aux, x + 3, y + 12, bgColor, fontColor );
+	}else{
+		ofDrawBitmapString(aux, x + 3, y + 12);
+	}
+}
+
 
 string removeInvalidCharacters(string input){
 	static char invalidChars[] = {'?', '\\', '/', '*', '<', '>', '"', ':' };

@@ -62,7 +62,6 @@
 #include "Poco/Exception.h"
 #include <iostream>
 
-#define COPY_BUFFER_SIZE					1024 * 128   /*128 Kb buffer size*/
 #define OFX_SIMPLEHTTP_UNTITLED_FILENAME	"unnamed.file"
 
 using namespace Poco::Net;
@@ -171,6 +170,10 @@ class ofxSimpleHttp : public ofThread{
 		void						draw(float x, float y);	//draws a box
 		string						drawableString();
 
+	void						drawMinimal(float x, float y, bool withBg = false, ofColor fontColor = ofColor::white,
+											ofColor bgColor = ofColor::black);	//draws a one-line status
+		string						minimalDrawableString();
+
 		float getHeight() { if ( isThreadRunning() ) return 18 * 4; else return 18; } //TODO!
 		float getWidth() { return 320; }
 	
@@ -188,6 +191,7 @@ class ofxSimpleHttp : public ofThread{
 		void						setVerbose(bool verbose); //unused
 		void						setUserAgent( string newUserAgent );
 		void						setMaxQueueLength(int len);
+		void 						setCopyBufferSize(int KB); /*in KiloBytes (1 -> 1024 bytes)*/
 		void						setIdleTimeAfterEachDownload(float seconds); //wait a bit before notifying once the dowload is over
 		void						setCancelCurrentDownloadOnDestruction(bool doIt);
 		void						addCustomHttpHeader(string headerName, string headerContent);
@@ -241,4 +245,6 @@ class ofxSimpleHttp : public ofThread{
 
 		static int pocoHttpInited;
 		static Context::Ptr pContext;
+
+		int COPY_BUFFER_SIZE;
 };
