@@ -23,7 +23,6 @@
 #include <fstream>      // std::ifstream
 
 
-int ofxSimpleHttp::pocoHttpInited = 0;
 Context::Ptr ofxSimpleHttp::pContext = NULL;
 
 
@@ -42,24 +41,6 @@ ofxSimpleHttp::ofxSimpleHttp(){
 	idleTimeAfterEachDownload = 0.0;
 	avgDownloadSpeed = 0.0f;
 
-	if (pocoHttpInited == 0){ //only register once!
-//		try{
-//			HTTPStreamFactory::registerFactory();
-//		}catch(...){
-//			ofLogError() << "cant register HTTPStreamFactory";
-//		}
-//		try{
-//			HTTPSStreamFactory::registerFactory();
-//		}catch(...){
-//			ofLogError() << "cant register HTTPSStreamFactory";
-//		}
-		if(!pContext){
-			pContext = new Context(Context::CLIENT_USE, "", Context::VERIFY_NONE);
-			Poco::Net::SSLManager::instance().initializeClient(0, 0, pContext);
-		}
-		pocoHttpInited++;
-		ofLogVerbose() << "initing poco https";
-	}
 }
 
 ofxSimpleHttp::~ofxSimpleHttp(){
@@ -83,16 +64,24 @@ ofxSimpleHttp::~ofxSimpleHttp(){
 		q.pop();
 		unlock();
 	}
-	pocoHttpInited--;
-	if(pocoHttpInited == 0){
-		//HTTPStreamFactory::unregisterFactory();
-		//HTTPSStreamFactory::unregisterFactory();
-		Poco::Net::SSLManager::instance().shutdown();
-		pContext = NULL;
-		ofLogVerbose() << "uniniting poco https";
+}
+
+
+void ofxSimpleHttp::createSslContext(){
+	if(!pContext){
+		pContext = new Context(Context::CLIENT_USE, "", Context::VERIFY_NONE);
+		Poco::Net::SSLManager::instance().initializeClient(0, 0, pContext);
+		ofLogWarning() << "initing poco https";
 	}
 }
 
+void ofxSimpleHttp::destroySslContext(){
+	if(pContext){
+		Poco::Net::SSLManager::instance().shutdown();
+		pContext = NULL;
+		ofLogWarning() << "uniniting poco https";
+	}
+}
 
 void ofxSimpleHttp::setCopyBufferSize(int KB){
 	COPY_BUFFER_SIZE = KB * 1024;

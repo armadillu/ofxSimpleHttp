@@ -207,6 +207,11 @@ class ofxSimpleHttp : public ofThread{
 		static string				bytesToHumanReadable(long long bytes, int decimalPrecision);
 		static string				secondsToHumanReadable(float sec, int decimalPrecision);
 
+		// https support //////////////////////////////////////////////////////////////
+		static void 				createSslContext(); //call once, before any https connection is made
+		static void 				destroySslContext(); //call once when no longer need https, once all trasnfers are finished
+														//or just b4 app exit
+
 	private:
 		
 		bool downloadURL( ofxSimpleHttpResponse * resp, bool sendResultThroughEvents, bool beingCalledFromMainThread, bool saveToDisk );
@@ -243,7 +248,6 @@ class ofxSimpleHttp : public ofThread{
 												 std::streamsize &currentBytes,
 												 float & progress, float & speed, const bool &shouldCancel);
 
-		static int pocoHttpInited;
 		static Context::Ptr pContext;
 
 		int COPY_BUFFER_SIZE;
