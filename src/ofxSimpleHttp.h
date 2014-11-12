@@ -69,8 +69,12 @@ using namespace Poco;
 using Poco::Exception;
 using Poco::Net::HTTPClientSession;
 
+class ofxSimpleHttp;
+
 struct ofxSimpleHttpResponse{
 
+	
+	ofxSimpleHttp * 			who;
 	bool						ok;
 	bool						notifyOnSuccess;	// user wants to be notified when download is ready
 	bool						downloadCanceled;	// flag to cancel download
@@ -98,10 +102,10 @@ struct ofxSimpleHttpResponse{
 	float						timeDowloadStarted; //from ofGetElapsedTimef()
 
 	ofxSimpleHttpResponse(){
+		who = NULL;
 		downloadToDisk = emptyWholeQueue = false;
 		checksumOK = true;
 		downloadProgress = downloadSpeed = avgDownloadSpeed = downloadedBytes = 0.0f;
-		//session = NULL;
 		timeTakenToDownload = 0.0;
 		serverReportedSize = -1;
 		downloadedSoFar = 0;

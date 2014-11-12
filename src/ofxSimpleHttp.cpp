@@ -432,6 +432,7 @@ void ofxSimpleHttp::fetchURL(string url, bool notifyOnSuccess){
 	}
 
 	ofxSimpleHttpResponse *response = new ofxSimpleHttpResponse();
+	response->who = this;
 	response->url = url;
 	response->downloadCanceled = false;
 	response->fileName = extractFileFromUrl(url);
@@ -476,6 +477,7 @@ void ofxSimpleHttp::fetchURLToDisk(string url, string expectedSha1, bool notifyO
 	string savePath = dirWhereToSave == "" ? extractFileFromUrl(url) : ofToDataPath(dirWhereToSave, true) + "/" + extractFileFromUrl(url);
 
 	ofxSimpleHttpResponse *response = new ofxSimpleHttpResponse();
+	response->who = this;
 	response->expectedChecksum = expectedSha1;
 	response->absolutePath = savePath;
 	response->url = url;
