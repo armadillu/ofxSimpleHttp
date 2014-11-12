@@ -249,10 +249,11 @@ float ofxSimpleHttp::getAvgDownloadSpeed(){
 
 string ofxSimpleHttp::minimalDrawableString(){
 
-	string msg = "ofxSimpleHttp: ";
+	string msg;
 	lock();
 	int n = q.size();
 	if( isThreadRunning() && n > 0 ){
+		msg = "ofxSimpleHttp: ";
 		ofxSimpleHttpResponse * r = q.front();
 		char aux[10];
 		sprintf(aux, "% 3d%%", (int)(r->downloadProgress * 100.0f));
@@ -264,8 +265,6 @@ string ofxSimpleHttp::minimalDrawableString(){
 		}
 		msg += "] ";
 		msg += string( r->downloadToDisk ? ofFilePath::getFileName(r->absolutePath) : "");
-	}else{
-		msg += "idle";
 	}
 	unlock();
 	return msg;
