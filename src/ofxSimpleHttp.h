@@ -173,8 +173,7 @@ class ofxSimpleHttp : public ofThread{
 		void						draw(float x, float y , float w , float h);	//draws a box
 		void						draw(float x, float y);	//draws a box
 		string						drawableString();
-
-	void						drawMinimal(float x, float y, bool withBg = false, ofColor fontColor = ofColor::white,
+		void						drawMinimal(float x, float y, bool withBg = false, ofColor fontColor = ofColor::white,
 											ofColor bgColor = ofColor::black);	//draws a one-line status
 		string						minimalDrawableString();
 
@@ -205,6 +204,8 @@ class ofxSimpleHttp : public ofThread{
 									//do we require a checksum match to assume the file is good?
 									//ie, if the user doesnt provide a checksum, what do we do?
 		void						setNeedsChecksumMatchToSkipDownload(bool needs);
+		void						setSpeedLimit(float KB_per_sec){ speedLimit = KB_per_sec; }
+
 
 		ofEvent<ofxSimpleHttpResponse>		httpResponse;
 
@@ -238,7 +239,8 @@ class ofxSimpleHttp : public ofThread{
 		float							idleTimeAfterEachDownload;	//seconds
 		float							avgDownloadSpeed;
 		bool							cancelCurrentDownloadOnDestruction;
-	
+
+		float							speedLimit; //in KiloBytes / sec
 		ofxSimpleHttpResponse			response;
 
 		queue<ofxSimpleHttpResponse>	responsesPendingNotification; //we store here downloads that arrived so that we can notify from main thread

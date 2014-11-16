@@ -40,6 +40,7 @@ ofxSimpleHttp::ofxSimpleHttp(){
 	onlySkipDownloadIfChecksumMatches = false;
 	idleTimeAfterEachDownload = 0.0;
 	avgDownloadSpeed = 0.0f;
+	speedLimit = -1;
 
 }
 
@@ -900,11 +901,22 @@ std::streamsize ofxSimpleHttp::streamCopyWithProgress(std::istream & istr, std::
 				progress = 0.0;
 			}
 			float time = (ofGetElapsedTimef() - t1);
+
+			if(speedLimit > 1.0f){ //apply speed limit if defined
+				float expectedTimeToDLCopyBuffer = COPY_BUFFER_SIZE / (speedLimit * 1024.0f);
+				//ofLog() << "expected " << expectedTimeToDLCopyBuffer << " and took " << time;
+				if (time < expectedTimeToDLCopyBuffer){
+					float sleepTime = (expectedTimeToDLCopyBuffer - time);
+					ofSleepMillis(sleepTime * 1000.0f);
+					//ofLog() << "sleeping a bit to match speed limit " << sleepTime;
+				}
+				time = (ofGetElapsedTimef() - t1);
+			}
 			float newSpeed = 0;
 			if(time > 0.0f){
 				newSpeed = (n) / time;
 			}
-			avgSpeed = 0.1 * newSpeed + 0.9 * avgSpeed;
+			avgSpeed = 0.5 * newSpeed + 0.5 * avgSpeed;
 			speed = avgSpeed;
 		}
 	}catch(Exception& exc){
@@ -914,7 +926,7 @@ std::streamsize ofxSimpleHttp::streamCopyWithProgress(std::istream & istr, std::
 	return len;
 }
 
-
+//todo this is silly, dup code with method above!
 std::streamsize ofxSimpleHttp::copyToStringWithProgress(std::istream& istr, std::string& str,
 														std::streamsize totalBytes,
 														std::streamsize &currentBytes,
@@ -949,7 +961,7 @@ std::streamsize ofxSimpleHttp::copyToStringWithProgress(std::istream& istr, std:
 			if(time > 0.0f){
 				newSpeed = (COPY_BUFFER_SIZE ) / time ;
 			}
-			avgSpeed = 0.1 * newSpeed + 0.9 * avgSpeed;
+			avgSpeed = 0.5 * newSpeed + 0.5 * avgSpeed;
 			speed = avgSpeed;
 			
 		}
