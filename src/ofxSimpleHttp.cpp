@@ -731,7 +731,10 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 							resp->downloadedBytes = resp->responseBody.size();
 						}
 
-						resp->avgDownloadSpeed = (resp->downloadedBytes ) / resp->timeTakenToDownload; //kb/sec
+						if(resp->timeTakenToDownload > 0.05){
+							resp->avgDownloadSpeed = (resp->downloadedBytes ) / resp->timeTakenToDownload; //kb/sec
+						}
+						if(isinf(avgDownloadSpeed)) avgDownloadSpeed = 0.0f;
 						if (avgDownloadSpeed == 0.0f){
 							avgDownloadSpeed = resp->avgDownloadSpeed;
 						}else{
