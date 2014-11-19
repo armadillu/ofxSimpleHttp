@@ -84,6 +84,10 @@ void ofxSimpleHttp::destroySslContext(){
 	}
 }
 
+void ofxSimpleHttp::removeDownloadedFile(ofxSimpleHttpResponse &response){
+    ofFile::removeFile(response.absolutePath, false /* path not relative to data folder */);
+}
+
 void ofxSimpleHttp::setCopyBufferSize(int KB){
 	COPY_BUFFER_SIZE = KB * 1024;
 }
