@@ -217,8 +217,6 @@ class ofxSimpleHttp : public ofThread{
 		static void 				destroySslContext(); //call once when no longer need https, once all trasnfers are finished
 														//or just b4 app exit
 
-        void removeDownloadedFile(ofxSimpleHttpResponse &response);
-
 	private:
 		
 		bool downloadURL( ofxSimpleHttpResponse * resp, bool sendResultThroughEvents, bool beingCalledFromMainThread, bool saveToDisk );
