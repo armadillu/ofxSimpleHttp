@@ -642,7 +642,11 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 				}
 
 				session->setTimeout( Poco::Timespan(timeOut,0) );
-				session->sendRequest(req);
+				try{
+					session->sendRequest(req);
+				}catch(Exception e){
+					ofLogWarning() << "ofxSimpleHttp session send request exception: " << e.what() << " - " << request.url;
+				}
 
 				HTTPResponse res;
 				istream& rs = session->receiveResponse(res);
