@@ -493,7 +493,11 @@ void ofxSimpleHttp::fetchURLToDisk(string url, string expectedSha1, bool notifyO
 	unlock();
 
 	if ( !isThreadRunning() ){	//if the queue is not running, lets start it
-		startThread(true);
+		try{
+			startThread(true);
+		}catch(Exception e){
+			ofLogError() << "ofxSimpleHttp: cant start thread!" << e.what();
+		}
 	}
 }
 
