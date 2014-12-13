@@ -222,7 +222,9 @@ class ofxSimpleHttp : public ofThread{
 		bool downloadURL( ofxSimpleHttpResponse * resp, bool sendResultThroughEvents, bool beingCalledFromMainThread, bool saveToDisk );
 
 		void threadedFunction();	//the queue runs here
-		string extractFileFromUrl(string url);
+    public:
+		static string extractFileFromUrl(string url);
+    private:
 		string extractExtensionFromFileName(string fileName);
 			
 		//bool							debug;	//should we print lots of stuff?
