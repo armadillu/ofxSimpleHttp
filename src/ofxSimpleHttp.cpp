@@ -68,9 +68,9 @@ ofxSimpleHttp::~ofxSimpleHttp(){
 }
 
 
-void ofxSimpleHttp::createSslContext(){
+void ofxSimpleHttp::createSslContext(Poco::Net::Context::Usage usage ){
 	if(!pContext){
-		pContext = new Context(Context::CLIENT_USE, "", Context::VERIFY_NONE);
+		pContext = new Context(usage, "", Context::VERIFY_NONE);
 		Poco::Net::SSLManager::instance().initializeClient(0, 0, pContext);
 		ofLogWarning() << "initing poco https";
 	}

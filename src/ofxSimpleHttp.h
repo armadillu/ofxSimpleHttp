@@ -213,7 +213,7 @@ class ofxSimpleHttp : public ofThread{
 		static string				secondsToHumanReadable(float sec, int decimalPrecision);
 
 		// https support //////////////////////////////////////////////////////////////
-		static void 				createSslContext(); //call once, before any https connection is made
+		static void 				createSslContext(Poco::Net::Context::Usage = Poco::Net::Context::CLIENT_USE); //call once, before any https connection is made
 		static void 				destroySslContext(); //call once when no longer need https, once all trasnfers are finished
 														//or just b4 app exit
 
