@@ -688,6 +688,7 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 					copySize = copyToStringWithProgress(rs, resp->responseBody, resp->serverReportedSize, resp->downloadedSoFar,
 														resp->downloadProgress, resp->downloadSpeed, resp->downloadCanceled);
 				}
+
 				delete session;
 				session = NULL;
 
@@ -820,6 +821,11 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 				ofLogError("ofxSimpleHttp", msg );
 
 			}
+            
+            if(session != NULL){
+                delete session;
+                // session = NULL;
+            }
 		}
 	}else{
 		resp->timeTakenToDownload = 0;
