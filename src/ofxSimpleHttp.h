@@ -192,7 +192,7 @@ class ofxSimpleHttp : public ofThread{
 
 		void 						setUseProxy(bool useProxy,
 												string proxyHost,
-												int proxyPort = 8080,
+												int proxyPort,
 												string proxyLogin="",
 												string proxyPassword = ""
 												);
