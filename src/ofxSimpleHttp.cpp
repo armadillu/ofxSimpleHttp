@@ -28,6 +28,7 @@ Context::Ptr ofxSimpleHttp::pContext = NULL;
 
 ofxSimpleHttp::ofxSimpleHttp(){
 
+	useProxy = false;
 	COPY_BUFFER_SIZE = 1024 * 128; // 128 kb buffer size
 	cancelCurrentDownloadOnDestruction = true;
 	timeOut = 10;
@@ -41,8 +42,8 @@ ofxSimpleHttp::ofxSimpleHttp(){
 	idleTimeAfterEachDownload = 0.0;
 	avgDownloadSpeed = 0.0f;
 	speedLimit = -1;
-
 }
+
 
 ofxSimpleHttp::~ofxSimpleHttp(){
 
@@ -65,6 +66,16 @@ ofxSimpleHttp::~ofxSimpleHttp(){
 		q.pop();
 		unlock();
 	}
+}
+
+
+void ofxSimpleHttp::setUseProxy(bool useProxy_, string proxyHost_, int proxyPort_,
+								string proxyLogin_, string proxyPassword_){
+	useProxy = useProxy_;
+	proxyHost = proxyHost_;
+	proxyPort = proxyPort_;
+	proxyLogin = proxyLogin_;
+	proxyPassword = proxyPassword_;
 }
 
 
@@ -633,6 +644,13 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 					session = new HTTPSClientSession(uri.getHost(), uri.getPort());//,context);
 				}else{
 					session = new HTTPClientSession(uri.getHost(), uri.getPort());
+				}
+
+				if(useProxy){
+					session->setProxy(proxyHost, proxyPort);
+					if(proxyLogin.size() && proxyPassword.size()){
+						session->setProxyCredentials(proxyLogin, proxyPassword);
+					}
 				}
 
 				HTTPRequest req(HTTPRequest::HTTP_GET, path, HTTPMessage::HTTP_1_1);

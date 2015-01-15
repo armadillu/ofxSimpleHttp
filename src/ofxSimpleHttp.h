@@ -189,7 +189,14 @@ class ofxSimpleHttp : public ofThread{
 		float						getAvgDownloadSpeed();			// kb/sec - also when not download
 
 		// properties //////////////////////////////////////////////////////////
-	
+
+		void 						setUseProxy(bool useProxy,
+												string proxyHost,
+												int proxyPort = 8080,
+												string proxyLogin="",
+												string proxyPassword = ""
+												);
+
 		void						setTimeOut(int seconds);
 		void						setVerbose(bool verbose); //unused
 		void						setUserAgent( string newUserAgent );
@@ -222,8 +229,10 @@ class ofxSimpleHttp : public ofThread{
 		bool downloadURL( ofxSimpleHttpResponse * resp, bool sendResultThroughEvents, bool beingCalledFromMainThread, bool saveToDisk );
 
 		void threadedFunction();	//the queue runs here
-    public:
+
+	public:
 		static string extractFileFromUrl(string url);
+
     private:
 		string extractExtensionFromFileName(string fileName);
 			
@@ -259,4 +268,10 @@ class ofxSimpleHttp : public ofThread{
 		static Context::Ptr pContext;
 
 		int COPY_BUFFER_SIZE;
+
+		bool useProxy;
+		string proxyHost;
+		int proxyPort;
+		string proxyPassword;
+		string proxyLogin;
 };

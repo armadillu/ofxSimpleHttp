@@ -10,11 +10,13 @@ void testApp::setup(){
 	ofBackground(22);
 	ofSetWindowPosition(20, 20);
 
-	downloadList.push_back("http://farm8.staticflickr.com/7420/10032530563_86ff701d19_o.jpg");
-	downloadList.push_back("http://farm4.staticflickr.com/3686/9225463176_d0bf83a992_o.jpg");
-	downloadList.push_back("http://farm8.staticflickr.com/7255/6888724266_158ce261a2_o.jpg");
-	downloadList.push_back("http://farm8.staticflickr.com/7047/7034809565_5f80871bff_o.jpg");
-	downloadList.push_back("http://farm8.staticflickr.com/7438/9481688475_e83f92e8b5_o.jpg");
+	ofxSimpleHttp::createSslContext();
+
+	downloadList.push_back("https://farm8.staticflickr.com/7420/10032530563_86ff701d19_o.jpg");
+	downloadList.push_back("https://farm4.staticflickr.com/3686/9225463176_d0bf83a992_o.jpg");
+	downloadList.push_back("https://farm8.staticflickr.com/7255/6888724266_158ce261a2_o.jpg");
+	downloadList.push_back("https://farm8.staticflickr.com/7047/7034809565_5f80871bff_o.jpg");
+	downloadList.push_back("https://farm8.staticflickr.com/7438/9481688475_e83f92e8b5_o.jpg");
 	downloadList.push_back("http://farm8.staticflickr.com/7321/9481647489_e73bed28e1_o.jpg");
 	downloadList.push_back("http://farm8.staticflickr.com/7367/9484432454_9701453c66_o.jpg");
 	downloadList.push_back("http://farm6.staticflickr.com/5537/9481654243_7b73b87ceb_o.jpg");
@@ -143,4 +145,8 @@ void testApp::newResponse(ofxSimpleHttpResponse &r){
 			cout << "file was not downloaded???!" << r.absolutePath << endl;
 		}
 	}
+}
+
+void testApp::exit(){
+	ofxSimpleHttp::destroySslContext();
 }
