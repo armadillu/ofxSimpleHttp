@@ -29,7 +29,7 @@ Context::Ptr ofxSimpleHttp::pContext = NULL;
 ofxSimpleHttp::ofxSimpleHttp(){
 
 	useProxy = false;
-	COPY_BUFFER_SIZE = 1024 * 128; // 128 kb buffer size
+	COPY_BUFFER_SIZE = 1024 * 128; //  kb buffer size
 	cancelCurrentDownloadOnDestruction = true;
 	timeOut = 10;
 	queueLenEstimation = 0;
@@ -41,7 +41,7 @@ ofxSimpleHttp::ofxSimpleHttp(){
 	onlySkipDownloadIfChecksumMatches = false;
 	idleTimeAfterEachDownload = 0.0;
 	avgDownloadSpeed = 0.0f;
-	speedLimit = -1;
+	speedLimit = 0.0f;
 }
 
 
@@ -265,10 +265,10 @@ string ofxSimpleHttp::minimalDrawableString(){
 	lock();
 	int n = q.size();
 	if( isThreadRunning() && n > 0 ){
-		msg = "ofxSimpleHttp: ";
+		msg = "ofxSimpleHttp:";
 		ofxSimpleHttpResponse * r = q.front();
 		char aux[10];
-		sprintf(aux, "% 3d%%", (int)(r->downloadProgress * 100.0f));
+		sprintf(aux, "% 4d%%", (int)(r->downloadProgress * 100.0f));
 		msg += string(aux) + " [";
 		float barLen = 12;
 		float numFill =  r->downloadProgress * barLen;
@@ -330,7 +330,7 @@ string ofxSimpleHttp::drawableString(){
 		"//   Downloaded:               " + spa + bytesToHumanReadable((long long)r->downloadedSoFar, 2) + "\n" +
 		"//   Download Speed:           " + spa + bytesToHumanReadable((long long)r->downloadSpeed, 2) + "/sec\n" +
 		"//   Time Taken so far:        " + spa + secondsToHumanReadable(timeSoFar, 1) + "\n" +
-		"//   Timeout after:            " + spa + secondsToHumanReadable(timeOut, 1) + "\n" +
+		//"//   Timeout after:            " + spa + secondsToHumanReadable(timeOut, 1) + "\n" +
 		"//   Estimated Remaining Time: " + spa + remTime + "\n" +
 		"//   Queue Size:               " + spa + ofToString(n) + "\n" +
 		"//  \n";
@@ -341,6 +341,7 @@ string ofxSimpleHttp::drawableString(){
 	unlock();
 	return aux;
 }
+
 
 string ofxSimpleHttp::bytesToHumanReadable(long long bytes, int decimalPrecision){
 	string ret;
@@ -936,7 +937,7 @@ std::streamsize ofxSimpleHttp::streamCopyWithProgress(std::istream & istr, std::
 			}
 			float time = (ofGetElapsedTimef() - t1);
 
-			if(speedLimit > 1.0f){ //apply speed limit if defined
+			if(speedLimit > 0.0f){ //apply speed limit if defined
 				float expectedTimeToDLCopyBuffer = COPY_BUFFER_SIZE / (speedLimit * 1024.0f);
 				//ofLog() << "expected " << expectedTimeToDLCopyBuffer << " and took " << time;
 				if (time < expectedTimeToDLCopyBuffer){

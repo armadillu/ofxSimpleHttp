@@ -74,7 +74,7 @@ class ofxSimpleHttp;
 struct ofxSimpleHttpResponse{
 
 	
-	ofxSimpleHttp * 			who;
+	ofxSimpleHttp * 			who;				//who are you getting the event from?
 	bool						ok;
 	bool						notifyOnSuccess;	// user wants to be notified when download is ready
 	bool						downloadCanceled;	// flag to cancel download

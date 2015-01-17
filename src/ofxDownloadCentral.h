@@ -45,8 +45,16 @@
 	you will be notified from the main thread when they are done
 	you will get a report
  
- 4 - start the download
- dlc.start
+ 6 - start the download
+	
+	startDownloading();
+ 
+ 7 - update the dlc object
+	
+	dlc.update();
+	
+	and wait for the notification to arrive
+
 
  */
 
@@ -58,19 +66,27 @@ class ofxDownloadCentral{
 		~ofxDownloadCentral();
 
 		void update();
-		void draw(float x, float y, bool drawAllPending = false);
-		string getDrawableInfo(bool drawAllPending = false);
+		void draw(float x, float y, bool drawAllPending = false, bool detailedDownloadInfo = true);
+		string getDrawableInfo(bool drawAllPending = false, bool detailedDownloadInfo = true); //draw with a monospaced font!
 
 		void cancelCurrentDownload();
 		void cancelAllDownloads();
 
 		bool isBusy();
 		int getNumPendingDownloads();
+		int getNumActiveDownloads();
 
 		void setVerbose(bool b);
-		void setNeedsChecksumMatchToSkipDownload(bool needs);
-		void setIdleTimeAfterEachDownload(float seconds); //wait a bit before notifying once the dowload is over
+		void setNeedsChecksumMatchToSkipDownload(bool needs);	//if downloaded file is on disk, should I assume its good?
+																//or only if you provided sha1 checksum and it matches
+
+		void setSpeedLimit(float KB_per_sec);
+		void setMaxConcurrentDownloads(int numConcurrentDownloads);
+
+		void setIdleTimeAfterEachDownload(float seconds);		//wait a bit before notifying once the dowload is over
 		void setMaxURLsToList(int max);
+
+		void startDownloading();
 
 		///////////////////////////////////////////////////////////////////////////////
 		template <typename ArgumentsType, class ListenerClass>
@@ -111,8 +127,12 @@ class ofxDownloadCentral{
 								string destinationFolder = "ofxDownloadCentral_downloads"
 							   ){
 
-			if (urlList.size() >0 ){
+			if (urlList.size() > 0 ){
 				ofxBatchDownloader * d = new ofxBatchDownloader();
+				if(speedLimit > 0.0f){
+					d->setSpeedLimit(speedLimit);
+				}
+
 				d->setDownloadFolder(destinationFolder);
 				d->setVerbose(verbose);
 				d->setNeedsChecksumMatchToSkipDownload(onlySkipDownloadIfChecksumMatches);
@@ -141,18 +161,13 @@ class ofxDownloadCentral{
 			downloadResources(urlList, shas, listener, listenerMethod, destinationFolder);
 		}
 
-		void startDownloading(){
-			if (!busy){
-				downloadStartJobsNumber = downloaders.size();
-				startQueue();
-			}
-		}
 
 	private:
 
 		void startQueue();
 
 		vector<ofxBatchDownloader*>			downloaders;
+		vector<ofxBatchDownloader*>			activeDownloaders;
 
 		bool								busy;
 		bool								verbose;
@@ -162,8 +177,10 @@ class ofxDownloadCentral{
 		unsigned long int					downloadedSoFar; //bytes
 		int									downloadStartJobsNumber;
 		float								avgSpeed;	 //bytes/sec
-		ofMutex								mutex;
 		int									maxURLsToList;
+
+		int									maxConcurrentDownloads;
+		float								speedLimit;
 };
 
 #endif

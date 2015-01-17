@@ -17,14 +17,29 @@ ofxDownloadCentral::ofxDownloadCentral(){
 
 	verbose = true;
 	busy = false;
+	speedLimit = 0.0f;
 	onlySkipDownloadIfChecksumMatches = true;
-	maxURLsToList = 10;
+	maxURLsToList = 4;
 	idleTimeAfterDownload = 0.0f;
 	avgSpeed = 0.0f;
+	maxConcurrentDownloads = 1;
 }
 
 ofxDownloadCentral::~ofxDownloadCentral(){
 	cancelAllDownloads();
+}
+
+
+void ofxDownloadCentral::setMaxConcurrentDownloads(int numConcurrentDownloads){
+	maxConcurrentDownloads = ofClamp(numConcurrentDownloads, 1, INT_MAX);
+}
+
+
+void ofxDownloadCentral::startDownloading(){
+	if (!busy){
+		downloadStartJobsNumber = downloaders.size();
+		startQueue();
+	}
 }
 
 
@@ -49,11 +64,13 @@ void ofxDownloadCentral::setNeedsChecksumMatchToSkipDownload(bool needs){
 
 void ofxDownloadCentral::startQueue(){
 
-	if (!busy){
+	for(int i = activeDownloaders.size(); i < maxConcurrentDownloads; i++){
 		if(downloaders.size() > 0){
 			busy = true;
 			ofxBatchDownloader * bd = downloaders[0];
 			bd->startDownloading();
+			activeDownloaders.push_back(bd);
+			downloaders.erase(downloaders.begin());
 		}
 	}
 }
@@ -61,58 +78,53 @@ void ofxDownloadCentral::startQueue(){
 
 void ofxDownloadCentral::update(){
 
-	mutex.lock();
 	if (busy){
-		if(downloaders.size() > 0){
-			ofxBatchDownloader * bd = downloaders[0];
+
+		for(int i = activeDownloaders.size() - 1; i >= 0; i--){
+
+			ofxBatchDownloader * bd = activeDownloaders[i];
 			bd->update();
+
 			if (!bd->isBusy()){ //this one is over! start the next one!
-				downloaders.erase(downloaders.begin());
-				if(avgSpeed == 0.0f){
+				if(avgSpeed <= 0.001f){
 					avgSpeed = bd->getAverageSpeed();
 				}else{
 					avgSpeed = avgSpeed * 0.75 + 0.25 * bd->getAverageSpeed();
 				}
-				downloadedSoFar += bd->getDownloadedBytesSoFar();
 
+				downloadedSoFar += bd->getDownloadedBytesSoFar();
+				activeDownloaders.erase(activeDownloaders.begin() + i);
 				delete bd;
-				busy = false;
-				if (downloaders.size()){
-					startQueue();
-				}
 			}
 		}
+		if(activeDownloaders.size() < maxConcurrentDownloads){
+			startQueue();
+		}
+		if(activeDownloaders.size() == 0){
+			busy = false;
+		}
 	}
-	mutex.unlock();
 }
 
 
 void ofxDownloadCentral::cancelCurrentDownload(){
-	mutex.lock();
 	if (busy){
-		if(downloaders.size() > 0){
-			ofxBatchDownloader * bd = downloaders[0];
+		for(int i = activeDownloaders.size() - 1; i >= 0; i--){
+			ofxBatchDownloader * bd = activeDownloaders[i];
 			bd->cancelBatch(true);
 		}
 	}
-	mutex.unlock();
 }
 
 
 void ofxDownloadCentral::cancelAllDownloads(){
-	mutex.lock();
 	if (busy){
-		if(downloaders.size() > 0){
-			ofxBatchDownloader * bd = downloaders[0];
-			bd->cancelBatch(true);
-			for(int i = 0; i < downloaders.size(); i++){
-				delete downloaders[0];
-				downloaders.erase(downloaders.begin());
-			}
+		cancelCurrentDownload(); //active downloads get stopped
+		while(downloaders.size() > 0){
+			delete downloaders[0];
+			downloaders.erase(downloaders.begin());
 		}
-		busy = false;
 	}
-	mutex.unlock();
 }
 
 
@@ -120,60 +132,106 @@ bool ofxDownloadCentral::isBusy(){
 	return busy;
 }
 
+
 int ofxDownloadCentral::getNumPendingDownloads(){
 
-	mutex.lock();
 	int c = 0;
 	for(int i = 0; i < downloaders.size(); i++){
 		vector<string> pending = downloaders[i]->pendingURLs();
 		c+= pending.size();
 	}
-	mutex.unlock();
 	return c;
 }
 
-string ofxDownloadCentral::getDrawableInfo(bool drawAllPending){
 
-	mutex.lock();
+int ofxDownloadCentral::getNumActiveDownloads(){
+	return activeDownloaders.size();
+}
+
+
+void ofxDownloadCentral::setSpeedLimit(float KB_per_sec){
+	speedLimit = KB_per_sec;
+}
+
+
+string ofxDownloadCentral::getDrawableInfo(bool drawAllPending, bool detailed){
+
 	int total = 0;
+	for(int i = 0; i < activeDownloaders.size(); i++){
+		total += activeDownloaders[i]->getNumSuppliedUrls();
+	}
+
 	for(int i = 0; i < downloaders.size(); i++){
 		total += downloaders[i]->getNumSuppliedUrls();
 	}
 
-	string aux;
-	int numQueuedJobs = downloaders.size();
-	if(downloaders.size() > 0){
-		vector<string> allURLs;
+	string httpDownloadersStatus;
+	string pendingDownloadsList;
+	int numQueuedJobs = downloaders.size() + activeDownloaders.size();
 
-		ofxBatchDownloader * bd = downloaders[0];
-		aux += bd->getDrawableString() + "\n";
+	vector<string> allURLs;
+	vector<string> allPending;
+	bool reachedListMaxLen = false;
+	int c = 0; //count how many pending urls have we printed
+	bool printingList = false; //are we printing a pending list?
 
-		total -= bd->getNumSuppliedUrls() - bd->pendingDownloads();
+	if(activeDownloaders.size() > 0){
+
+		if(!detailed) httpDownloadersStatus += "\n//// Active Downloads Status (" + ofToString(activeDownloaders.size()) + ") /////////////////////////////////";
+
+		for(int i = 0; i < activeDownloaders.size(); i++){
+			ofxBatchDownloader * bd = activeDownloaders[i];
+
+			if(!detailed){
+				httpDownloadersStatus += "\n//   (" + ofToString(i) + ") " + bd->getMinimalDrawableString();
+				if(i == activeDownloaders.size() - 1) httpDownloadersStatus += "\n\n"; //last line more spce
+			}else{
+				httpDownloadersStatus += bd->getDrawableString();
+			}
+			total -= bd->getNumSuppliedUrls() - bd->pendingDownloads();
+		}
 
 		if(drawAllPending){
-			int c = 0;
-			aux += "//// Remaining Downloads /////////////////////////////////////////\n";
-			vector<string> allPending;
-			bool done = false;
+			printingList = true;
+			pendingDownloadsList += "//// Remaining Downloads (" + ofToString(total) + ") /////////////////////////////////////\n";
+			for(int i = 0; i < activeDownloaders.size(); i++){
+				vector<string> pending = activeDownloaders[i]->pendingURLs();
+				for(int j = 0; j < pending.size(); j++){
+					allPending.push_back(pending[j]);
+					if (c < maxURLsToList){
+						pendingDownloadsList += "//   " + pending[j] + "\n";
+					}
+					if (c == maxURLsToList ){
+						pendingDownloadsList += "//   ...\n";
+						reachedListMaxLen = true;
+					}
+					c++;
+				}
+				if (reachedListMaxLen) break;
+			}
+		}
+	}
+
+	if(drawAllPending){
+		if(downloaders.size() > 0 && !reachedListMaxLen){
 			for(int i = 0; i < downloaders.size(); i++){
 				vector<string> pending = downloaders[i]->pendingURLs();
 				for(int j = 0; j < pending.size(); j++){
 					allPending.push_back(pending[j]);
 					if (c < maxURLsToList){
-						aux += "//   " + pending[j] + "\n";
+						pendingDownloadsList += "//   " + pending[j] + "\n";
 					}
 					if (c == maxURLsToList ){
-						aux += "//   ...\n";
-						done = true;
+						pendingDownloadsList += "//   ...\n";
+						reachedListMaxLen = true;
 					}
 					c++;
 				}
-				if (done ) break;
+				if (reachedListMaxLen ) break;
 			}
-			aux += "//////////////////////////////////////////////////////////////////";
 		}
 	}
-	mutex.unlock();
+	if(printingList) pendingDownloadsList += "//////////////////////////////////////////////////////////////////";
 
 	float elapsedTime = ofGetElapsedTimef() - downloadStartTime;
 	float timeLeft = 0.0f;
@@ -192,20 +250,21 @@ string ofxDownloadCentral::getDrawableInfo(bool drawAllPending){
 	string spa = "     ";
 	string header = "//// ofxDownloadCentral queued Jobs: " + ofToString(numQueuedJobs) + " ///////////////////////////\n"
 	"//// Jobs executed:        " + spa + ofToString(numProcessed) + "\n" +
-	"//// Total Downloads Left: " + spa + ofToString(total) + "\n" +
+//	"//// Total Downloads Left: " + spa + ofToString(total) + "\n" +
 	"//// Elapsed Time:         " + spa + ofxSimpleHttp::secondsToHumanReadable(elapsedTime, 1) + "\n" +
 	"//// Estimated Time Left:  " + spa + ofxSimpleHttp::secondsToHumanReadable(timeLeft, 1) + "\n"
 	"//// Estimated Completion: " + spa + estFinish + "\n" +
 	"//// Avg Download Speed:   " + spa + ofxSimpleHttp::bytesToHumanReadable(avgSpeed, 1) + "/sec\n" +
 	"//// Downloaded So Far:    " + spa + ofxSimpleHttp::bytesToHumanReadable(downloadedSoFar, 1) +
-	"\n\n";
-	return header + aux;
+	"\n";
+
+	return header + httpDownloadersStatus + pendingDownloadsList;
 }
 
 
-void ofxDownloadCentral::draw(float x, float y, bool drawAllPending){
+void ofxDownloadCentral::draw(float x, float y, bool drawAllPending, bool detailedDownloadInfo){
 	if (busy){
-		string aux = getDrawableInfo(drawAllPending);
+		string aux = getDrawableInfo(drawAllPending, detailedDownloadInfo);
 		ofDrawBitmapString(aux, x, y);
 	}
 }

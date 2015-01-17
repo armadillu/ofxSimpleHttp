@@ -53,8 +53,10 @@ public:
 	void update();
 	void draw(float x, float y);
 	string getDrawableString();
+	string getMinimalDrawableString();
 
 	void setDownloadFolder(string f);
+	void setSpeedLimit(float KB_per_sec);
 
 	void addResourcesToDownloadList( vector<string>urlList );
 	void addResourcesToDownloadList( vector<string>urlList, vector<string>sha1List );
@@ -90,6 +92,7 @@ private:
 
 	void httpResult(ofxSimpleHttpResponse &response);
 	void reset();
+
 	unsigned long int					downloadedSoFar; //bytes
 
 

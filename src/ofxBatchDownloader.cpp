@@ -41,6 +41,10 @@ void ofxBatchDownloader::update(){
 	http.update();
 }
 
+void ofxBatchDownloader::setSpeedLimit(float KB_per_sec){
+	http.setSpeedLimit(KB_per_sec);
+}
+
 
 void ofxBatchDownloader::cancelBatch(bool notify){
 	http.stopCurrentDownload(true);
@@ -71,6 +75,10 @@ void ofxBatchDownloader::draw(float x, float y){
 
 string ofxBatchDownloader::getDrawableString(){
 	return http.drawableString();
+}
+
+string ofxBatchDownloader::getMinimalDrawableString(){
+	return http.minimalDrawableString();
 }
 
 void ofxBatchDownloader::addResourcesToDownloadList( vector<string> _urlList ){
