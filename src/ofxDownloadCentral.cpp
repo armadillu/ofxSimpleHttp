@@ -177,7 +177,7 @@ string ofxDownloadCentral::getDrawableInfo(bool drawAllPending, bool detailed){
 
 	if(activeDownloaders.size() > 0){
 
-		if(!detailed) httpDownloadersStatus += "\n//// Active Downloads Status (" + ofToString(activeDownloaders.size()) + ") /////////////////////////////////";
+		if(!detailed) httpDownloadersStatus += "\n//// Active Downloaders (" + ofToString(activeDownloaders.size()) + ") Status ///////////////////////////////";
 
 		for(int i = 0; i < activeDownloaders.size(); i++){
 			ofxBatchDownloader * bd = activeDownloaders[i];
