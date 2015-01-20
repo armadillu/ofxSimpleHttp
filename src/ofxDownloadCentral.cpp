@@ -21,7 +21,6 @@ ofxDownloadCentral::ofxDownloadCentral(){
 	onlySkipDownloadIfChecksumMatches = true;
 	maxURLsToList = 4;
 	idleTimeAfterDownload = 0.0f;
-	avgSpeed = 0.0f;
 	maxConcurrentDownloads = 1;
 }
 
@@ -86,10 +85,10 @@ void ofxDownloadCentral::update(){
 			bd->update();
 
 			if (!bd->isBusy()){ //this one is over! start the next one!
-				if(avgSpeed <= 0.001f){
-					avgSpeed = bd->getAverageSpeed();
+				if(avgSpeed[i] <= 0.001f){
+					avgSpeed[i] = bd->getAverageSpeed();
 				}else{
-					avgSpeed = avgSpeed * 0.75 + 0.25 * bd->getAverageSpeed();
+					avgSpeed[i] = avgSpeed[i] * 0.75 + 0.25 * bd->getAverageSpeed();
 				}
 
 				downloadedSoFar += bd->getDownloadedBytesSoFar();
@@ -246,6 +245,10 @@ string ofxDownloadCentral::getDrawableInfo(bool drawAllPending, bool detailed){
 		now += timeToAdd;
 		estFinish = Poco::DateTimeFormatter::format(now, timeFormat);
 	}
+	float avg = 0;
+	for(int i = 0; i < activeDownloaders.size(); i++){
+		avg += avgSpeed[i];
+	}
 
 	string spa = "     ";
 	string header = "//// ofxDownloadCentral queued Jobs: " + ofToString(numQueuedJobs) + " ///////////////////////////\n"
@@ -254,7 +257,7 @@ string ofxDownloadCentral::getDrawableInfo(bool drawAllPending, bool detailed){
 	"//// Elapsed Time:         " + spa + ofxSimpleHttp::secondsToHumanReadable(elapsedTime, 1) + "\n" +
 	"//// Estimated Time Left:  " + spa + ofxSimpleHttp::secondsToHumanReadable(timeLeft, 1) + "\n"
 	"//// Estimated Completion: " + spa + estFinish + "\n" +
-	"//// Avg Download Speed:   " + spa + ofxSimpleHttp::bytesToHumanReadable(avgSpeed, 1) + "/sec\n" +
+	"//// Avg Download Speed:   " + spa + ofxSimpleHttp::bytesToHumanReadable(avg, 1) + "/sec\n" +
 	"//// Downloaded So Far:    " + spa + ofxSimpleHttp::bytesToHumanReadable(downloadedSoFar, 1) +
 	"\n";
 

@@ -176,7 +176,7 @@ class ofxDownloadCentral{
 		float								downloadStartTime;
 		unsigned long int					downloadedSoFar; //bytes
 		int									downloadStartJobsNumber;
-		float								avgSpeed;	 //bytes/sec
+		map<int, float>						avgSpeed;	 //bytes/sec
 		int									maxURLsToList;
 
 		int									maxConcurrentDownloads;
