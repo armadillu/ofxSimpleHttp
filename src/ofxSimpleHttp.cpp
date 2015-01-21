@@ -740,7 +740,7 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 							}
 						}
 
-					}else{
+					}else{ //download not canceled
 
 						if(saveToDisk){
 							string msg = "downloadURL() downloaded to " + resp->fileName;
@@ -814,6 +814,12 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 					resp->reasonForStatus = "Unknown exception at streamCopy";
 					resp->status = -1;
 					ok = FALSE;
+				}
+
+				//last check for OK flag
+				if(!resp->checksumOK){
+					resp->ok = false;
+					resp->reasonForStatus += " / SHA1 missmatch!";
 				}
 
 			}catch(Exception& exc){
