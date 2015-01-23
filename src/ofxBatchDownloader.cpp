@@ -29,6 +29,11 @@ void ofxBatchDownloader::setIdleTimeAfterEachDownload(float seconds){
 }
 
 
+void ofxBatchDownloader::setProxyConfiguration(const ProxyConfig & c){
+	http.setProxyConfiguration(c);
+}
+
+
 void ofxBatchDownloader::setVerbose(bool b){}
 
 

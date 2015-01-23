@@ -71,9 +71,17 @@ using Poco::Net::HTTPClientSession;
 
 class ofxSimpleHttp;
 
+struct ProxyConfig{
+	bool useProxy;
+	string host;
+	int port;
+	string password;
+	string login;
+	ProxyConfig(){useProxy = 0; port = 80;}
+};
+
 struct ofxSimpleHttpResponse{
 
-	
 	ofxSimpleHttp * 			who;				//who are you getting the event from?
 	bool						ok;
 	bool						notifyOnSuccess;	// user wants to be notified when download is ready
@@ -101,52 +109,8 @@ struct ofxSimpleHttpResponse{
 	float						timeTakenToDownload;// seconds
 	float						timeDowloadStarted; //from ofGetElapsedTimef()
 
-	ofxSimpleHttpResponse(){
-		who = NULL;
-		downloadToDisk = emptyWholeQueue = false;
-		checksumOK = true;
-		downloadProgress = downloadSpeed = avgDownloadSpeed = downloadedBytes = 0.0f;
-		timeTakenToDownload = 0.0;
-		serverReportedSize = -1;
-		downloadedSoFar = 0;
-		status = -1;
-		fileWasHere = false;
-		timeDowloadStarted = ofGetElapsedTimef();
-	}
-
-	void print(){
-		ofLogNotice() << "#### " << url;
-		if (ok){
-			if (fileWasHere){
-				ofLogNotice() << "    File was already on disk, no download needed!";
-				if (expectedChecksum.size()){
-					ofLogNotice() << "    File checksum " << expectedChecksum << " matched!";
-				}else{
-					ofLogNotice() << "    File checksum not supplied, assuming file is the same blindly";
-				}
-				ofLogNotice() << "    File saved at: " << absolutePath;
-			}else{
-				ofLogNotice() << "    Server Status: " << status;
-				ofLogNotice() << "    Server Reported size: " << serverReportedSize;
-				ofLogNotice() << "    Content Type: " << contentType;
-				if(expectedChecksum.length()){
-					ofLogNotice() << "    Expected Checksum: " << expectedChecksum;
-					ofLogNotice() << "    Checksum Match: " << string(checksumOK ? "YES" : "NO");
-				}
-				ofLogNotice() << "    Download Time taken: " << timeTakenToDownload << " seconds";
-				if (serverReportedSize != -1){
-					ofLogNotice() << "    Avg Download Speed: " << (serverReportedSize / 1024.f) / timeTakenToDownload << "Kb/sec";
-				}
-				if(downloadToDisk){
-					ofLogNotice() << "    File Saved at: " << absolutePath;
-				}
-			}
-		}else{
-			ofLogError() << "    Download FAILED! ";
-			ofLogError() << "    Status: " << status << " - " << reasonForStatus;
-		}
-		ofLogNotice() << endl;
-	}
+	ofxSimpleHttpResponse();
+	void print();
 };
 
 
@@ -190,12 +154,7 @@ class ofxSimpleHttp : public ofThread{
 
 		// properties //////////////////////////////////////////////////////////
 
-		void 						setUseProxy(bool useProxy,
-												string proxyHost,
-												int proxyPort,
-												string proxyLogin="",
-												string proxyPassword = ""
-												);
+		void 						setProxyConfiguration(const ProxyConfig & c);
 
 		void						setTimeOut(int seconds);
 		void						setVerbose(bool verbose); //unused
@@ -254,6 +213,9 @@ class ofxSimpleHttp : public ofThread{
 		float							speedLimit; //in KiloBytes / sec
 		ofxSimpleHttpResponse			response;
 
+		ProxyConfig						proxyConfig;
+
+
 		queue<ofxSimpleHttpResponse>	responsesPendingNotification; //we store here downloads that arrived so that we can notify from main thread
 		map<string, string>				customHttpHeaders;
 
@@ -269,9 +231,4 @@ class ofxSimpleHttp : public ofThread{
 
 		int COPY_BUFFER_SIZE;
 
-		bool useProxy;
-		string proxyHost;
-		int proxyPort;
-		string proxyPassword;
-		string proxyLogin;
 };

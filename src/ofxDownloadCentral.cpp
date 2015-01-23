@@ -152,6 +152,10 @@ void ofxDownloadCentral::setSpeedLimit(float KB_per_sec){
 	speedLimit = KB_per_sec;
 }
 
+void ofxDownloadCentral::setProxyConfiguration(const ProxyConfig & c){
+	proxyConfig = c;
+}
+
 
 string ofxDownloadCentral::getDrawableInfo(bool drawAllPending, bool detailed){
 

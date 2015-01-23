@@ -28,7 +28,6 @@ Context::Ptr ofxSimpleHttp::pContext = NULL;
 
 ofxSimpleHttp::ofxSimpleHttp(){
 
-	useProxy = false;
 	COPY_BUFFER_SIZE = 1024 * 128; //  kb buffer size
 	cancelCurrentDownloadOnDestruction = true;
 	timeOut = 10;
@@ -69,13 +68,8 @@ ofxSimpleHttp::~ofxSimpleHttp(){
 }
 
 
-void ofxSimpleHttp::setUseProxy(bool useProxy_, string proxyHost_, int proxyPort_,
-								string proxyLogin_, string proxyPassword_){
-	useProxy = useProxy_;
-	proxyHost = proxyHost_;
-	proxyPort = proxyPort_;
-	proxyLogin = proxyLogin_;
-	proxyPassword = proxyPassword_;
+void ofxSimpleHttp::setProxyConfiguration(const ProxyConfig & c){
+	proxyConfig = c;
 }
 
 
@@ -647,10 +641,10 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 					session = new HTTPClientSession(uri.getHost(), uri.getPort());
 				}
 
-				if(useProxy){
-					session->setProxy(proxyHost, proxyPort);
-					if(proxyLogin.size() && proxyPassword.size()){
-						session->setProxyCredentials(proxyLogin, proxyPassword);
+				if(proxyConfig.useProxy){
+					session->setProxy(proxyConfig.host, proxyConfig.port);
+					if(proxyConfig.login.size() && proxyConfig.password.size()){
+						session->setProxyCredentials(proxyConfig.login, proxyConfig.password);
 					}
 				}
 
@@ -1011,4 +1005,53 @@ std::streamsize ofxSimpleHttp::copyToStringWithProgress(std::istream& istr, std:
 		return -1;
 	}
 	return len;
+}
+
+
+ofxSimpleHttpResponse::ofxSimpleHttpResponse(){
+	who = NULL;
+	downloadToDisk = emptyWholeQueue = false;
+	checksumOK = true;
+	downloadProgress = downloadSpeed = avgDownloadSpeed = downloadedBytes = 0.0f;
+	timeTakenToDownload = 0.0;
+	serverReportedSize = -1;
+	downloadedSoFar = 0;
+	status = -1;
+	fileWasHere = false;
+	timeDowloadStarted = ofGetElapsedTimef();
+}
+
+
+void ofxSimpleHttpResponse::print(){
+	ofLogNotice() << "#### " << url;
+	if (ok){
+		if (fileWasHere){
+			ofLogNotice() << "    File was already on disk, no download needed!";
+			if (expectedChecksum.size()){
+				ofLogNotice() << "    File checksum " << expectedChecksum << " matched!";
+			}else{
+				ofLogNotice() << "    File checksum not supplied, assuming file is the same blindly";
+			}
+			ofLogNotice() << "    File saved at: " << absolutePath;
+		}else{
+			ofLogNotice() << "    Server Status: " << status;
+			ofLogNotice() << "    Server Reported size: " << serverReportedSize;
+			ofLogNotice() << "    Content Type: " << contentType;
+			if(expectedChecksum.length()){
+				ofLogNotice() << "    Expected Checksum: " << expectedChecksum;
+				ofLogNotice() << "    Checksum Match: " << string(checksumOK ? "YES" : "NO");
+			}
+			ofLogNotice() << "    Download Time taken: " << timeTakenToDownload << " seconds";
+			if (serverReportedSize != -1){
+				ofLogNotice() << "    Avg Download Speed: " << (serverReportedSize / 1024.f) / timeTakenToDownload << "Kb/sec";
+			}
+			if(downloadToDisk){
+				ofLogNotice() << "    File Saved at: " << absolutePath;
+			}
+		}
+	}else{
+		ofLogError() << "    Download FAILED! ";
+		ofLogError() << "    Status: " << status << " - " << reasonForStatus;
+	}
+	ofLogNotice() << endl;
 }

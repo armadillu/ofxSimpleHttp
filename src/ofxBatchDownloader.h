@@ -67,6 +67,9 @@ public:
 	void setNeedsChecksumMatchToSkipDownload(bool needsChecksum);
 	void setIdleTimeAfterEachDownload(float seconds); //wait a bit before notifying once the dowload is over
 
+	void setProxyConfiguration(const ProxyConfig & c);
+
+
 	unsigned long int getDownloadedBytesSoFar(){ return downloadedSoFar;}
 	int getNumSuppliedUrls();
 	int pendingDownloads();
@@ -89,6 +92,7 @@ private:
 	vector<string>						failedList;
 	vector<string>						okList;
 	vector<ofxSimpleHttpResponse>		responses;
+
 
 	void httpResult(ofxSimpleHttpResponse &response);
 	void reset();

@@ -83,6 +83,8 @@ class ofxDownloadCentral{
 		void setSpeedLimit(float KB_per_sec);
 		void setMaxConcurrentDownloads(int numConcurrentDownloads);
 
+		void setProxyConfiguration(const ProxyConfig & c);
+
 		void setIdleTimeAfterEachDownload(float seconds);		//wait a bit before notifying once the dowload is over
 		void setMaxURLsToList(int max);
 
@@ -129,6 +131,8 @@ class ofxDownloadCentral{
 
 			if (urlList.size() > 0 ){
 				ofxBatchDownloader * d = new ofxBatchDownloader();
+				d->setProxyConfiguration(proxyConfig);
+
 				if(speedLimit > 0.0f){
 					d->setSpeedLimit(speedLimit);
 				}
@@ -181,6 +185,7 @@ class ofxDownloadCentral{
 
 		int									maxConcurrentDownloads;
 		float								speedLimit;
+		ProxyConfig							proxyConfig;
 };
 
 #endif
