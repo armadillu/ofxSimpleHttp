@@ -426,7 +426,6 @@ string ofxSimpleHttp::extractExtensionFromFileName(string fileName){
 	}else{
 		file = "";
 	}
-
 	return file;
 }
 

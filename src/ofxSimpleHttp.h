@@ -191,10 +191,10 @@ class ofxSimpleHttp : public ofThread{
 
 	public:
 		static string extractFileFromUrl(string url);
+		static string extractExtensionFromFileName(string fileName);
 
-    private:
-		string extractExtensionFromFileName(string fileName);
-			
+	private:
+
 		//bool							debug;	//should we print lots of stuff?
 		bool							notifyFromMainThread;
 		bool							onlySkipDownloadIfChecksumMatches;
