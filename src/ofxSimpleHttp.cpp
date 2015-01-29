@@ -407,7 +407,7 @@ string removeInvalidCharacters(string input){
 	return input;
 }
 
-string ofxSimpleHttp::extractFileFromUrl(string url){
+string ofxSimpleHttp::extractFileFromUrl(const string& url){
 	int found = url.find_last_of("/");
 	string file = url.substr(found + 1);
 	file = removeInvalidCharacters(file);
@@ -418,7 +418,7 @@ string ofxSimpleHttp::extractFileFromUrl(string url){
 }
 
 
-string ofxSimpleHttp::extractExtensionFromFileName(string fileName){
+string ofxSimpleHttp::extractExtensionFromFileName(const string& fileName){
 	int found = fileName.find_last_of(".");
 	string file;
 	if (found > 0){

@@ -190,8 +190,8 @@ class ofxSimpleHttp : public ofThread{
 		void threadedFunction();	//the queue runs here
 
 	public:
-		static string extractFileFromUrl(string url);
-		static string extractExtensionFromFileName(string fileName);
+		static string extractFileFromUrl(const string & url);
+		static string extractExtensionFromFileName(const string& fileName);
 
 	private:
 
