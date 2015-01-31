@@ -761,8 +761,11 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 							avgDownloadSpeed = avgDownloadSpeed * 0.75f + 0.25f * resp->avgDownloadSpeed;
 						}
 
+						bool isAPI = (resp->contentType == "text/json");
+						bool sizeMissmatch = resp->serverReportedSize > 0 && resp->serverReportedSize != resp->downloadedBytes;
+
 						//check download file size missmatch
-						if ( resp->serverReportedSize > 0 && resp->serverReportedSize != resp->downloadedBytes) {
+						if ( sizeMissmatch && !isAPI ) {
 							string msg;
 
 							if (resp->downloadedBytes == 0){
