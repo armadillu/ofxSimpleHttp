@@ -540,6 +540,7 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 	bool ok = FALSE;
 	ofstream myfile;
 	bool fileIsAlreadyHere = false;
+	resp->responseBody = "";
 
 	//create a file to save the stream to
 	if(saveToDisk){
