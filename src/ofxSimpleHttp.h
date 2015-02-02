@@ -111,6 +111,7 @@ struct ofxSimpleHttpResponse{
 
 	ofxSimpleHttpResponse();
 	void print();
+	string toString();
 };
 
 

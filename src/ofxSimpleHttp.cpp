@@ -77,7 +77,7 @@ void ofxSimpleHttp::createSslContext(Poco::Net::Context::Usage usage ){
 	if(!pContext){
 		pContext = new Context(usage, "", Context::VERIFY_NONE);
 		Poco::Net::SSLManager::instance().initializeClient(0, 0, pContext);
-		ofLogWarning() << "initing Poco SSLManager";
+		ofLogWarning("ofxSimpleHttp") << "initing Poco SSLManager";
 	}
 }
 
@@ -85,7 +85,7 @@ void ofxSimpleHttp::destroySslContext(){
 	if(pContext){
 		Poco::Net::SSLManager::instance().shutdown();
 		pContext = NULL;
-		ofLogWarning() << "uniniting Poco SSLManager";
+		ofLogWarning("ofxSimpleHttp") << "uniniting Poco SSLManager";
 	}
 }
 
@@ -501,7 +501,7 @@ void ofxSimpleHttp::fetchURLToDisk(string url, string expectedSha1, bool notifyO
 		try{
 			startThread(true);
 		}catch(Exception e){
-			ofLogError() << "ofxSimpleHttp: cant start thread!" << e.what();
+			ofLogError("ofxSimpleHttp") << "ofxSimpleHttp: cant start thread!" << e.what();
 		}
 	}
 }
@@ -555,8 +555,8 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 					resp->status = 0;
 					resp->ok = true;
 					resp->fileWasHere = true;
-					ofLogVerbose() << "ofxSimpleHttp: about to download " << resp->url << " but a file with same name and correct checksum is already here!";
-					ofLogVerbose() << "ofxSimpleHttp: skipping download (" << resp->expectedChecksum << ")";
+					ofLogVerbose("ofxSimpleHttp") << "ofxSimpleHttp: about to download " << resp->url << " but a file with same name and correct checksum is already here!";
+					ofLogVerbose("ofxSimpleHttp") << "ofxSimpleHttp: skipping download (" << resp->expectedChecksum << ")";
 				}
 			}
 			f.close();
@@ -570,8 +570,8 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 					resp->ok = true;
 					resp->fileWasHere = true;
 					fileIsAlreadyHere = true;
-					ofLogVerbose() << "ofxSimpleHttp: about to download "<< resp->url << " but a file with same name and (size > 0) is already here!";
-					ofLogVerbose() << "ofxSimpleHttp: skipping download (missing checksum)";
+					ofLogVerbose("ofxSimpleHttp") << "ofxSimpleHttp: about to download "<< resp->url << " but a file with same name and (size > 0) is already here!";
+					ofLogVerbose("ofxSimpleHttp") << "ofxSimpleHttp: skipping download (missing checksum)";
 				}
 				f.close();
 			}
@@ -662,7 +662,7 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 				try{
 					session->sendRequest(req);
 				}catch(Exception e){
-					ofLogWarning() << "ofxSimpleHttp session send request exception: " << e.what() << " - " << request.url;
+					ofLogWarning("ofxSimpleHttp") << "ofxSimpleHttp session send request exception: " << e.what() << " - " << request.url;
 				}
 
 				HTTPResponse res;
@@ -715,8 +715,8 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 					if (resp->expectedChecksum.length() > 0){
 						resp->checksumOK = ofxChecksum::sha1(resp->absolutePath, resp->expectedChecksum);
 						if(!resp->checksumOK){
-							ofLogVerbose() << "ofxSimpleHttp: downloaded OK but Checksum FAILED";
-							ofLogVerbose() << "ofxSimpleHttp: SHA1 was meant to be: " << resp->expectedChecksum;
+							ofLogVerbose("ofxSimpleHttp") << "ofxSimpleHttp: downloaded OK but Checksum FAILED";
+							ofLogVerbose("ofxSimpleHttp") << "ofxSimpleHttp: SHA1 was meant to be: " << resp->expectedChecksum;
 						}
 					}
 
@@ -796,12 +796,12 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 								resp->ok = false;
 							}
 						}
-						ofLogVerbose() << "ofxSimpleHttp: download finished! " << resp->url << " !";
+						ofLogVerbose("ofxSimpleHttp") << "ofxSimpleHttp: download finished! " << resp->url << " !";
 						ok = TRUE;
 					}
 
 					if (copySize == 0){
-						ofLogError() << "downloaded file is empty!";
+						ofLogError("ofxSimpleHttp") << "downloaded file is empty!";
 						resp->ok = false;
 						resp->reasonForStatus += " / server file is empty!";
 					}
@@ -1024,37 +1024,46 @@ ofxSimpleHttpResponse::ofxSimpleHttpResponse(){
 	timeDowloadStarted = ofGetElapsedTimef();
 }
 
+string ofxSimpleHttpResponse::toString(){
 
-void ofxSimpleHttpResponse::print(){
-	ofLogNotice() << "#### " << url;
+	std::stringstream ss;
+	ss << "#### " << url;
 	if (ok){
 		if (fileWasHere){
-			ofLogNotice() << "    File was already on disk, no download needed!";
+			ss << "    File was already on disk, no download needed!";
 			if (expectedChecksum.size()){
-				ofLogNotice() << "    File checksum " << expectedChecksum << " matched!";
+				ss << "    File checksum " << expectedChecksum << " matched!";
 			}else{
-				ofLogNotice() << "    File checksum not supplied, assuming file is the same blindly";
+				ss << "    File checksum not supplied, assuming file is the same blindly";
 			}
-			ofLogNotice() << "    File saved at: " << absolutePath;
+			ss << "    File saved at: " << absolutePath;
 		}else{
-			ofLogNotice() << "    Server Status: " << status;
-			ofLogNotice() << "    Server Reported size: " << serverReportedSize;
-			ofLogNotice() << "    Content Type: " << contentType;
+			ss << "    Server Status: " << status;
+			ss << "    Server Reported size: " << serverReportedSize;
+			ss << "    Content Type: " << contentType;
 			if(expectedChecksum.length()){
-				ofLogNotice() << "    Expected Checksum: " << expectedChecksum;
-				ofLogNotice() << "    Checksum Match: " << string(checksumOK ? "YES" : "NO");
+				ss << "    Expected Checksum: " << expectedChecksum;
+				ss << "    Checksum Match: " << string(checksumOK ? "YES" : "NO");
 			}
-			ofLogNotice() << "    Download Time taken: " << timeTakenToDownload << " seconds";
+			ss << "    Download Time taken: " << timeTakenToDownload << " seconds";
 			if (serverReportedSize != -1){
-				ofLogNotice() << "    Avg Download Speed: " << (serverReportedSize / 1024.f) / timeTakenToDownload << "Kb/sec";
+				ss << "    Avg Download Speed: " << (serverReportedSize / 1024.f) / timeTakenToDownload << "Kb/sec";
 			}
 			if(downloadToDisk){
-				ofLogNotice() << "    File Saved at: " << absolutePath;
+				ss << "    File Saved at: " << absolutePath;
 			}
 		}
 	}else{
-		ofLogError() << "    Download FAILED! ";
-		ofLogError() << "    Status: " << status << " - " << reasonForStatus;
+		ss << "    Download FAILED! ";
+		ss << "    Status: " << status << " - " << reasonForStatus;
 	}
-	ofLogNotice() << endl;
+	return ss.str();
+}
+
+void ofxSimpleHttpResponse::print(){
+	if (ok){
+		ofLogNotice("ofxSimpleHttpResponse") << toString();
+	}else{
+		ofLogError("ofxSimpleHttpResponse") << toString();
+	}
 }
