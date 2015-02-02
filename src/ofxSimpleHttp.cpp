@@ -1027,35 +1027,35 @@ ofxSimpleHttpResponse::ofxSimpleHttpResponse(){
 string ofxSimpleHttpResponse::toString(){
 
 	std::stringstream ss;
-	ss << "ofxSimpleHttpResponse: " << url;
+	ss << "ofxSimpleHttpResponse: " << url << endl;
 	if (ok){
 		if (fileWasHere){
-			ss << "    File was already on disk, no download needed!";
+			ss << "    File was already on disk, no download needed!" << endl;
 			if (expectedChecksum.size()){
-				ss << "    File checksum " << expectedChecksum << " matched!";
+				ss << "    File checksum " << expectedChecksum << " matched!" << endl;
 			}else{
-				ss << "    File checksum not supplied, assuming file is the same blindly";
+				ss << "    File checksum not supplied, assuming file is the same blindly" << endl;
 			}
-			ss << "    File saved at: " << absolutePath;
+			ss << "    File saved at: " << absolutePath << endl;
 		}else{
-			ss << "    Server Status: " << status;
-			ss << "    Server Reported size: " << serverReportedSize;
-			ss << "    Content Type: " << contentType;
+			ss << "    Server Status: " << status << endl;
+			ss << "    Server Reported size: " << serverReportedSize << endl;
+			ss << "    Content Type: " << contentType << endl;
 			if(expectedChecksum.length()){
-				ss << "    Expected Checksum: " << expectedChecksum;
-				ss << "    Checksum Match: " << string(checksumOK ? "YES" : "NO");
+				ss << "    Expected Checksum: " << expectedChecksum << endl;
+				ss << "    Checksum Match: " << string(checksumOK ? "YES" : "NO") << endl;
 			}
-			ss << "    Download Time taken: " << timeTakenToDownload << " seconds";
+			ss << "    Download Time taken: " << timeTakenToDownload << " seconds" << endl;
 			if (serverReportedSize != -1){
-				ss << "    Avg Download Speed: " << (serverReportedSize / 1024.f) / timeTakenToDownload << "Kb/sec";
+				ss << "    Avg Download Speed: " << (serverReportedSize / 1024.f) / timeTakenToDownload << "Kb/sec" << endl;
 			}
 			if(downloadToDisk){
-				ss << "    File Saved at: " << absolutePath;
+				ss << "    File Saved at: " << absolutePath << endl;
 			}
 		}
 	}else{
-		ss << "    Download FAILED! ";
-		ss << "    Status: " << status << " - " << reasonForStatus;
+		ss << "    Download FAILED! " << endl;
+		ss << "    Status: " << status << " - " << reasonForStatus << endl;
 	}
 	return ss.str();
 }
