@@ -1027,7 +1027,7 @@ ofxSimpleHttpResponse::ofxSimpleHttpResponse(){
 string ofxSimpleHttpResponse::toString(){
 
 	std::stringstream ss;
-	ss << "#### " << url;
+	ss << "ofxSimpleHttpResponse: " << url;
 	if (ok){
 		if (fileWasHere){
 			ss << "    File was already on disk, no download needed!";
