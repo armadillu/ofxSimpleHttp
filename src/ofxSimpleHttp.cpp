@@ -168,11 +168,9 @@ float ofxSimpleHttp::getCurrentDownloadProgress(){
 
 void ofxSimpleHttp::threadedFunction(){
 
-#ifdef TARGET_OSX
-	pthread_setname_np("ofxSimpleHttp");
-#endif
+	getPocoThread().setName("ofxSimpleHttp");
 
-	ofLogVerbose("ofxSimpleHttp", "start threadedFunction");
+	ofLogVerbose("ofxSimpleHttp") << "start threadedFunction";
 	queueLenEstimation = 0;
 
 	lock();
@@ -203,11 +201,12 @@ void ofxSimpleHttp::threadedFunction(){
 	//if no more pending requests, let the thread die...
 	ofLogVerbose("ofxSimpleHttp", "exiting threadedFunction (queue len %d)", queueLenEstimation);
 
-#if  defined(TARGET_OSX) || defined(TARGET_LINUX) /*I'm not 100% sure of linux*/
-	if (!timeToStop){ //if we are naturally exiting the thread; if TimeToStop==true it means we are being destructed, and the thread will be joined (so no need to detach!)
-		pthread_detach( pthread_self() ); //this is a workaround for this issue https://github.com/openframeworks/openFrameworks/issues/2506
-	}
-#endif
+//not needed anymore, only for 0.81 and below I think
+//#if  defined(TARGET_OSX) || defined(TARGET_LINUX) /*I'm not 100% sure of linux*/
+//	if (!timeToStop){ //if we are naturally exiting the thread; if TimeToStop==true it means we are being destructed, and the thread will be joined (so no need to detach!)
+//		pthread_detach( pthread_self() ); //this is a workaround for this issue https://github.com/openframeworks/openFrameworks/issues/2506
+//	}
+//#endif
 }
 
 
@@ -277,7 +276,7 @@ string ofxSimpleHttp::minimalDrawableString(){
 }
 
 
-string ofxSimpleHttp::drawableString(){
+string ofxSimpleHttp::drawableString(int urlLen){
 
 	string aux;
 	lock();
@@ -312,10 +311,13 @@ string ofxSimpleHttp::drawableString(){
 			}
 		}
 		string spa = "      ";
-
+		string url = r->url;
+		if (urlLen > 0){
+			url = url.substr(0, MIN(url.size(), urlLen)) + "...";
+		}
 		aux = "//// ofxSimpleHttp now fetching //////////////////////////////////\n"
 		"//\n"
-		"//   URL: " + r->url + "\n" +
+		"//   URL: " + url + "\n" +
 		string( r->downloadToDisk ? "//   Save To: " + r->absolutePath + "\n" : "") +
 		string(serverSize.length() ?
 		"//   Progress:                 " + spa + string((r->downloadProgress >= 0.0) ? ofToString(100.0f * r->downloadProgress, 2) : "") + "%\n" : "") +
@@ -397,20 +399,21 @@ void ofxSimpleHttp::drawMinimal(float x, float y, bool withBg, ofColor fontColor
 }
 
 
-string removeInvalidCharacters(string input){
-	static char invalidChars[] = {'?', '\\', '/', '*', '<', '>', '"', ':' };
+string ofxSimpleHttp::getFileSystemSafeString(const string & input){
+	static char invalidChars[] = {'?', '\\', '/', '*', '<', '>', '"', ':', '#' };
 	int howMany = sizeof(invalidChars) / sizeof(invalidChars[0]);
 	char replacementChar = '_';
+	string output = input;
 	for(int i = 0; i < howMany; i++){
-		std::replace( input.begin(), input.end(), invalidChars[i], replacementChar);
+		std::replace( output.begin(), output.end(), invalidChars[i], replacementChar);
 	}
-	return input;
+	return output;
 }
 
 string ofxSimpleHttp::extractFileFromUrl(const string& url){
 	int found = url.find_last_of("/");
 	string file = url.substr(found + 1);
-	file = removeInvalidCharacters(file);
+	file = getFileSystemSafeString(file);
 	if (file.length() == 0){
 		file = OFX_SIMPLEHTTP_UNTITLED_FILENAME;
 	}

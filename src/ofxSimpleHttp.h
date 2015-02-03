@@ -137,7 +137,7 @@ class ofxSimpleHttp : public ofThread{
 
 		void						draw(float x, float y , float w , float h);	//draws a box
 		void						draw(float x, float y);	//draws a box
-		string						drawableString();
+		string						drawableString(int urlLen = 0);
 		void						drawMinimal(float x, float y, bool withBg = false, ofColor fontColor = ofColor::white,
 											ofColor bgColor = ofColor::black);	//draws a one-line status
 		string						minimalDrawableString();
@@ -176,25 +176,25 @@ class ofxSimpleHttp : public ofThread{
 
 		ofEvent<ofxSimpleHttpResponse>		httpResponse;
 
-		static string				bytesToHumanReadable(long long bytes, int decimalPrecision);
-		static string				secondsToHumanReadable(float sec, int decimalPrecision);
-
 		// https support //////////////////////////////////////////////////////////////
-		static void 				createSslContext(Poco::Net::Context::Usage = Poco::Net::Context::CLIENT_USE); //call once, before any https connection is made
+
+		//call once, before any https connection is made
+		static void 				createSslContext(Poco::Net::Context::Usage = Poco::Net::Context::CLIENT_USE);
 		static void 				destroySslContext(); //call once when no longer need https, once all trasnfers are finished
 														//or just b4 app exit
 
-	private:
-		
+		// STATIC Utility Methods ////////////////////////////////////////////////////////
+
+		static string				bytesToHumanReadable(long long bytes, int decimalPrecision);
+		static string				secondsToHumanReadable(float sec, int decimalPrecision);
+		static string				extractFileFromUrl(const string & url);
+		static string				extractExtensionFromFileName(const string& fileName);
+		static string				getFileSystemSafeString(const string & input);
+
+private:
+
 		bool downloadURL( ofxSimpleHttpResponse * resp, bool sendResultThroughEvents, bool beingCalledFromMainThread, bool saveToDisk );
-
 		void threadedFunction();	//the queue runs here
-
-	public:
-		static string extractFileFromUrl(const string & url);
-		static string extractExtensionFromFileName(const string& fileName);
-
-	private:
 
 		//bool							debug;	//should we print lots of stuff?
 		bool							notifyFromMainThread;
@@ -215,7 +215,6 @@ class ofxSimpleHttp : public ofThread{
 		ofxSimpleHttpResponse			response;
 
 		ProxyConfig						proxyConfig;
-
 
 		queue<ofxSimpleHttpResponse>	responsesPendingNotification; //we store here downloads that arrived so that we can notify from main thread
 		map<string, string>				customHttpHeaders;
