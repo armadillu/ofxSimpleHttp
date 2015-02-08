@@ -130,7 +130,6 @@ int ofxBatchDownloader::getNumSuppliedUrls(){
 void ofxBatchDownloader::startDownloading(){
 
 	if (!busy){
-
 		busy = true;
 		reset();
 
