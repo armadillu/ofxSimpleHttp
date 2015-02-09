@@ -400,7 +400,7 @@ void ofxSimpleHttp::drawMinimal(float x, float y, bool withBg, ofColor fontColor
 
 
 string ofxSimpleHttp::getFileSystemSafeString(const string & input){
-	static char invalidChars[] = {'?', '\\', '/', '*', '<', '>', '"', ':', '#' };
+	static char invalidChars[] = {'?', '\\', '/', '*', '<', '>', '"', ';', ':', '#' };
 	int howMany = sizeof(invalidChars) / sizeof(invalidChars[0]);
 	char replacementChar = '_';
 	string output = input;
