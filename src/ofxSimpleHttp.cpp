@@ -433,7 +433,7 @@ string ofxSimpleHttp::extractExtensionFromFileName(const string& fileName){
 }
 
 
-void ofxSimpleHttp::fetchURL(string url, bool notifyOnSuccess){
+void ofxSimpleHttp::fetchURL(string url, bool notifyOnSuccess, string customField){
 
 	if (queueLenEstimation >= maxQueueLen){
 		ofLogError("ofxSimpleHttp", "fetchURL can't do that, queue is too long already (%d)!\n", queueLenEstimation );
@@ -443,6 +443,7 @@ void ofxSimpleHttp::fetchURL(string url, bool notifyOnSuccess){
 	ofxSimpleHttpResponse *response = new ofxSimpleHttpResponse();
 	response->who = this;
 	response->url = url;
+	response->customField = customField;
 	response->downloadCanceled = false;
 	response->fileName = extractFileFromUrl(url);
 	response->extension = extractExtensionFromFileName(response->fileName);
@@ -473,7 +474,8 @@ ofxSimpleHttpResponse ofxSimpleHttp::fetchURLBlocking(string  url){
 	return response;
 }
 
-void ofxSimpleHttp::fetchURLToDisk(string url, string expectedSha1, bool notifyOnSuccess, string dirWhereToSave){
+void ofxSimpleHttp::fetchURLToDisk(string url, string expectedSha1, bool notifyOnSuccess,
+								   string dirWhereToSave, string customField){
 
 	if (queueLenEstimation >= maxQueueLen){
 		ofLogError("ofxSimpleHttp", "fetchURL can't do that, queue is too long already (%d)!\n", queueLenEstimation );
@@ -487,6 +489,7 @@ void ofxSimpleHttp::fetchURLToDisk(string url, string expectedSha1, bool notifyO
 
 	ofxSimpleHttpResponse *response = new ofxSimpleHttpResponse();
 	response->who = this;
+	response->customField = customField;
 	response->expectedChecksum = expectedSha1;
 	response->absolutePath = savePath;
 	response->url = url;
@@ -509,8 +512,9 @@ void ofxSimpleHttp::fetchURLToDisk(string url, string expectedSha1, bool notifyO
 	}
 }
 
-void ofxSimpleHttp::fetchURLToDisk(string url, bool notifyOnSuccess, string dirWhereToSave){
-	fetchURLToDisk(url, "", notifyOnSuccess, dirWhereToSave);
+void ofxSimpleHttp::fetchURLToDisk(string url, bool notifyOnSuccess,
+								   string dirWhereToSave, string customField){
+	fetchURLToDisk(url, "", notifyOnSuccess, dirWhereToSave, customField);
 }
 
 
@@ -1031,6 +1035,7 @@ string ofxSimpleHttpResponse::toString(){
 
 	std::stringstream ss;
 	ss << "ofxSimpleHttpResponse: " << url << endl;
+	if(customField.size()) ss << "CustomField: " << customField << endl;
 	if (ok){
 		if (fileWasHere){
 			ss << "    File was already on disk, no download needed!" << endl;

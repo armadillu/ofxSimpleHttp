@@ -109,6 +109,8 @@ struct ofxSimpleHttpResponse{
 	float						timeTakenToDownload;// seconds
 	float						timeDowloadStarted; //from ofGetElapsedTimef()
 
+	string						customField;		//to be supplied when starting a download
+													//so that you can identify the callback when you get it
 	ofxSimpleHttpResponse();
 	void print();
 	string toString();
@@ -125,13 +127,27 @@ class ofxSimpleHttp : public ofThread{
 		// actions //////////////////////////////////////////////////////////////
 
 		//download to RAM ( download to ofxSimpleHttpResponse->responseBody)
-		void						fetchURL(string url, bool notifyOnSuccess = false);
+		void						fetchURL(string url,
+											 bool notifyOnSuccess = false,
+											 string customField = ""); //supply any info you need, get it back when you are notified
+
 		ofxSimpleHttpResponse		fetchURLBlocking(string url);
 
 		//download to Disk
-		void						fetchURLToDisk(string url, bool notifyOnSuccess = false, string outputDir = ".");
-		void						fetchURLToDisk(string url, string expectedSha1, bool notifyOnSuccess = false, string outputDir = ".");
-		ofxSimpleHttpResponse		fetchURLtoDiskBlocking(string url, string outputDir = ".", string expectedSha1 = "");
+		void						fetchURLToDisk(string url,
+												   bool notifyOnSuccess = false,
+												   string outputDir = ".",
+												   string customField = ""); //supply any info you need, get it back when you are notified
+
+		void						fetchURLToDisk(string url,
+												   string expectedSha1,
+												   bool notifyOnSuccess = false,
+												   string outputDir = ".", string
+												   customField = ""); //supply any info you need, get it back when you are notified
+
+		ofxSimpleHttpResponse		fetchURLtoDiskBlocking(string url,
+														   string outputDir = ".",
+														   string expectedSha1 = "");
 
 		void						update(); //this is mainly used to get notifications in the main thread
 
