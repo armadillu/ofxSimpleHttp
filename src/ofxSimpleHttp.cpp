@@ -285,12 +285,6 @@ string ofxSimpleHttp::drawableString(int urlLen){
 		ofxSimpleHttpResponse * r = q.front();
 		float timeSoFar = ofGetElapsedTimef() - r->timeDowloadStarted; //seconds
 		float timeRemaining = 0.0f;
-		string soFarTimeUnit = "sec";
-
-		if (timeSoFar > 60.0f){
-			timeSoFar /= 60.0f;
-			soFarTimeUnit = "min";
-		}
 
 		if(r->downloadedSoFar > 100){
 			timeRemaining = (timeSoFar / r->downloadProgress) - timeSoFar;
