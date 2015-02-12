@@ -41,6 +41,7 @@ ofxSimpleHttp::ofxSimpleHttp(){
 	idleTimeAfterEachDownload = 0.0;
 	avgDownloadSpeed = 0.0f;
 	speedLimit = 0.0f;
+	useCredentials = false;
 }
 
 
@@ -121,6 +122,11 @@ void ofxSimpleHttp::setUserAgent( string newUserAgent ){
 	userAgent = newUserAgent;
 }
 
+void ofxSimpleHttp::setCredentials(string username, string password){
+	credentials.setUsername(username);
+	credentials.setPassword(password);
+	useCredentials = true;
+}
 
 void ofxSimpleHttp::setMaxQueueLength(int len){
 	maxQueueLen = len;
@@ -661,6 +667,9 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 
 				session->setTimeout( Poco::Timespan(timeOut,0) );
 				try{
+					if(useCredentials){
+						credentials.authenticate(req);
+					}
 					session->sendRequest(req);
 				}catch(Exception e){
 					ofLogWarning("ofxSimpleHttp") << "ofxSimpleHttp session send request exception: " << e.what() << " - " << request.url;
