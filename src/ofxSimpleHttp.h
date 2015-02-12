@@ -61,7 +61,6 @@
 #include "Poco/Path.h"
 #include "Poco/URI.h"
 #include "Poco/Exception.h"
-
 #include <iostream>
 
 #define OFX_SIMPLEHTTP_UNTITLED_FILENAME	"unnamed.file"
@@ -178,7 +177,7 @@ class ofxSimpleHttp : public ofThread{
 		void						setTimeOut(int seconds);
 		void						setVerbose(bool verbose); //unused
 		void						setUserAgent( string newUserAgent );
-        void                        setCredentials(string username, string password);
+		void						setCredentials(string username, string password);
 		void						setMaxQueueLength(int len);
 		void 						setCopyBufferSize(int KB); /*in KiloBytes (1 -> 1024 bytes)*/
 		void						setIdleTimeAfterEachDownload(float seconds); //wait a bit before notifying once the dowload is over

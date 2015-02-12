@@ -41,7 +41,7 @@ ofxSimpleHttp::ofxSimpleHttp(){
 	idleTimeAfterEachDownload = 0.0;
 	avgDownloadSpeed = 0.0f;
 	speedLimit = 0.0f;
-    useCredentials = false;
+	useCredentials = false;
 }
 
 
@@ -123,9 +123,9 @@ void ofxSimpleHttp::setUserAgent( string newUserAgent ){
 }
 
 void ofxSimpleHttp::setCredentials(string username, string password){
-    credentials.setUsername(username);
-    credentials.setPassword(password);
-    useCredentials = true;
+	credentials.setUsername(username);
+	credentials.setPassword(password);
+	useCredentials = true;
 }
 
 void ofxSimpleHttp::setMaxQueueLength(int len){
