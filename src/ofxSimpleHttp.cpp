@@ -667,9 +667,9 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 
 				session->setTimeout( Poco::Timespan(timeOut,0) );
 				try{
-                    if(useCredentials){
-                        credentials.authenticate(req);
-                    }
+					if(useCredentials){
+						credentials.authenticate(req);
+					}
                     session->sendRequest(req);
 				}catch(Exception e){
 					ofLogWarning("ofxSimpleHttp") << "ofxSimpleHttp session send request exception: " << e.what() << " - " << request.url;

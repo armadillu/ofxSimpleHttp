@@ -234,8 +234,8 @@ private:
 		ofxSimpleHttpResponse			response;
 
 		ProxyConfig						proxyConfig;
-        bool                            useCredentials;
-        HTTPBasicCredentials            credentials;
+		bool							useCredentials;
+		HTTPBasicCredentials			credentials;
 
 		queue<ofxSimpleHttpResponse>	responsesPendingNotification; //we store here downloads that arrived so that we can notify from main thread
 		map<string, string>				customHttpHeaders;
