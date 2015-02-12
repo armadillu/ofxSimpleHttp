@@ -670,7 +670,7 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 					if(useCredentials){
 						credentials.authenticate(req);
 					}
-                    session->sendRequest(req);
+					session->sendRequest(req);
 				}catch(Exception e){
 					ofLogWarning("ofxSimpleHttp") << "ofxSimpleHttp session send request exception: " << e.what() << " - " << request.url;
 				}
