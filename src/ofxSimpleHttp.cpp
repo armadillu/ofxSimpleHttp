@@ -264,9 +264,8 @@ string ofxSimpleHttp::minimalDrawableString(){
 	lock();
 	int n = q.size();
 	if( isThreadRunning() && n > 0 ){
-		msg = "ofxSimpleHttp:";
 		ofxSimpleHttpResponse * r = q.front();
-		char aux[10];
+		char aux[16];
 		sprintf(aux, "% 4d%%", (int)(r->downloadProgress * 100.0f));
 		msg += string(aux) + " [";
 		float barLen = 12;
@@ -276,6 +275,8 @@ string ofxSimpleHttp::minimalDrawableString(){
 		}
 		msg += "] ";
 		msg += string( r->downloadToDisk ? ofFilePath::getFileName(r->absolutePath) : "");
+		msg += " (" + bytesToHumanReadable((long long)r->downloadSpeed, 1) + "/s)";
+
 	}
 	unlock();
 	return msg;
