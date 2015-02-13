@@ -44,6 +44,7 @@
 #include "ofEvents.h"
 #include <queue>
 #include <stdio.h>
+#include "Poco/Net/HTTPBasicCredentials.h"
 #include "Poco/Net/HTTPClientSession.h"
 #include "Poco/Net/HTTPRequest.h"
 #include "Poco/Net/HTTPResponse.h"
@@ -176,6 +177,7 @@ class ofxSimpleHttp : public ofThread{
 		void						setTimeOut(int seconds);
 		void						setVerbose(bool verbose); //unused
 		void						setUserAgent( string newUserAgent );
+		void						setCredentials(string username, string password);
 		void						setMaxQueueLength(int len);
 		void 						setCopyBufferSize(int KB); /*in KiloBytes (1 -> 1024 bytes)*/
 		void						setIdleTimeAfterEachDownload(float seconds); //wait a bit before notifying once the dowload is over
@@ -231,6 +233,8 @@ private:
 		ofxSimpleHttpResponse			response;
 
 		ProxyConfig						proxyConfig;
+		bool							useCredentials;
+		HTTPBasicCredentials			credentials;
 
 		queue<ofxSimpleHttpResponse>	responsesPendingNotification; //we store here downloads that arrived so that we can notify from main thread
 		map<string, string>				customHttpHeaders;
