@@ -67,7 +67,7 @@ public:
 	void setNeedsChecksumMatchToSkipDownload(bool needsChecksum);
 	void setIdleTimeAfterEachDownload(float seconds); //wait a bit before notifying once the dowload is over
 
-	void setProxyConfiguration(const ProxyConfig & c);
+	void setProxyConfiguration(const ofxSimpleHttp::ProxyConfig & c);
 
 
 	unsigned long int getDownloadedBytesSoFar(){ return downloadedSoFar;}

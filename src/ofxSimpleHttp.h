@@ -72,15 +72,6 @@ using Poco::Net::HTTPClientSession;
 
 class ofxSimpleHttp;
 
-struct ProxyConfig{
-	bool useProxy;
-	string host;
-	int port;
-	string password;
-	string login;
-	ProxyConfig(){useProxy = 0; port = 80;}
-};
-
 struct ofxSimpleHttpResponse{
 
 	ofxSimpleHttp * 			who;				//who are you getting the event from?
@@ -124,6 +115,15 @@ class ofxSimpleHttp : public ofThread{
 
 		ofxSimpleHttp();
 		~ofxSimpleHttp();
+
+		struct ProxyConfig{
+			bool useProxy;
+			string host;
+			int port;
+			string password;
+			string login;
+			ProxyConfig(){useProxy = 0; port = 80;}
+		};
 
 		// actions //////////////////////////////////////////////////////////////
 
