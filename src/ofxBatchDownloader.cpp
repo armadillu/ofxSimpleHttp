@@ -46,6 +46,11 @@ void ofxBatchDownloader::update(){
 	http.update();
 }
 
+
+void ofxBatchDownloader::setTimeOut(float timeOut){
+	http.setTimeOut(timeOut);
+}
+
 void ofxBatchDownloader::setSpeedLimit(float KB_per_sec){
 	http.setSpeedLimit(KB_per_sec);
 }

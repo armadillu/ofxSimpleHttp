@@ -57,6 +57,7 @@ public:
 
 	void setDownloadFolder(string f);
 	void setSpeedLimit(float KB_per_sec);
+	void setTimeOut(float timeOut);
 
 	void addResourcesToDownloadList( vector<string>urlList );
 	void addResourcesToDownloadList( vector<string>urlList, vector<string>sha1List );

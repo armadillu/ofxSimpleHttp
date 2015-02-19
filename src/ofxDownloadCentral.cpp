@@ -22,6 +22,7 @@ ofxDownloadCentral::ofxDownloadCentral(){
 	maxURLsToList = 4;
 	idleTimeAfterDownload = 0.0f;
 	maxConcurrentDownloads = 1;
+	timeOut = -1.0f;
 }
 
 ofxDownloadCentral::~ofxDownloadCentral(){
@@ -151,6 +152,12 @@ int ofxDownloadCentral::getNumActiveDownloads(){
 void ofxDownloadCentral::setSpeedLimit(float KB_per_sec){
 	speedLimit = KB_per_sec;
 }
+
+
+void ofxDownloadCentral::setTimeOut(float timeoutSecs){
+	timeOut = timeoutSecs;
+}
+
 
 void ofxDownloadCentral::setProxyConfiguration(const ofxSimpleHttp::ProxyConfig & c){
 	proxyConfig = c;

@@ -786,7 +786,7 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 								if (resp->timeTakenToDownload > timeOut){
 									msg = "downloadURLtoDiskBlocking() >> TimeOut! (" + resp->fileName + ")";
 									resp->reasonForStatus = "Request TimeOut";
-									resp->status = 408;
+									resp->status = HTTPResponse::HTTP_REQUEST_TIMEOUT;
 								}else{
 									msg = "downloadURLtoDiskBlocking() >> Download file is 0 bytes  (" + resp->fileName + ")";
 									resp->reasonForStatus = "Download size is 0 bytes!";
@@ -803,7 +803,7 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 
 						}else{
 
-							if (resp->status == 200){ //mmm
+							if (resp->status == HTTPResponse::HTTP_OK){ //mmm
 								resp->ok = true;
 							}else{
 								resp->ok = false;

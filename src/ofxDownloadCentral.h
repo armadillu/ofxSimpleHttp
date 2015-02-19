@@ -81,6 +81,7 @@ class ofxDownloadCentral{
 																//or only if you provided sha1 checksum and it matches
 
 		void setSpeedLimit(float KB_per_sec);
+		void setTimeOut(float timeoutSecs);
 		void setMaxConcurrentDownloads(int numConcurrentDownloads);
 
 		void setProxyConfiguration(const ofxSimpleHttp::ProxyConfig & c);
@@ -133,9 +134,8 @@ class ofxDownloadCentral{
 				ofxBatchDownloader * d = new ofxBatchDownloader();
 				d->setProxyConfiguration(proxyConfig);
 
-				if(speedLimit > 0.0f){
-					d->setSpeedLimit(speedLimit);
-				}
+				if(timeOut > 0.0f) d->setTimeOut(timeOut);
+				if(speedLimit > 0.0f) d->setSpeedLimit(speedLimit);
 
 				d->setDownloadFolder(destinationFolder);
 				d->setVerbose(verbose);
@@ -185,6 +185,7 @@ class ofxDownloadCentral{
 
 		int									maxConcurrentDownloads;
 		float								speedLimit;
+		float								timeOut;
 		ofxSimpleHttp::ProxyConfig			proxyConfig;
 };
 
