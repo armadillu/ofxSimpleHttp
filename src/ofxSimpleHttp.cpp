@@ -1040,7 +1040,7 @@ ofxSimpleHttpResponse::ofxSimpleHttpResponse(){
 string ofxSimpleHttpResponse::toString(){
 
 	std::stringstream ss;
-	ss << "ofxSimpleHttpResponse: " << url << endl;
+	ss << "URL: " << url << endl;
 	if(customField.size()) ss << "CustomField: " << customField << endl;
 	if (ok){
 		if (fileWasHere){
