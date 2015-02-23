@@ -90,7 +90,7 @@ void ofxSimpleHttp::destroySslContext(){
 	}
 }
 
-void ofxSimpleHttp::setCopyBufferSize(int KB){
+void ofxSimpleHttp::setCopyBufferSize(float KB){
 	COPY_BUFFER_SIZE = KB * 1024;
 }
 
@@ -955,11 +955,9 @@ std::streamsize ofxSimpleHttp::streamCopyWithProgress(std::istream & istr, std::
 
 			if(speedLimit > 0.0f){ //apply speed limit if defined
 				float expectedTimeToDLCopyBuffer = COPY_BUFFER_SIZE / (speedLimit * 1024.0f);
-				//ofLog() << "expected " << expectedTimeToDLCopyBuffer << " and took " << time;
 				if (time < expectedTimeToDLCopyBuffer){
 					float sleepTime = (expectedTimeToDLCopyBuffer - time);
 					ofSleepMillis(sleepTime * 1000.0f);
-					//ofLog() << "sleeping a bit to match speed limit " << sleepTime;
 				}
 				time = (ofGetElapsedTimef() - t1);
 			}
@@ -1000,21 +998,33 @@ std::streamsize ofxSimpleHttp::copyToStringWithProgress(std::istream& istr, std:
 				istr.read(buffer.begin(), COPY_BUFFER_SIZE);
 				n = istr.gcount();
 				if (istr.fail() && !istr.eof()){
-					ofLogError("ofxSimpleHttp", "copyToStringWithProgress() >> Fail");
+					ofLogError("ofxSimpleHttp", "copyToStringWithProgress() >> iostream Fail");
 					return -1;
 				}
 			}else{
 				n = 0;
 			}
-			progress = float(len) / float(totalBytes);
+			if (totalBytes > 0){
+				progress = float(len) / float(totalBytes);
+			}else{
+				progress = 0.0;
+			}
 			float time = (ofGetElapsedTimef() - t1);
+
+			if(speedLimit > 0.0f){ //apply speed limit if defined
+				float expectedTimeToDLCopyBuffer = COPY_BUFFER_SIZE / (speedLimit * 1024.0f);
+				if (time < expectedTimeToDLCopyBuffer){
+					float sleepTime = (expectedTimeToDLCopyBuffer - time);
+					ofSleepMillis(sleepTime * 1000.0f);
+				}
+				time = (ofGetElapsedTimef() - t1);
+			}
 			float newSpeed = 0;
 			if(time > 0.0f){
-				newSpeed = (COPY_BUFFER_SIZE ) / time ;
+				newSpeed = (n) / time;
 			}
 			avgSpeed = 0.5 * newSpeed + 0.5 * avgSpeed;
 			speed = avgSpeed;
-			
 		}
 	}catch(Exception& exc){
 		ofLogError("ofxSimpleHttp", "copyToStringWithProgress() >> Exception: %s", exc.displayText().c_str() );

@@ -179,7 +179,7 @@ class ofxSimpleHttp : public ofThread{
 		void						setUserAgent( string newUserAgent );
 		void						setCredentials(string username, string password);
 		void						setMaxQueueLength(int len);
-		void 						setCopyBufferSize(int KB); /*in KiloBytes (1 -> 1024 bytes)*/
+		void 						setCopyBufferSize(float KB); /*in KiloBytes (1 -> 1024 bytes)*/
 		void						setIdleTimeAfterEachDownload(float seconds); //wait a bit before notifying once the dowload is over
 		void						setCancelCurrentDownloadOnDestruction(bool doIt);
 		void						addCustomHttpHeader(string headerName, string headerContent);
