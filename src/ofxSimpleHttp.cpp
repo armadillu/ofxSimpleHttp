@@ -393,7 +393,9 @@ void ofxSimpleHttp::draw(float x, float y) {
 void ofxSimpleHttp::drawMinimal(float x, float y, bool withBg, ofColor fontColor, ofColor bgColor) {
 	string aux = minimalDrawableString();
 	if(withBg){
-		ofDrawBitmapStringHighlight(aux, x + 3, y + 12, bgColor, fontColor );
+		if(aux.size()){
+			ofDrawBitmapStringHighlight(aux, x + 3, y + 12, bgColor, fontColor );
+		}
 	}else{
 		ofDrawBitmapString(aux, x + 3, y + 12);
 	}
