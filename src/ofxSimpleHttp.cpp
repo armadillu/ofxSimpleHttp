@@ -465,6 +465,7 @@ void ofxSimpleHttp::fetchURL(string url, bool notifyOnSuccess, string customFiel
 ofxSimpleHttpResponse ofxSimpleHttp::fetchURLBlocking(string  url){
 
 	response.url = url;
+	response.who = this;
 	response.downloadCanceled = false;
 	response.fileName = extractFileFromUrl(url);
 	response.extension = extractExtensionFromFileName(response.fileName);
@@ -530,6 +531,7 @@ ofxSimpleHttpResponse ofxSimpleHttp::fetchURLtoDiskBlocking(string  url, string 
 
 	response.absolutePath = savePath;
 	response.url = url;
+	response.who = this;
 	response.expectedChecksum = expectedSha1;
 	response.downloadCanceled = false;
 	response.fileName = extractFileFromUrl(url);
