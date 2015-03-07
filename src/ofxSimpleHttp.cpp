@@ -78,7 +78,7 @@ void ofxSimpleHttp::createSslContext(Poco::Net::Context::Usage usage ){
 	if(!pContext){
 		pContext = new Context(usage, "", Context::VERIFY_NONE);
 		Poco::Net::SSLManager::instance().initializeClient(0, 0, pContext);
-		ofLogWarning("ofxSimpleHttp") << "initing Poco SSLManager";
+		ofLogNotice("ofxSimpleHttp") << "initing Poco SSLManager";
 	}
 }
 
@@ -86,7 +86,7 @@ void ofxSimpleHttp::destroySslContext(){
 	if(pContext){
 		Poco::Net::SSLManager::instance().shutdown();
 		pContext = NULL;
-		ofLogWarning("ofxSimpleHttp") << "uniniting Poco SSLManager";
+		ofLogNotice("ofxSimpleHttp") << "uniniting Poco SSLManager";
 	}
 }
 
