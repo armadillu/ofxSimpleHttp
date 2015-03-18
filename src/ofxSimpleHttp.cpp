@@ -76,7 +76,7 @@ void ofxSimpleHttp::setProxyConfiguration(const ProxyConfig & c){
 
 void ofxSimpleHttp::createSslContext(Poco::Net::Context::Usage usage, Poco::Net::Context::VerificationMode verMode ){
 	if(!pContext){
-
+		ofLogNotice("ofxSimpleHttp") << "initing Poco SSLManager";
 		//pContext = new Context(usage, "", Context::VERIFY_RELAXED, 9, true, "ALL:!ADH:!LOW:!EXP:!MD5:@STRENGTH");
 		string certFilePath = ofToDataPath("ssl/cacert.pem", true);
 		if (!ofFile::doesFileExist(certFilePath)){
@@ -93,7 +93,6 @@ void ofxSimpleHttp::createSslContext(Poco::Net::Context::Usage usage, Poco::Net:
 										  );
 
 		Poco::Net::SSLManager::instance().initializeClient(0, 0, pContext);
-		ofLogNotice("ofxSimpleHttp") << "initing Poco SSLManager";
 	}
 }
 
