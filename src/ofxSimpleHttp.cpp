@@ -74,9 +74,24 @@ void ofxSimpleHttp::setProxyConfiguration(const ProxyConfig & c){
 }
 
 
-void ofxSimpleHttp::createSslContext(Poco::Net::Context::Usage usage ){
+void ofxSimpleHttp::createSslContext(Poco::Net::Context::Usage usage, Poco::Net::Context::VerificationMode verMode ){
 	if(!pContext){
-		pContext = new Context(usage, "", Context::VERIFY_NONE);
+
+		//pContext = new Context(usage, "", Context::VERIFY_RELAXED, 9, true, "ALL:!ADH:!LOW:!EXP:!MD5:@STRENGTH");
+		string certFilePath = ofToDataPath("ssl/cacert.pem", true);
+		if (!ofFile::doesFileExist(certFilePath)){
+			certFilePath = "";
+			ofLogWarning("ofxSimpleHttp") << "CA Root Certificate not found. Place in data/ssl/cacert.pem.";
+		}
+
+		pContext = new Poco::Net::Context(Poco::Net::Context::CLIENT_USE,
+										  certFilePath, //ca location
+										  verMode, //verification mode
+										  9, //verification depth
+										  false, //load default cas (openSSL)
+										  "ALL:!ADH:!LOW:!EXP:!MD5:@STRENGTH" //cipher list
+										  );
+
 		Poco::Net::SSLManager::instance().initializeClient(0, 0, pContext);
 		ofLogNotice("ofxSimpleHttp") << "initing Poco SSLManager";
 	}
@@ -648,7 +663,7 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 				if (path.empty()) path = "/";
 
 				if(uri.getScheme()=="https"){
-					session = new HTTPSClientSession(uri.getHost(), uri.getPort());//,context);
+					session = new HTTPSClientSession(uri.getHost(), uri.getPort(), pContext);
 				}else{
 					session = new HTTPClientSession(uri.getHost(), uri.getPort());
 				}
@@ -679,7 +694,7 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 				try{
 					session->sendRequest(req);
 				}catch(Exception e){
-					ofLogWarning("ofxSimpleHttp") << "ofxSimpleHttp session send request exception: " << e.what() << " - " << request.url;
+					ofLogWarning("ofxSimpleHttp") << "ofxSimpleHttp session send request exception: " << e.message() << "\nfor URL:" << request.url;
 				}
 
 				HTTPResponse res;
@@ -1002,7 +1017,7 @@ std::streamsize ofxSimpleHttp::copyToStringWithProgress(std::istream& istr, std:
 				istr.read(buffer.begin(), COPY_BUFFER_SIZE);
 				n = istr.gcount();
 				if (istr.fail() && !istr.eof()){
-					ofLogError("ofxSimpleHttp", "copyToStringWithProgress() >> iostream Fail");
+					ofLogError("ofxSimpleHttp", "copyToStringWithProgress() >> istream Fail");
 					return -1;
 				}
 			}else{

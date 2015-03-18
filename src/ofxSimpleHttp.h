@@ -197,7 +197,9 @@ class ofxSimpleHttp : public ofThread{
 		// https support //////////////////////////////////////////////////////////////
 
 		//call once, before any https connection is made
-		static void 				createSslContext(Poco::Net::Context::Usage = Poco::Net::Context::CLIENT_USE);
+		static void 				createSslContext(Poco::Net::Context::Usage = Poco::Net::Context::CLIENT_USE,
+													 Poco::Net::Context::VerificationMode verMode = Poco::Net::Context::VERIFY_NONE);
+
 		static void 				destroySslContext(); //call once when no longer need https, once all trasnfers are finished
 														//or just b4 app exit
 
