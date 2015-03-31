@@ -159,9 +159,6 @@ class ofxSimpleHttp : public ofThread{
 											ofColor bgColor = ofColor::black);	//draws a one-line status
 		string						minimalDrawableString();
 
-		float getHeight() { if ( isThreadRunning() ) return 18 * 4; else return 18; } //TODO!
-		float getWidth() { return 320; }
-	
 		void						stopCurrentDownload(bool emptyQueue); //if there's more downloads on queue, next will start immediatelly
 
 		int							getPendingDownloads();
