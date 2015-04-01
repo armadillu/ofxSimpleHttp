@@ -93,10 +93,10 @@ class ofxDownloadCentral{
 
 		///////////////////////////////////////////////////////////////////////////////
 		template <typename ArgumentsType, class ListenerClass>
-		void downloadResources(	string url,
+		void downloadResources(	const string & url,
 							   ListenerClass  * listener,
 							   void (ListenerClass::*listenerMethod)(ArgumentsType&),
-							   string destinationFolder = "ofxDownloadCentral_downloads"
+							   const string & destinationFolder = "ofxDownloadCentral_downloads"
 							   ){
 
 			vector<string> list;
@@ -106,11 +106,11 @@ class ofxDownloadCentral{
 
 		///////////////////////////////////////////////////////////////////////////////
 		template <typename ArgumentsType, class ListenerClass>
-		void downloadResources(	string url,
-								string sha1String,
+		void downloadResources( const string & url,
+								const string & sha1String,
 							   ListenerClass  * listener,
 							   void (ListenerClass::*listenerMethod)(ArgumentsType&),
-							   string destinationFolder = "ofxDownloadCentral_downloads"
+							   const string & destinationFolder = "ofxDownloadCentral_downloads"
 							   ){
 
 			vector<string> list;
@@ -123,11 +123,11 @@ class ofxDownloadCentral{
 
 		///////////////////////////////////////////////////////////////////////////////
 		template <typename ArgumentsType, class ListenerClass>
-		void downloadResources(	vector<string>urlList,
-								vector<string>sha1List,
+		void downloadResources(	const vector<string> & urlList,
+								const vector<string> & sha1List,
 								ListenerClass  * listener,
 								void (ListenerClass::*listenerMethod)(ArgumentsType&),
-								string destinationFolder = "ofxDownloadCentral_downloads"
+								const string & destinationFolder = "ofxDownloadCentral_downloads"
 							   ){
 
 			if (urlList.size() > 0 ){
@@ -155,10 +155,10 @@ class ofxDownloadCentral{
 
 		///////////////////////////////////////////////////////////////////////////////
 		template <typename ArgumentsType, class ListenerClass>
-		void downloadResources(	vector<string>urlList,
+		void downloadResources(const vector<string> & urlList,
 							   ListenerClass  * listener,
 							   void (ListenerClass::*listenerMethod)(ArgumentsType&),
-							   string destinationFolder = "ofxDownloadCentral_downloads"
+							   const string & destinationFolder = "ofxDownloadCentral_downloads"
 							   ){
 
 			vector<string> shas;
