@@ -99,7 +99,7 @@ void ofxBatchDownloader::addResourcesToDownloadList( vector<string> _urlList ){
 void ofxBatchDownloader::addResourcesToDownloadList( vector<string> _urlList, vector<string>_sha1List ){
 
 	if ( _sha1List.size() > 0 && (_urlList.size() != _sha1List.size()) ){
-		ofLogWarning() << "ofxBatchDownloader::addResourcesToDownloadList >> urlList & shaList element num missmatch!";
+		ofLogWarning("ofxBatchDownloader") << "addResourcesToDownloadList >> urlList & shaList element num missmatch!";
 		return;
 	}
 
@@ -110,11 +110,11 @@ void ofxBatchDownloader::addResourcesToDownloadList( vector<string> _urlList, ve
 			if (_sha1List.size()){
 				originalSha1List.push_back(_sha1List[i]);
 			}
-			ofLogVerbose() << "ofxBatchDownloader queueing " << _urlList[i] << " for download";
+			ofLogVerbose("ofxBatchDownloader") << "queueing " << _urlList[i] << " for download";
 		}
 
 	}else{
-		ofLogWarning() << "ofxBatchDownloader already working, wait for it to finish!";
+		ofLogWarning("ofxBatchDownloader") << "already working, wait for it to finish!";
 	}
 }
 
@@ -138,7 +138,7 @@ void ofxBatchDownloader::startDownloading(){
 		busy = true;
 		reset();
 
-		ofLogVerbose() << "ofxBatchDownloader starting downloads! ";
+		ofLogVerbose("ofxBatchDownloader") << "starting downloads! ";
 
 		http.setMaxQueueLength(originalUrlList.size() * 2); //just in case
 
@@ -162,13 +162,13 @@ void ofxBatchDownloader::httpResult(ofxSimpleHttpResponse &r){
 	bool checkedOK = r.checksumOK || (!r.checksumOK && r.expectedChecksum.size() == 0);
 	if(r.ok && checkedOK){
 		okList.push_back( r.url );
-		ofLogNotice() << "ofxBatchDownloader downloaded OK " << r.url;
+		ofLogNotice("ofxBatchDownloader") << "downloaded OK [" << r.url << "]";
 	}else{
 		failedList.push_back( r.url );
 		if (!r.checksumOK){
-			ofLogError() << "ofxBatchDownloader checksum missmatch! " << r.url;
+			ofLogError("ofxBatchDownloader") << "checksum missmatch! [" << r.url << "] expectedSha1: " << r.expectedChecksum << ")";
 		}else{
-			ofLogError() << "ofxBatchDownloader FAILED TO download " << r.url;
+			ofLogError("ofxBatchDownloader") << "FAILED TO download [" << r.url << "]";
 		}
 	}
 

@@ -13,8 +13,8 @@ bool ofxChecksum::sha1(string filePath, string sha1String, bool verbose ) {
 	std::ifstream ifHash(ofToDataPath(filePath, true).c_str(), std::ios::binary);
 	if (ifHash.is_open()){
 		Poco::DigestInputStream isSha1(sha1e, ifHash);
-		size_t bufSize = 1024 * 50; //50kb bufer
-		char* buf = new char[bufSize];
+		const size_t bufSize = 1024 * 50; //50kb bufer
+		char buf[bufSize];
 
 		isSha1.read(buf, bufSize);
 		while ( (isSha1.rdstate() && std::ifstream::failbit) == 0 ){
@@ -24,7 +24,6 @@ bool ofxChecksum::sha1(string filePath, string sha1String, bool verbose ) {
 		if ( (isSha1.rdstate() && std::ifstream::eofbit) != 0){
 			localHash = Poco::DigestEngine::digestToHex(sha1e.digest());
 		}
-		delete [] buf;
 	}
 
 	bool match = sha1String.compare(localHash) == 0;
