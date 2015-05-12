@@ -10,7 +10,6 @@
 #include "ofxBatchDownloader.h"
 
 ofxBatchDownloader::ofxBatchDownloader(){
-	http.setVerbose(false);
 	busy = false;
 	downloadFolder = "_downloads_";
 	downloadedSoFar = 0;

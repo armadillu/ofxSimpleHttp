@@ -172,13 +172,15 @@ class ofxSimpleHttp : public ofThread{
 		void 						setProxyConfiguration(const ProxyConfig & c);
 
 		void						setTimeOut(int seconds);
-		void						setVerbose(bool verbose); //unused
 		void						setUserAgent( string newUserAgent );
 		void						setCredentials(string username, string password);
 		void						setMaxQueueLength(int len);
 		void 						setCopyBufferSize(float KB); /*in KiloBytes (1 -> 1024 bytes)*/
 		void						setIdleTimeAfterEachDownload(float seconds); //wait a bit before notifying once the dowload is over
+
 		void						setCancelCurrentDownloadOnDestruction(bool doIt);
+		void						setCancelPendingDownloadsOnDestruction(bool cancelAll);
+
 		void						addCustomHttpHeader(string headerName, string headerContent);
 		void						setNotifyFromMainThread(bool mainThread);
 
@@ -227,6 +229,7 @@ private:
 		float							idleTimeAfterEachDownload;	//seconds
 		float							avgDownloadSpeed;
 		bool							cancelCurrentDownloadOnDestruction;
+		bool							flushPendingRequestsOnDestruction;
 
 		float							speedLimit; //in KiloBytes / sec
 		ofxSimpleHttpResponse			response;

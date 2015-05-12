@@ -30,6 +30,7 @@ ofxSimpleHttp::ofxSimpleHttp(){
 
 	COPY_BUFFER_SIZE = 1024 * 128; //  kb buffer size
 	cancelCurrentDownloadOnDestruction = true;
+	flushPendingRequestsOnDestruction = true;
 	timeOut = 10;
 	queueLenEstimation = 0;
 	maxQueueLen = 1000;
@@ -47,18 +48,21 @@ ofxSimpleHttp::ofxSimpleHttp(){
 
 ofxSimpleHttp::~ofxSimpleHttp(){
 
-	timeToStop = true;	//lets flag the thread so that it doesnt try access stuff while we delete things around
+	if(flushPendingRequestsOnDestruction){
+		timeToStop = true;	//lets flag the thread so that it doesnt try access stuff while we delete things around
+	}
+
 	if(cancelCurrentDownloadOnDestruction){
 		stopCurrentDownload(true);
 	}
 
 	try{
-		waitForThread(false);
+		waitForThread(false); //wait for the thread to completelly finish
 	}catch(Exception& exc){
 		ofLogError("ofxSimpleHttp", "Exception at waitForThread %s", exc.displayText().c_str() );
 	}
 
-	//empty queue
+	//empty queue, dont leak out
 	while ( getPendingDownloads() > 0 ){
 		lock();
 		ofxSimpleHttpResponse * r = q.front();
@@ -112,6 +116,10 @@ void ofxSimpleHttp::setCancelCurrentDownloadOnDestruction(bool doIt){
 	cancelCurrentDownloadOnDestruction = doIt;
 }
 
+void ofxSimpleHttp::setCancelPendingDownloadsOnDestruction(bool cancelAll){
+	flushPendingRequestsOnDestruction = cancelAll;
+}
+
 void ofxSimpleHttp::setIdleTimeAfterEachDownload(float seconds){
 	idleTimeAfterEachDownload = seconds;
 }
@@ -127,9 +135,6 @@ void ofxSimpleHttp::setNeedsChecksumMatchToSkipDownload(bool needs){
 void ofxSimpleHttp::setTimeOut(int seconds){
 	timeOut = seconds;
 }
-
-
-void ofxSimpleHttp::setVerbose(bool verbose){}
 
 
 void ofxSimpleHttp::setUserAgent( string newUserAgent ){
@@ -201,7 +206,7 @@ void ofxSimpleHttp::threadedFunction(){
 		ofxSimpleHttpResponse * r = q.front();
 
 		unlock();
-		downloadURL(	r,		/*response*/
+		downloadURL(	r,	/*response*/
 					true,	/*sendResultThroughEvents*/
 					false,	/*calling from main thread*/
 					r->downloadToDisk
@@ -242,10 +247,6 @@ void ofxSimpleHttp::stopCurrentDownload(bool emptyQueue){
 			try{
 				r->emptyWholeQueue = emptyQueue;
 				r->downloadCanceled = true;
-				//if ( r->session != NULL ){
-				//cout << "aboritng session " << r->session;
-				//	r->session->abort();
-				//}
 			}catch(Exception& exc){
 				ofLogError("ofxSimpleHttp", "stopCurrentDownload(" + r->fileName + ") >> Exception: " + exc.displayText() );
 			}
@@ -253,6 +254,7 @@ void ofxSimpleHttp::stopCurrentDownload(bool emptyQueue){
 	}
 	unlock();
 }
+
 
 float ofxSimpleHttp::getCurrentDownloadSpeed(){
 	float downloadSpeed = 0.0f;
@@ -784,7 +786,7 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 							resp->downloadedBytes = resp->responseBody.size();
 						}
 
-						if(resp->timeTakenToDownload > 0.05){
+						if(resp->timeTakenToDownload > 0.01f){
 							resp->avgDownloadSpeed = (resp->downloadedBytes ) / resp->timeTakenToDownload; //kb/sec
 						}
 						if (avgDownloadSpeed == 0.0f){
