@@ -132,6 +132,10 @@ int ofxBatchDownloader::getNumSuppliedUrls(){
 	return originalUrlList.size();
 }
 
+int ofxBatchDownloader::getNumFailedUrls(){
+	return failedList.size();
+}
+
 void ofxBatchDownloader::startDownloading(){
 
 	if (!busy){

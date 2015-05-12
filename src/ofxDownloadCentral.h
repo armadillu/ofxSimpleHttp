@@ -180,6 +180,10 @@ class ofxDownloadCentral{
 		float								downloadStartTime;
 		unsigned long int					downloadedSoFar; //bytes
 		int									downloadStartJobsNumber;
+
+		int									failedJobsStartNumber;
+		int									failedJobsSoFar;
+
 		map<int, float>						avgSpeed;	 //bytes/sec
 		int									maxURLsToList;
 

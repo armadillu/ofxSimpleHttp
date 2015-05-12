@@ -23,6 +23,7 @@ ofxDownloadCentral::ofxDownloadCentral(){
 	idleTimeAfterDownload = 0.0f;
 	maxConcurrentDownloads = 1;
 	timeOut = -1.0f;
+	failedJobsSoFar = failedJobsStartNumber = 0;
 }
 
 ofxDownloadCentral::~ofxDownloadCentral(){
@@ -38,6 +39,7 @@ void ofxDownloadCentral::setMaxConcurrentDownloads(int numConcurrentDownloads){
 void ofxDownloadCentral::startDownloading(){
 	if (!busy){
 		downloadStartJobsNumber = downloaders.size();
+		failedJobsStartNumber = failedJobsSoFar;
 		startQueue();
 	}
 }
@@ -93,6 +95,7 @@ void ofxDownloadCentral::update(){
 				}
 
 				downloadedSoFar += bd->getDownloadedBytesSoFar();
+				if(bd->getNumFailedUrls() > 0) failedJobsSoFar ++;
 				activeDownloaders.erase(activeDownloaders.begin() + i);
 				delete bd;
 			}
@@ -246,6 +249,7 @@ string ofxDownloadCentral::getDrawableInfo(bool drawAllPending, bool detailed){
 	float elapsedTime = ofGetElapsedTimef() - downloadStartTime;
 	float timeLeft = 0.0f;
 	int numProcessed = downloadStartJobsNumber - numQueuedJobs;
+	int numFailed = failedJobsSoFar - failedJobsStartNumber;
 	string estFinish;
 	if (numProcessed > 0){
 		timeLeft = numQueuedJobs * elapsedTime / float(numProcessed);
@@ -264,6 +268,7 @@ string ofxDownloadCentral::getDrawableInfo(bool drawAllPending, bool detailed){
 	string spa = "     ";
 	string header = "//// ofxDownloadCentral queued Jobs: " + ofToString(numQueuedJobs) + " ///////////////////////////\n"
 	"//// Jobs executed:        " + spa + ofToString(numProcessed) + "\n" +
+	"//// Jobs failed:          " + spa + ofToString(numFailed) + "\n" +
 //	"//// Total Downloads Left: " + spa + ofToString(total) + "\n" +
 	"//// Elapsed Time:         " + spa + ofxSimpleHttp::secondsToHumanReadable(elapsedTime, 1) + "\n" +
 	"//// Estimated Time Left:  " + spa + ofxSimpleHttp::secondsToHumanReadable(timeLeft, 1) + "\n"

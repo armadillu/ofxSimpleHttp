@@ -73,6 +73,7 @@ public:
 
 	unsigned long int getDownloadedBytesSoFar(){ return downloadedSoFar;}
 	int getNumSuppliedUrls();
+	int getNumFailedUrls();
 	int pendingDownloads();
 	bool isBusy();
 	float getAverageSpeed(); //bytes/sec
