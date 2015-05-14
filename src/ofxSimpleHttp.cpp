@@ -502,6 +502,8 @@ void ofxSimpleHttp::fetchURLToDisk(string url, string expectedSha1, bool notifyO
 		return;
 	}
 
+	dirWhereToSave = ofFilePath::removeTrailingSlash(dirWhereToSave);
+
 	ofDirectory d;
 	d.createDirectory(dirWhereToSave, true, true); //create the download dir first
 
@@ -616,39 +618,46 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 
 		if(protocol == "file://"){
 
-			string srcFile = resp->url.substr(7, resp->url.length() - 7);
+			string srcFilePath = resp->url.substr(7, resp->url.length() - 7);
 
 #ifdef TARGET_WIN32
 			ofStringReplace(srcFile, "\\", "/"); //for windows, replace escaped backslashes
 #endif
 			//ofFile::copyFromTo(srcFile, resp->absolutePath);
 
-			ofFile f;
-			bool openOK = f.open(ofToDataPath(srcFile, true), ofFile::ReadOnly);
+			ofFile srcOfFile;
+			bool openOK = srcOfFile.open(ofToDataPath(srcFilePath, true), ofFile::ReadOnly);
 			resp->downloadSpeed = 0;
 			resp->downloadedBytes = 0;
-			if(f.exists()){
-				uint64_t size = f.getSize();
+			if(srcOfFile.exists()){
+				uint64_t size = srcOfFile.getSize();
 				resp->serverReportedSize = size;
 				resp->timeDowloadStarted = ofGetElapsedTimef();
 
-				std::ifstream rs (ofToDataPath(srcFile, true).c_str(), std::ifstream::binary);
+				std::ifstream rs (ofToDataPath(srcFilePath, true).c_str(), std::ifstream::binary);
 				streamCopyWithProgress(rs, myfile, resp->serverReportedSize, resp->downloadedSoFar,
 									   resp->downloadProgress, resp->downloadSpeed, resp->downloadCanceled);
 				resp->ok = true;
 				resp->status = 200;
 				resp->timeTakenToDownload = ofGetElapsedTimef() - resp->timeDowloadStarted;
+				resp->downloadedBytes = resp->serverReportedSize;
 				rs.close();
 				ok = TRUE;
 			}else{
+				ofLogError("ofxSimpleHttp") << "Source File does not exist! " << resp->url;
 				resp->ok = false;
 				resp->status = 404; //assume not found? todo!
 				resp->reasonForStatus = "Can't load File!!";
 				resp->timeTakenToDownload = 0;
-				ok = TRUE;
+				resp->checksumOK = false;
+				ok = FALSE;
 			}
-			f.close();
+			srcOfFile.close();
 			myfile.close();
+
+			if(!ok){
+				ofFile::removeFile(resp->absolutePath, false); //if we failed, dont leave an empty file in there
+			}
 
 		}else{
 
