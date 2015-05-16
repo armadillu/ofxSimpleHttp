@@ -28,7 +28,7 @@ Context::Ptr ofxSimpleHttp::pContext = NULL;
 
 ofxSimpleHttp::ofxSimpleHttp(){
 
-	COPY_BUFFER_SIZE = 1024 * 128; //  kb buffer size
+	COPY_BUFFER_SIZE = 1024 * 16; //  kb buffer size
 	cancelCurrentDownloadOnDestruction = true;
 	flushPendingRequestsOnDestruction = true;
 	timeOut = 10;
@@ -49,14 +49,17 @@ ofxSimpleHttp::ofxSimpleHttp(){
 ofxSimpleHttp::~ofxSimpleHttp(){
 
 	if(flushPendingRequestsOnDestruction){
+		if(queueLenEstimation > 0) ofLogWarning("ofxSimpleHttp") << "Destructor canceling pending downloads (" << queueLenEstimation << ")";
 		timeToStop = true;	//lets flag the thread so that it doesnt try access stuff while we delete things around
 	}
 
 	if(cancelCurrentDownloadOnDestruction){
 		stopCurrentDownload(true);
+		if(isThreadRunning()) ofLogWarning("ofxSimpleHttp") << "Destructor stopping current download...";
 	}
 
 	try{
+		if(queueLenEstimation > 0) ofLogWarning("ofxSimpleHttp") << "Destructor finishing all pending downloads (" << queueLenEstimation << ")";
 		waitForThread(false); //wait for the thread to completelly finish
 	}catch(Exception& exc){
 		ofLogError("ofxSimpleHttp", "Exception at waitForThread %s", exc.displayText().c_str() );
