@@ -636,10 +636,17 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 				uint64_t size = srcOfFile.getSize();
 				resp->serverReportedSize = size;
 				resp->timeDowloadStarted = ofGetElapsedTimef();
-
 				std::ifstream rs (ofToDataPath(srcFilePath, true).c_str(), std::ifstream::binary);
-				streamCopyWithProgress(rs, myfile, resp->serverReportedSize, resp->downloadedSoFar,
+
+				if(saveToDisk){
+					streamCopyWithProgress(rs, myfile, resp->serverReportedSize, resp->downloadedSoFar,
 									   resp->downloadProgress, resp->downloadSpeed, resp->downloadCanceled);
+
+				}else{
+					copyToStringWithProgress(rs, resp->responseBody, resp->serverReportedSize, resp->downloadedSoFar,
+												resp->downloadProgress, resp->downloadSpeed, resp->downloadCanceled);
+
+				}
 				resp->ok = true;
 				resp->status = 200;
 				resp->timeTakenToDownload = ofGetElapsedTimef() - resp->timeDowloadStarted;
