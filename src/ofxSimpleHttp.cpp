@@ -624,7 +624,7 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 			string srcFilePath = resp->url.substr(7, resp->url.length() - 7);
 
 #ifdef TARGET_WIN32
-			ofStringReplace(srcFile, "\\", "/"); //for windows, replace escaped backslashes
+			ofStringReplace(srcFilePath, "\\", "/"); //for windows, replace escaped backslashes
 #endif
 			//ofFile::copyFromTo(srcFile, resp->absolutePath);
 
