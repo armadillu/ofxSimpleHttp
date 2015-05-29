@@ -28,7 +28,7 @@ Context::Ptr ofxSimpleHttp::pContext = NULL;
 
 ofxSimpleHttp::ofxSimpleHttp(){
 
-	COPY_BUFFER_SIZE = 1024 * 16; //  kb buffer size
+	COPY_BUFFER_SIZE = 1024 * 128; //  kb buffer size
 	cancelCurrentDownloadOnDestruction = true;
 	flushPendingRequestsOnDestruction = true;
 	timeOut = 10;
