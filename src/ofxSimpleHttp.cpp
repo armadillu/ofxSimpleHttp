@@ -990,21 +990,24 @@ std::streamsize ofxSimpleHttp::streamCopyWithProgress(std::istream & istr, std::
 			}else{
 				progress = 0.0;
 			}
-			float time = (ofGetElapsedTimef() - t1);
 
-			if(speedLimit > 0.0f){ //apply speed limit if defined
+			float time = 0.0;
+			if(speedLimit > 0.0f && n > 0){ //apply speed limit if defined, but not on the last chunk
 				float expectedTimeToDLCopyBuffer = COPY_BUFFER_SIZE / (speedLimit * 1024.0f);
 				if (time < expectedTimeToDLCopyBuffer){
 					float sleepTime = (expectedTimeToDLCopyBuffer - time);
-					ofSleepMillis(sleepTime * 1000.0f);
+					ofSleepMillis(sleepTime * 1000.0f ); //0.9 roughly sleep overhead
 				}
 				time = (ofGetElapsedTimef() - t1);
+			}else{
+				time = (ofGetElapsedTimef() - t1);
 			}
+
 			float newSpeed = 0;
 			if(time > 0.0f){
 				newSpeed = (n) / time;
 			}
-			avgSpeed = 0.5 * newSpeed + 0.5 * avgSpeed;
+			avgSpeed = 0.1 * newSpeed + 0.9 * avgSpeed;
 			speed = avgSpeed;
 		}
 	}catch(Exception& exc){
@@ -1048,21 +1051,23 @@ std::streamsize ofxSimpleHttp::copyToStringWithProgress(std::istream& istr, std:
 			}else{
 				progress = 0.0;
 			}
-			float time = (ofGetElapsedTimef() - t1);
 
-			if(speedLimit > 0.0f){ //apply speed limit if defined
+			float time = 0.0;
+			if(speedLimit > 0.0f && n > 0){ //apply speed limit if defined, but not on the last chunk
 				float expectedTimeToDLCopyBuffer = COPY_BUFFER_SIZE / (speedLimit * 1024.0f);
 				if (time < expectedTimeToDLCopyBuffer){
 					float sleepTime = (expectedTimeToDLCopyBuffer - time);
-					ofSleepMillis(sleepTime * 1000.0f);
+					ofSleepMillis(sleepTime * 1000.0f ); //0.90 roughly sleep overhead
 				}
+				time = (ofGetElapsedTimef() - t1);
+			}else{
 				time = (ofGetElapsedTimef() - t1);
 			}
 			float newSpeed = 0;
 			if(time > 0.0f){
 				newSpeed = (n) / time;
 			}
-			avgSpeed = 0.5 * newSpeed + 0.5 * avgSpeed;
+			avgSpeed = 0.1 * newSpeed + 0.9 * avgSpeed;
 			speed = avgSpeed;
 		}
 	}catch(Exception& exc){

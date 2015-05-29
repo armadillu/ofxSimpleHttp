@@ -23,10 +23,11 @@ void testApp::setup(){
 	downloadList.push_back("http://farm4.staticflickr.com/3740/9481659071_3159d318dc_o.jpg");
 	downloadList.push_back("http://farm4.staticflickr.com/3802/9484323300_6d3a6a78b5_o.jpg");
 	downloadList.push_back("http://farm6.staticflickr.com/5346/9484309488_11ee39298e_o.jpg");
-
-	http.setVerbose(true);
 	
 	http.addCustomHttpHeader("Accept", "application/json"); //you can supply custom headers if you need to
+
+	http.setCopyBufferSize(16);
+	http.setSpeedLimit(100);
 
 	//add download listener
 	ofAddListener(http.httpResponse, this, &testApp::newResponse);
