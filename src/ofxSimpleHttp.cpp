@@ -665,7 +665,7 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 			srcOfFile.close();
 			myfile.close();
 
-			if(!ok){
+			if(!ok && saveToDisk){
 				ofFile::removeFile(resp->absolutePath, false); //if we failed, dont leave an empty file in there
 			}
 
