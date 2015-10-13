@@ -43,6 +43,7 @@ ofxSimpleHttp::ofxSimpleHttp(){
 	avgDownloadSpeed = 0.0f;
 	speedLimit = 0.0f;
 	useCredentials = false;
+	avgSpeedPatch = 0.0f;
 }
 
 
@@ -259,16 +260,9 @@ void ofxSimpleHttp::stopCurrentDownload(bool emptyQueue){
 }
 
 
-float ofxSimpleHttp::getCurrentDownloadSpeed(){
-	float downloadSpeed = 0.0f;
-	lock();
-	int n = q.size();
-	if ( isThreadRunning() && n > 0){
-		ofxSimpleHttpResponse * r = q.front();
-		downloadSpeed = r->downloadSpeed;
-	}
-	unlock();
-	return downloadSpeed;
+float ofxSimpleHttp::getCurrentDownloadSpeed(bool * isGoodSample){
+	if (isGoodSample != NULL) *isGoodSample = goodSample;
+	return avgSpeedPatch;
 }
 
 
@@ -632,6 +626,7 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 			bool openOK = srcOfFile.open(ofToDataPath(srcFilePath, true), ofFile::ReadOnly);
 			resp->downloadSpeed = 0;
 			resp->downloadedBytes = 0;
+
 			if(srcOfFile.exists()){
 				uint64_t size = srcOfFile.getSize();
 				resp->serverReportedSize = size;
@@ -639,12 +634,15 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 				std::ifstream rs (ofToDataPath(srcFilePath, true).c_str(), std::ifstream::binary);
 
 				if(saveToDisk){
-					streamCopyWithProgress(rs, myfile, resp->serverReportedSize, resp->downloadedSoFar,
+					streamCopyWithProgress(rs, myfile, resp->serverReportedSize, resp->downloadedSoFar, resp->chunkTested,
 									   resp->downloadProgress, resp->downloadSpeed, resp->downloadCanceled);
 
 				}else{
-					copyToStringWithProgress(rs, resp->responseBody, resp->serverReportedSize, resp->downloadedSoFar,
-												resp->downloadProgress, resp->downloadSpeed, resp->downloadCanceled);
+
+					std::ostringstream output;
+					streamCopyWithProgress(rs, output, resp->serverReportedSize, resp->downloadedSoFar, resp->chunkTested,
+													  resp->downloadProgress, resp->downloadSpeed, resp->downloadCanceled);
+					resp->responseBody = output.str();
 
 				}
 				resp->ok = true;
@@ -670,8 +668,6 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 			}
 
 		}else{
-
-			//myfile.open(ofToDataPath(filename).c_str()); //for not binary?
 
 			HTTPClientSession * session = NULL;
 
@@ -747,11 +743,13 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 
 				int copySize = 0;
 				if(saveToDisk){
-					copySize = streamCopyWithProgress(rs, myfile, resp->serverReportedSize, resp->downloadedSoFar,
+					copySize = streamCopyWithProgress(rs, myfile, resp->serverReportedSize, resp->downloadedSoFar, resp->chunkTested,
 													  resp->downloadProgress, resp->downloadSpeed, resp->downloadCanceled);
 				}else{
-					copySize = copyToStringWithProgress(rs, resp->responseBody, resp->serverReportedSize, resp->downloadedSoFar,
+					std::ostringstream output;
+					copySize = streamCopyWithProgress(rs, output, resp->serverReportedSize, resp->downloadedSoFar, resp->chunkTested,
 														resp->downloadProgress, resp->downloadSpeed, resp->downloadCanceled);
+					resp->responseBody = output.str();
 				}
 
 				delete session;
@@ -943,6 +941,26 @@ void ofxSimpleHttp::update(){
 
 	ofxSimpleHttpResponse r;
 	lock();
+
+	avgDownloadSpeed = 0.1 * avgSpeedPatch + 0.9 * avgDownloadSpeed;
+	
+	int n = q.size();
+	if ( isThreadRunning() && n > 0){
+		ofxSimpleHttpResponse * r = q.front();
+		if(r->chunkTested == false){
+			avgSpeedPatch = r->downloadSpeed;
+			r->chunkTested = true;
+			goodSample = true;
+		}else{
+			avgSpeedPatch *= 0.95; //0.1 * r->downloadSpeed;
+			goodSample = false;
+		}
+
+	}else{
+		avgSpeedPatch = 0;
+		goodSample = false;
+	}
+
 	if(responsesPendingNotification.size()){
 		r = responsesPendingNotification.front();
 		responsesPendingNotification.pop();
@@ -952,23 +970,22 @@ void ofxSimpleHttp::update(){
 	}else{
 		unlock();
 	}
-
 }
 
 
 std::streamsize ofxSimpleHttp::streamCopyWithProgress(std::istream & istr, std::ostream & out,
 													  std::streamsize totalBytes,
 													  std::streamsize &currentBytes,
+													  bool & chunkTested,
 													  float & progress, float & speed, const bool &cancel){
-
 	std::streamsize len = 0;
-
 	try{
 		Buffer<char> buffer(COPY_BUFFER_SIZE);
-
 		istr.read(buffer.begin(), COPY_BUFFER_SIZE);
 		std::streamsize n = istr.gcount();
 		float avgSpeed = 0;
+		bool first = true;
+		float sleepError = 0; //in sec
 
 		while (n > 0 && !cancel){
 			float t1 = ofGetElapsedTimef();
@@ -991,87 +1008,47 @@ std::streamsize ofxSimpleHttp::streamCopyWithProgress(std::istream & istr, std::
 				progress = 0.0;
 			}
 
-			float time = 0.0;
-			if(speedLimit > 0.0f && n > 0){ //apply speed limit if defined, but not on the last chunk
+			float time = (ofGetElapsedTimef() - t1);
+
+			if(speedLimit > 0.0f && n > 0){ //apply speed limit if defined
+
 				float expectedTimeToDLCopyBuffer = COPY_BUFFER_SIZE / (speedLimit * 1024.0f);
-				if (time < expectedTimeToDLCopyBuffer){
-					float sleepTime = (expectedTimeToDLCopyBuffer - time);
-					ofSleepMillis(sleepTime * 1000.0f ); //0.9 roughly sleep overhead
+				float sleepTime = (expectedTimeToDLCopyBuffer - time) * 1000.0f;
+				//cout << "## expected DL time: " << expectedTimeToDLCopyBuffer * 1000 << " #######################" << endl;
+				//cout << "actual DL time: " << time * 1000 << endl;
+				//cout << "calculated sleep time: " << sleepTime << endl;
+				if(sleepTime - sleepError * 1000.0f > 0.0f){
+					ofSleepMillis(sleepTime - sleepError * 1000.0f);
+					//cout << "sleeping " << sleepTime - sleepError * 1000.0f << endl;
+				}else{
+					sleepError = 0.0;
 				}
 				time = (ofGetElapsedTimef() - t1);
-			}else{
-				time = (ofGetElapsedTimef() - t1);
+				float overslept = (time - expectedTimeToDLCopyBuffer);
+				//cout << "overslept: " << overslept << endl;
+				if(first){
+					sleepError = overslept;
+				}else{
+					sleepError = 0.5 * sleepError + 0.5 * overslept;
+				}
+				//cout << "sleepError: " << sleepError * 1000 << endl;
 			}
 
 			float newSpeed = 0;
 			if(time > 0.0f){
 				newSpeed = (n) / time;
 			}
-			avgSpeed = 0.1 * newSpeed + 0.9 * avgSpeed;
-			speed = avgSpeed;
+			if(first){
+				avgSpeed = newSpeed;
+			}else{
+				avgSpeed = 0.5 * newSpeed + 0.5 * avgSpeed;
+			}
+			avgSpeedPatch = avgSpeed;
+			chunkTested = false;
+			first = false;
 		}
 	}catch(Exception& exc){
 		ofLogError("ofxSimpleHttp", "streamCopyWithProgress() >> Exception: %s", exc.displayText().c_str() );
-		return -1;
-	}
-	return len;
-}
-
-//todo this is silly, dup code with method above!
-std::streamsize ofxSimpleHttp::copyToStringWithProgress(std::istream& istr, std::string& str,
-														std::streamsize totalBytes,
-														std::streamsize &currentBytes,
-														float & progress, float & speed, const bool &cancel){
-
-	Buffer<char> buffer(COPY_BUFFER_SIZE);
-	std::streamsize len = 0;
-
-	try{
-		istr.read(buffer.begin(), COPY_BUFFER_SIZE);
-		std::streamsize n = istr.gcount();
-		float avgSpeed = 0;
-
-		while (n > 0 && !cancel){
-			float t1 = ofGetElapsedTimef();
-			currentBytes = len;
-			len += n;
-			str.append(buffer.begin(), static_cast<std::string::size_type>(n));
-			if (istr){
-				istr.read(buffer.begin(), COPY_BUFFER_SIZE);
-				n = istr.gcount();
-				if (istr.fail() && !istr.eof()){
-					ofLogError("ofxSimpleHttp", "copyToStringWithProgress() >> istream Fail");
-					return -1;
-				}
-			}else{
-				n = 0;
-			}
-			if (totalBytes > 0){
-				progress = float(len) / float(totalBytes);
-			}else{
-				progress = 0.0;
-			}
-
-			float time = 0.0;
-			if(speedLimit > 0.0f && n > 0){ //apply speed limit if defined, but not on the last chunk
-				float expectedTimeToDLCopyBuffer = COPY_BUFFER_SIZE / (speedLimit * 1024.0f);
-				if (time < expectedTimeToDLCopyBuffer){
-					float sleepTime = (expectedTimeToDLCopyBuffer - time);
-					ofSleepMillis(sleepTime * 1000.0f ); //0.90 roughly sleep overhead
-				}
-				time = (ofGetElapsedTimef() - t1);
-			}else{
-				time = (ofGetElapsedTimef() - t1);
-			}
-			float newSpeed = 0;
-			if(time > 0.0f){
-				newSpeed = (n) / time;
-			}
-			avgSpeed = 0.1 * newSpeed + 0.9 * avgSpeed;
-			speed = avgSpeed;
-		}
-	}catch(Exception& exc){
-		ofLogError("ofxSimpleHttp", "copyToStringWithProgress() >> Exception: %s", exc.displayText().c_str() );
 		return -1;
 	}
 	return len;
@@ -1134,4 +1111,9 @@ void ofxSimpleHttpResponse::print(){
 	}else{
 		ofLogError("ofxSimpleHttpResponse") << toString();
 	}
+}
+
+void ofxSimpleHttp::setSpeedLimit(float KB_per_sec){
+	speedLimit = KB_per_sec;
+	ofLogNotice("ofxSimpleHttp") << "Setting speed limit to " << KB_per_sec << " Kb/sec";
 }

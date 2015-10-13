@@ -92,6 +92,7 @@ struct ofxSimpleHttpResponse{
 	float						downloadProgress;	// [0..1]
 	std::streamsize				downloadedSoFar;
 	float						downloadSpeed;		// bytes/sec, only >0 when downloading, immediate
+	bool						chunkTested;
 	float						avgDownloadSpeed;	// bytes/sec, read after download happened
 	long int					downloadedBytes;
 	string						url;
@@ -164,7 +165,7 @@ class ofxSimpleHttp : public ofThread{
 		int							getPendingDownloads();
 		float						getCurrentDownloadProgress();	//retuns [0..1] how complete is the download
 		string						getCurrentDownloadFileName();	//only while downloading
-		float						getCurrentDownloadSpeed();		// kb/sec - only whilde downloading will be > 0!
+		float						getCurrentDownloadSpeed(bool * isGoodSample = NULL);		// kb/sec - only whilde downloading will be > 0!
 		float						getAvgDownloadSpeed();			// kb/sec - also when not download
 
 		// properties //////////////////////////////////////////////////////////
@@ -188,7 +189,7 @@ class ofxSimpleHttp : public ofThread{
 									//do we require a checksum match to assume the file is good?
 									//ie, if the user doesnt provide a checksum, what do we do?
 		void						setNeedsChecksumMatchToSkipDownload(bool needs);
-		void						setSpeedLimit(float KB_per_sec){ speedLimit = KB_per_sec; }
+		void						setSpeedLimit(float KB_per_sec);
 
 
 		ofEvent<ofxSimpleHttpResponse>		httpResponse;
@@ -242,15 +243,14 @@ private:
 		map<string, string>				customHttpHeaders;
 
 		std::streamsize streamCopyWithProgress(std::istream & in, std::ostream & out, std::streamsize totalBytes,
-											   std::streamsize &currentBytes,
+											   std::streamsize &currentBytes, bool & speedSampled,
 											   float & progress, float &speed, const bool &shouldCancel);
-
-		std::streamsize copyToStringWithProgress(std::istream& istr, std::string& str, std::streamsize totalBytes,
-												 std::streamsize &currentBytes,
-												 float & progress, float & speed, const bool &shouldCancel);
 
 		static Context::Ptr pContext;
 
 		int COPY_BUFFER_SIZE;
+
+		float avgSpeedPatch;
+		bool goodSample;
 
 };
