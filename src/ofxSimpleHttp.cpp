@@ -10,7 +10,7 @@
 
 #include "ofxSimpleHttp.h"
 #include "ofEvents.h"
-#include "poco/Net/HTTPStreamFactory.h"
+#include "Poco/Net/HTTPStreamFactory.h"
 #include "Poco/Net/HTTPSStreamFactory.h"
 #include "Poco/Net/HTTPSClientSession.h"
 #include "Poco/Buffer.h"
