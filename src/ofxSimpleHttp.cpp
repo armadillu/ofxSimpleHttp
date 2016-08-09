@@ -197,7 +197,9 @@ float ofxSimpleHttp::getCurrentDownloadProgress(){
 
 void ofxSimpleHttp::threadedFunction(){
 
+	#if( OF_VERSION_MINOR <= 9 )
 	getPocoThread().setName("ofxSimpleHttp");
+	#endif
 
 	ofLogVerbose("ofxSimpleHttp") << "start threadedFunction";
 	queueLenEstimation = 0;
