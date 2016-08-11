@@ -250,7 +250,7 @@ private:
 
 		int COPY_BUFFER_SIZE;
 
-		float avgSpeedPatch;
+		float avgSpeedNow;
 		bool goodSample;
 
 };

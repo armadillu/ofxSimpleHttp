@@ -43,7 +43,7 @@ ofxSimpleHttp::ofxSimpleHttp(){
 	avgDownloadSpeed = 0.0f;
 	speedLimit = 0.0f;
 	useCredentials = false;
-	avgSpeedPatch = 0.0f;
+	avgSpeedNow = 0.0f;
 }
 
 
@@ -264,7 +264,7 @@ void ofxSimpleHttp::stopCurrentDownload(bool emptyQueue){
 
 float ofxSimpleHttp::getCurrentDownloadSpeed(bool * isGoodSample){
 	if (isGoodSample != NULL) *isGoodSample = goodSample;
-	return avgSpeedPatch;
+	return avgSpeedNow;
 }
 
 
@@ -944,22 +944,22 @@ void ofxSimpleHttp::update(){
 	ofxSimpleHttpResponse r;
 	lock();
 
-	avgDownloadSpeed = 0.1 * avgSpeedPatch + 0.9 * avgDownloadSpeed;
+	avgDownloadSpeed = 0.01 * avgSpeedNow + 0.99 * avgDownloadSpeed;
 	
 	int n = q.size();
 	if ( isThreadRunning() && n > 0){
 		ofxSimpleHttpResponse * r = q.front();
 		if(r->chunkTested == false){
-			avgSpeedPatch = r->downloadSpeed;
+			avgSpeedNow = r->downloadSpeed;
 			r->chunkTested = true;
 			goodSample = true;
 		}else{
-			avgSpeedPatch *= 0.95; //0.1 * r->downloadSpeed;
+			avgSpeedNow *= 0.95; //slowly drop the speed if we are not getting new data
 			goodSample = false;
 		}
 
 	}else{
-		avgSpeedPatch = 0;
+		avgSpeedNow = 0;
 		goodSample = false;
 	}
 
@@ -1043,10 +1043,10 @@ std::streamsize ofxSimpleHttp::streamCopyWithProgress(std::istream & istr, std::
 			if(first){
 				avgSpeed = newSpeed;
 			}else{
-				avgSpeed = 0.5 * newSpeed + 0.5 * avgSpeed;
+				avgSpeed = 0.01 * newSpeed + 0.99 * avgSpeed;
 			}
 			speed = avgSpeed;
-			avgSpeedPatch = avgSpeed;
+			avgSpeedNow = avgSpeed;
 			chunkTested = false;
 			first = false;
 		}
