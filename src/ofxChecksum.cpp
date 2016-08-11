@@ -17,11 +17,11 @@ bool ofxChecksum::sha1(string filePath, string sha1String, bool verbose ) {
 		char buf[bufSize];
 
 		isSha1.read(buf, bufSize);
-		while ( (isSha1.rdstate() && std::ifstream::failbit) == 0 ){
+		while ( (isSha1.rdstate() & std::ifstream::failbit) == 0 ){
 			isSha1.read(buf, bufSize);
 		}
 
-		if ( (isSha1.rdstate() && std::ifstream::eofbit) != 0){
+		if ( (isSha1.rdstate() & std::ifstream::eofbit) != 0){
 			localHash = Poco::DigestEngine::digestToHex(sha1e.digest());
 		}
 	}
