@@ -1045,6 +1045,7 @@ std::streamsize ofxSimpleHttp::streamCopyWithProgress(std::istream & istr, std::
 			}else{
 				avgSpeed = 0.5 * newSpeed + 0.5 * avgSpeed;
 			}
+			speed = avgSpeed;
 			avgSpeedPatch = avgSpeed;
 			chunkTested = false;
 			first = false;
