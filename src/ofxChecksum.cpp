@@ -39,7 +39,7 @@ bool ofxChecksum::sha1(const string& filePath,
 	}
 
 	if(verbose){
-		ofLog() << "ofxChecksum::sha1(" << localHash << ") took " << sec << " secs to calc " << endl;
+		ofLog() << "ofxChecksum::sha1(" << localHash << ") took " << sec << " secs to calc ";
 	}
 
 	return match;
