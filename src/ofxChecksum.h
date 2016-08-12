@@ -5,6 +5,8 @@
 
 class ofxChecksum{
 public:
-	static bool sha1(string filePath, string sha1String, bool verbose = true);	
+	static bool sha1(const string & filePath,
+					 const string & sha1String,
+					 bool verbose = true);
 };
 

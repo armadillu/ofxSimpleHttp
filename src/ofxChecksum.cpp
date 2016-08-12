@@ -4,16 +4,21 @@
 #include <Poco/SHA1Engine.h>
 #include <Poco/DigestStream.h>
 
-bool ofxChecksum::sha1(string filePath, string sha1String, bool verbose ) {
+bool ofxChecksum::sha1(const string& filePath,
+					   const string& sha1String,
+					   bool verbose){
 
-	float t = ofGetElapsedTimef();
+	float t;
+	if(verbose){
+ 		t = ofGetElapsedTimef();
+	}
 
 	Poco::SHA1Engine sha1e;
 	string localHash;
 	std::ifstream ifHash(ofToDataPath(filePath, true).c_str(), std::ios::binary);
 	if (ifHash.is_open()){
 		Poco::DigestInputStream isSha1(sha1e, ifHash);
-		const size_t bufSize = 1024 * 50; //50kb bufer
+		const size_t bufSize = 1024 * 50; //50kb buffer
 		char buf[bufSize];
 
 		isSha1.read(buf, bufSize);
@@ -28,9 +33,12 @@ bool ofxChecksum::sha1(string filePath, string sha1String, bool verbose ) {
 
 	bool match = sha1String.compare(localHash) == 0;
 
-	float sec = ofGetElapsedTimef() - t;
+	float sec;
+ 	if(verbose){
+		sec = ofGetElapsedTimef() - t;
+	}
 
-	if(sec > 0.5 && verbose){
+	if(verbose){
 		ofLog() << "ofxChecksum::sha1(" << localHash << ") took " << sec << " secs to calc " << endl;
 	}
 

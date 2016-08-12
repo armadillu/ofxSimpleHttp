@@ -33,6 +33,11 @@ void ofxBatchDownloader::setProxyConfiguration(const ofxSimpleHttp::ProxyConfig 
 }
 
 
+void ofxBatchDownloader::setCredentials(const string& user, const string& password){
+	http.setCredentials(user, password);
+}
+
+
 void ofxBatchDownloader::setVerbose(bool b){}
 
 

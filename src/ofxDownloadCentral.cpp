@@ -166,6 +166,11 @@ void ofxDownloadCentral::setProxyConfiguration(const ofxSimpleHttp::ProxyConfig 
 	proxyConfig = c;
 }
 
+void ofxDownloadCentral::setCredentials(const string& user, const string& password){
+	credentials.first = user;
+	credentials.second = password;
+}
+
 
 string ofxDownloadCentral::getDrawableInfo(bool drawAllPending, bool detailed){
 

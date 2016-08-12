@@ -85,6 +85,7 @@ class ofxDownloadCentral{
 		void setMaxConcurrentDownloads(int numConcurrentDownloads);
 
 		void setProxyConfiguration(const ofxSimpleHttp::ProxyConfig & c);
+		void setCredentials(const string& user, const string& password);
 
 		void setIdleTimeAfterEachDownload(float seconds);		//wait a bit before notifying once the dowload is over
 		void setMaxURLsToList(int max);
@@ -133,7 +134,9 @@ class ofxDownloadCentral{
 			if (urlList.size() > 0 ){
 				ofxBatchDownloader * d = new ofxBatchDownloader();
 				d->setProxyConfiguration(proxyConfig);
-
+				if(credentials.first.size() || credentials.second.size()){
+					d->setCredentials(credentials.first, credentials.second);
+				}
 				if(timeOut > 0.0f) d->setTimeOut(timeOut);
 				if(speedLimit > 0.0f) d->setSpeedLimit(speedLimit);
 
@@ -190,7 +193,9 @@ class ofxDownloadCentral{
 		int									maxConcurrentDownloads;
 		float								speedLimit;
 		float								timeOut;
+
 		ofxSimpleHttp::ProxyConfig			proxyConfig;
+		std::pair<string,string> 			credentials;
 };
 
 #endif

@@ -69,7 +69,7 @@ public:
 	void setIdleTimeAfterEachDownload(float seconds); //wait a bit before notifying once the dowload is over
 
 	void setProxyConfiguration(const ofxSimpleHttp::ProxyConfig & c);
-
+	void setCredentials(const string& user, const string& password);
 
 	unsigned long int getDownloadedBytesSoFar(){ return downloadedSoFar;}
 	int getNumSuppliedUrls();
