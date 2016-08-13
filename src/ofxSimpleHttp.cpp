@@ -28,7 +28,7 @@ Context::Ptr ofxSimpleHttp::pContext = NULL;
 
 ofxSimpleHttp::ofxSimpleHttp(){
 
-	COPY_BUFFER_SIZE = 1024 * 128; //  kb buffer size
+	COPY_BUFFER_SIZE = 1024 * 16; //  kb buffer size
 	cancelCurrentDownloadOnDestruction = true;
 	flushPendingRequestsOnDestruction = true;
 	timeOut = 10;
@@ -657,7 +657,7 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 				ofLogError("ofxSimpleHttp") << "Source File does not exist! " << resp->url;
 				resp->ok = false;
 				resp->status = 404; //assume not found? todo!
-				resp->reasonForStatus = "Can't load File!!";
+				resp->reasonForStatus = "Source File does not exist!";
 				resp->timeTakenToDownload = 0;
 				resp->checksumOK = false;
 				ok = FALSE;
