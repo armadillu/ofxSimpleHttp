@@ -503,8 +503,14 @@ void ofxSimpleHttp::fetchURLToDisk(string url, string expectedSha1, bool notifyO
 
 	dirWhereToSave = ofFilePath::removeTrailingSlash(dirWhereToSave);
 
-	ofDirectory d;
-	d.createDirectory(dirWhereToSave, true, true); //create the download dir first
+
+	if(!ofDirectory::doesDirectoryExist(dirWhereToSave)){
+		ofDirectory d;
+		bool createDirOK = d.createDirectory(dirWhereToSave, true, true); //create the download dir first
+		if(!createDirOK){
+			ofLogError("ofxSimpleHttp") << "Can't create directory at '" << dirWhereToSave << "'";
+		}
+	}
 
 	string savePath = dirWhereToSave == "" ? extractFileFromUrl(url) : ofToDataPath(dirWhereToSave, true) + "/" + extractFileFromUrl(url);
 
