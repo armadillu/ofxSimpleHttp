@@ -727,7 +727,7 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 				resp->status = res.getStatus();
 				try {
 					resp->timestamp = res.getDate();
-				} catch (Exception& exc) {
+				} catch (Exception exc) {
 					resp->timestamp = 0;
 				}
 
