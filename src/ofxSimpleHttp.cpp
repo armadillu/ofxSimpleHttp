@@ -736,8 +736,9 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 				resp->serverReportedSize = res.getContentLength();
 				resp->timeDowloadStarted = ofGetElapsedTimef();
 
-				string msg = "downloadURL(" + resp->fileName + ") >> Server doesn't report download size...";
+				string msg;
 				if (resp->serverReportedSize == -1){
+					msg = "downloadURL(" + resp->fileName + ") >> Server doesn't report download size...";
 					ofLogWarning("ofxSimpleHttp", msg);
 				}
 
