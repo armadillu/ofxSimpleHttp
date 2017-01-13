@@ -42,7 +42,9 @@ void ofxBatchDownloader::setVerbose(bool b){}
 
 
 ofxBatchDownloader::~ofxBatchDownloader(){
-	cancelBatch(false /*notify*/);
+	if (busy) {
+		cancelBatch(false /*notify*/);
+	}
 }
 
 
@@ -62,7 +64,7 @@ void ofxBatchDownloader::setSpeedLimit(float KB_per_sec){
 
 void ofxBatchDownloader::cancelBatch(bool notify){
 	http.stopCurrentDownload(true);
-
+	http.waitForThread(true);
 	if(notify){
 		ofxBatchDownloaderReport report;
 		report.owner = this;

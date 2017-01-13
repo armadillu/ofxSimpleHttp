@@ -54,26 +54,30 @@ ofxSimpleHttp::~ofxSimpleHttp(){
 		timeToStop = true;	//lets flag the thread so that it doesnt try access stuff while we delete things around
 	}
 
-	if(cancelCurrentDownloadOnDestruction){
+	if(cancelCurrentDownloadOnDestruction && isThreadRunning()){
+		ofLogWarning("ofxSimpleHttp") << "Destructor stopping current download...";
 		stopCurrentDownload(true);
-		if(isThreadRunning()) ofLogWarning("ofxSimpleHttp") << "Destructor stopping current download...";
 	}
 
-	try{
-		if(queueLenEstimation > 0) ofLogWarning("ofxSimpleHttp") << "Destructor finishing all pending downloads (" << queueLenEstimation << ")";
-		waitForThread(false); //wait for the thread to completelly finish
-	}catch(Exception& exc){
-		ofLogError("ofxSimpleHttp", "Exception at waitForThread %s", exc.displayText().c_str() );
+	
+	if (queueLenEstimation > 0) {
+		ofLogWarning("ofxSimpleHttp") << "Destructor finishing all pending downloads (" << queueLenEstimation << ")";
+	}
+	if (isThreadRunning()) {
+		try {
+			waitForThread(false); //wait for the thread to completelly finish
+		} catch (Exception& exc) {
+			ofLogError("ofxSimpleHttp", "Exception at waitForThread %s", exc.displayText().c_str());
+		}
 	}
 
 	//empty queue, dont leak out
-	while ( getPendingDownloads() > 0 ){
-		lock();
+	while (q.size() > 0) {
 		ofxSimpleHttpResponse * r = q.front();
 		delete r;
 		q.pop();
-		unlock();
 	}
+	
 }
 
 
@@ -248,8 +252,7 @@ void ofxSimpleHttp::stopCurrentDownload(bool emptyQueue){
 	if ( isThreadRunning() && n > 0){
 		ofxSimpleHttpResponse * r = q.front();
 		if (!r->downloadCanceled){ //dont cancel it twice!
-			string msg = "stopCurrentDownload() >> about to stop download of " + r->fileName  + " ...";
-			ofLogVerbose("ofxSimpleHttp", msg);
+			ofLogVerbose("ofxSimpleHttp") << "stopCurrentDownload() >> about to stop download of " + r->fileName + " ...";
 			try{
 				r->emptyWholeQueue = emptyQueue;
 				r->downloadCanceled = true;
