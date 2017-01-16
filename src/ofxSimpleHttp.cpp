@@ -935,6 +935,7 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 
 				ofNotifyEvent(httpResponse, *resp, this);
                 ofNotifyEvent(resp->responseEvent, *resp, this); // notify request-specific callbacks
+                ofNotifyEvent(resp->status >= 200 && resp->status < 300 ? resp->successEvent : resp->failureEvent, *resp, this);
 
 			}else{
                 //we are running from a bg thread and
@@ -984,6 +985,7 @@ void ofxSimpleHttp::update(){
 		unlock();
 		ofNotifyEvent( httpResponse, r, this ); //we want to be able to notify from outside the lock
         ofNotifyEvent(r.responseEvent, r, this); // notify request-specific callbacks
+        ofNotifyEvent(r.status >= 200 && r.status < 300 ? r.successEvent : r.failureEvent, r, this);
 		//otherwise we cant start a new download from the callback (deadlock!)
 	}else{
 		unlock();

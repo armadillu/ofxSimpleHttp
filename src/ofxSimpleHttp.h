@@ -107,7 +107,7 @@ struct ofxSimpleHttpResponse{
 	ofxSimpleHttpResponse();
 	void print();
 	string toString();
-    ofEvent<ofxSimpleHttpResponse> responseEvent;
+    ofEvent<ofxSimpleHttpResponse> responseEvent, successEvent, failureEvent;
 };
 
 
