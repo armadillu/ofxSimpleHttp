@@ -454,11 +454,11 @@ string ofxSimpleHttp::extractExtensionFromFileName(const string& fileName){
 }
 
 
-void ofxSimpleHttp::fetchURL(string url, bool notifyOnSuccess, string customField){
+ofxSimpleHttpResponse* ofxSimpleHttp::fetchURL(string url, bool notifyOnSuccess, string customField){
 
 	if (queueLenEstimation >= maxQueueLen){
 		ofLogError("ofxSimpleHttp", "fetchURL can't do that, queue is too long already (%d)!\n", queueLenEstimation );
-		return;
+		return NULL;
 	}
 
 	ofxSimpleHttpResponse *response = new ofxSimpleHttpResponse();
@@ -477,6 +477,8 @@ void ofxSimpleHttp::fetchURL(string url, bool notifyOnSuccess, string customFiel
 	if ( !isThreadRunning() ){	//if the queue is not running, lets start it
 		startThread(true);
 	}
+
+    return response;
 }
 
 
@@ -925,22 +927,23 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 				ofSleepMillis(idleTimeAfterEachDownload * 1000);
 			}
 
-			if (beingCalledFromMainThread){ //we running on main thread, we can just snd the notif from here
+            //We're either running on the main thread, or we can send notifications directly from
+            // the separate thread. Either way; notify directly
+			if (beingCalledFromMainThread || !notifyFromMainThread){
 
-				ofNotifyEvent( httpResponse, *resp, this );
+				ofNotifyEvent(httpResponse, *resp, this);
+                ofNotifyEvent(resp->responseEvent, *resp, this); // notify request-specific callbacks
 
-			}else{ //we are running from a bg thread
-
-				if (notifyFromMainThread){ //user wants to get notified form main thread, we need to enqueue the notification
-					if (timeToStop == false){	//see if we have been destructed! dont forward events if so
-						lock();
-						ofxSimpleHttpResponse tempCopy = *resp;
-						responsesPendingNotification.push(tempCopy);
-						unlock();
-					}
-				}else{ //user doesnt care about main thread, the notificaiton can come from bg thread so we do it from here
-					ofNotifyEvent( httpResponse, *resp, this );
-				}
+			}else{
+                //we are running from a bg thread and
+                //user wants to get notified from main thread,
+                //we need to enqueue the notification
+                if (timeToStop == false){	//see if we have been destructed! dont forward events if so
+                    lock();
+                    ofxSimpleHttpResponse tempCopy = *resp;
+                    responsesPendingNotification.push(tempCopy);
+                    unlock();
+                }
 			}
 		}
 	}
@@ -978,6 +981,7 @@ void ofxSimpleHttp::update(){
 		responsesPendingNotification.pop();
 		unlock();
 		ofNotifyEvent( httpResponse, r, this ); //we want to be able to notify from outside the lock
+        ofNotifyEvent(r.responseEvent, r, this); // notify request-specific callbacks
 		//otherwise we cant start a new download from the callback (deadlock!)
 	}else{
 		unlock();

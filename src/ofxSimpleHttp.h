@@ -107,6 +107,7 @@ struct ofxSimpleHttpResponse{
 	ofxSimpleHttpResponse();
 	void print();
 	string toString();
+    ofEvent<ofxSimpleHttpResponse> responseEvent;
 };
 
 
@@ -129,7 +130,7 @@ class ofxSimpleHttp : public ofThread{
 		// actions //////////////////////////////////////////////////////////////
 
 		//download to RAM ( download to ofxSimpleHttpResponse->responseBody)
-		void						fetchURL(string url,
+		ofxSimpleHttpResponse*		fetchURL(string url,
 											 bool notifyOnSuccess = false,
 											 string customField = ""); //supply any info you need, get it back when you are notified
 
