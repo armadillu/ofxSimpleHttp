@@ -498,12 +498,12 @@ ofxSimpleHttpResponse ofxSimpleHttp::fetchURLBlocking(string  url){
 	return response;
 }
 
-void ofxSimpleHttp::fetchURLToDisk(string url, string expectedSha1, bool notifyOnSuccess,
+ofxSimpleHttpResponse* ofxSimpleHttp::fetchURLToDisk(string url, string expectedSha1, bool notifyOnSuccess,
 								   string dirWhereToSave, string customField){
 
 	if (queueLenEstimation >= maxQueueLen){
 		ofLogError("ofxSimpleHttp", "fetchURL can't do that, queue is too long already (%d)!\n", queueLenEstimation );
-		return;
+		return NULL;
 	}
 
 	dirWhereToSave = ofFilePath::removeTrailingSlash(dirWhereToSave);
@@ -542,11 +542,13 @@ void ofxSimpleHttp::fetchURLToDisk(string url, string expectedSha1, bool notifyO
 			ofLogError("ofxSimpleHttp") << "ofxSimpleHttp: cant start thread!" << e.what();
 		}
 	}
+    
+    return response;
 }
 
-void ofxSimpleHttp::fetchURLToDisk(string url, bool notifyOnSuccess,
+ofxSimpleHttpResponse* ofxSimpleHttp::fetchURLToDisk(string url, bool notifyOnSuccess,
 								   string dirWhereToSave, string customField){
-	fetchURLToDisk(url, "", notifyOnSuccess, dirWhereToSave, customField);
+	return fetchURLToDisk(url, "", notifyOnSuccess, dirWhereToSave, customField);
 }
 
 

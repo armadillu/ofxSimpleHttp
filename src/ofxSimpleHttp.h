@@ -137,12 +137,12 @@ class ofxSimpleHttp : public ofThread{
 		ofxSimpleHttpResponse		fetchURLBlocking(string url);
 
 		//download to Disk
-		void						fetchURLToDisk(string url,
+		ofxSimpleHttpResponse*      fetchURLToDisk(string url,
 												   bool notifyOnSuccess = false,
 												   string outputDir = ".",
 												   string customField = ""); //supply any info you need, get it back when you are notified
 
-		void						fetchURLToDisk(string url,
+		ofxSimpleHttpResponse*      fetchURLToDisk(string url,
 												   string expectedSha1,
 												   bool notifyOnSuccess = false,
 												   string outputDir = ".", string
