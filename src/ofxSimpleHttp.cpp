@@ -201,8 +201,9 @@ float ofxSimpleHttp::getCurrentDownloadProgress(){
 
 void ofxSimpleHttp::threadedFunction(){
 
-	#if( OF_VERSION_MINOR <= 9 )
-	getPocoThread().setName("ofxSimpleHttp");
+	#ifdef TARGET_WIN32
+	#else
+	pthread_setname_np("ofxSimpleHttp");
 	#endif
 
 	ofLogVerbose("ofxSimpleHttp") << "start threadedFunction";
