@@ -19,9 +19,6 @@ public:
 
     // response callbacks
     void onResponseLogStatus( ofxSimpleHttpResponse & response );
-    void onSuccessLogSize( ofxSimpleHttpResponse & response );
-    void onSuccessLogFileLocation( ofxSimpleHttpResponse & response );
-    void onFailureShowMessage( ofxSimpleHttpResponse & response );
     void onFailureWheep( ofxSimpleHttpResponse & response );
 };
 
@@ -71,56 +68,50 @@ void testApp::keyPressed(int key){
     // fetch url and register listener for a response to this specific request
 
     if(key=='1'){
-        ofxSimpleHttpResponse* response = http.fetchURL(theOneUrl , true/*notify when done*/);
-        if(response){
-            ofAddListener(response->responseEvent, this, &testApp::onResponseLogStatus);
+        auto notifier = http.fetchURL(theOneUrl , true/*notify when done*/);
+        if(notifier){
+            ofAddListener(notifier->responseEvent, this, &testApp::onResponseLogStatus);
         }
     }
 
-    // fetch url and register listener for a successfull response to this specific request
+    // fetch url and register inline lambda success-callback
 
     if(key=='2'){
-        ofxSimpleHttpResponse* response = http.fetchURL(theOneUrl , true/*notify when done*/);
-        if(response){
-            ofAddListener(response->successEvent, this, &testApp::onSuccessLogSize);
+        auto notifier = http.fetchURL(theOneUrl , true/*notify when done*/);
+        if(notifier){
+            notifier->onSuccess([this](ofxSimpleHttpResponse & response){
+                feedback = response.url + " gave us\n" + ofToString(response.serverReportedSize) + " bytes of data";
+            });
         }
     }
 
-    // like above, but do something else with the result
+    // separate lambda callbacks for both success and failure responses
 
     if(key=='3'){
-        ofxSimpleHttpResponse* response = http.fetchURLToDisk(theOneUrl , true/*notify when done*/);
-        if(response){
-            ofAddListener(response->successEvent, this, &testApp::onSuccessLogFileLocation);
-            ofAddListener(response->failureEvent, this, &testApp::onFailureShowMessage);
+        auto notifier = http.fetchURLToDisk(theOneUrl , true/*notify when done*/);
+        if(notifier){
+            notifier->onSuccess([this](ofxSimpleHttpResponse & response){
+                feedback = response.url + " downloaded to:\n" + response.absolutePath;
+            });
 
+            notifier->onFailure([this](ofxSimpleHttpResponse & response){
+                feedback = response.url + " failed.\nStatus code: " + ofToString(response.status) + "\nMessage:\n" + response.responseBody;
+            });
         }
     }
 
     // they can't all be winners
 
     if(key=='4'){
-        ofxSimpleHttpResponse* response = http.fetchURLToDisk("http://localhost:4321/are/you/_really_/running/this/server?#!" , true/*notify when done*/);
-        if(response){
-            ofAddListener(response->failureEvent, this, &testApp::onFailureWheep);
+        auto notifier = http.fetchURLToDisk("http://localhost:4321/are/you/_really_/running/this/server?#!" , true/*notify when done*/);
+        if(notifier){
+            ofAddListener(notifier->failureEvent, this, &testApp::onFailureWheep);
         }
     }
 }
 
 void testApp::onResponseLogStatus( ofxSimpleHttpResponse & response ){
     feedback = "HTTP request to " + response.url + "\nresponded with status code: " + ofToString(response.status);
-}
-
-void testApp::onSuccessLogSize( ofxSimpleHttpResponse & response ){
-    feedback = response.url + " gave us\n" + ofToString(response.serverReportedSize) + " bytes of data";
-}
-
-void testApp::onSuccessLogFileLocation( ofxSimpleHttpResponse & response ){
-    feedback = response.url + " downloaded to:\n" + response.absolutePath;
-}
-
-void testApp::onFailureShowMessage( ofxSimpleHttpResponse & response ){
-    feedback = response.url + " failed.\nStatus code: " + ofToString(response.status) + "\nMessage:\n" + response.responseBody;
 }
 
 void testApp::onFailureWheep( ofxSimpleHttpResponse & response ){
