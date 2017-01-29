@@ -71,12 +71,7 @@ using Poco::Exception;
 using Poco::Net::HTTPClientSession;
 
 class ofxSimpleHttp;
-struct ofxSimpleHttpResponse;
-
-class ofxSimpleHttpNotifier {
-public:
-    ofEvent<ofxSimpleHttpResponse> responseEvent, successEvent, failureEvent;
-};
+class ofxSimpleHttpNotifier;
 
 struct ofxSimpleHttpResponse{
 	ofxSimpleHttp * 			who;				//who are you getting the event from?
@@ -114,6 +109,26 @@ struct ofxSimpleHttpResponse{
 	string toString();
     
     shared_ptr<ofxSimpleHttpNotifier> notifier;
+};
+
+
+class ofxSimpleHttpNotifier {
+        // lets ofxSimpleHttp call the notify function
+        friend ofxSimpleHttp;
+
+    public: // lambda callback adders
+        ofxSimpleHttpNotifier* onSuccess(std::function<void (ofxSimpleHttpResponse&)> func);
+        ofxSimpleHttpNotifier* onFailure(std::function<void (ofxSimpleHttpResponse&)> func);
+        ofxSimpleHttpNotifier* onResponse(std::function<void (ofxSimpleHttpResponse&)> func);
+        
+    public: // events
+        ofEvent<ofxSimpleHttpResponse> responseEvent, successEvent, failureEvent;
+        
+    protected: // resolver method
+        void notify(ofxSimpleHttpResponse &response, bool success);
+
+    private: // attributes
+        std::vector<std::function<void (ofxSimpleHttpResponse&)>> responseFuncs, successFuncs, failureFuncs;
 };
 
 

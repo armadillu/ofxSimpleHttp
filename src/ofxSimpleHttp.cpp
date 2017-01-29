@@ -26,6 +26,7 @@
 Context::Ptr ofxSimpleHttp::pContext = NULL;
 
 
+
 ofxSimpleHttp::ofxSimpleHttp(){
 
 	COPY_BUFFER_SIZE = 1024 * 16; //  kb buffer size
@@ -938,11 +939,8 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 				ofNotifyEvent(httpResponse, *resp, this);
 
                 if(resp->notifier){
-                    // notify request-specific callbacks
-                    ofNotifyEvent(resp->notifier->responseEvent, *resp, this);
-                    ofNotifyEvent(resp->status >= 200 && resp->status < 300 ? resp->notifier->successEvent : resp->notifier->failureEvent, *resp, this);
+                    resp->notifier->notify(*resp, resp->status >= 200 && resp->status < 300);
                 }
-
 			}else{
                 //we are running from a bg thread and
                 //user wants to get notified from main thread,
@@ -992,9 +990,7 @@ void ofxSimpleHttp::update(){
 		ofNotifyEvent( httpResponse, r, this ); //we want to be able to notify from outside the lock
         
         if(r.notifier){
-            // notify request-specific callbacks
-            ofNotifyEvent(r.notifier->responseEvent, r, this);
-            ofNotifyEvent(r.status >= 200 && r.status < 300 ? r.notifier->successEvent : r.notifier->failureEvent, r, this);
+            r.notifier->notify(r, r.status >= 200 && r.status < 300 /* success-status */);
         }
 		//otherwise we cant start a new download from the callback (deadlock!)
 	}else{
@@ -1147,4 +1143,50 @@ void ofxSimpleHttpResponse::print(){
 void ofxSimpleHttp::setSpeedLimit(float KB_per_sec){
 	speedLimit = KB_per_sec;
 	ofLogNotice("ofxSimpleHttp") << "Setting speed limit to " << KB_per_sec << " Kb/sec";
+}
+
+
+// ofxSimpleHttpNotifier ////////////////////////////////////////////////////////
+
+
+ofxSimpleHttpNotifier* ofxSimpleHttpNotifier::onSuccess(std::function<void (ofxSimpleHttpResponse&)> func){
+    successFuncs.push_back(func);
+    return this; // returning 'this' to allow for chaining on* methods
+}
+
+ofxSimpleHttpNotifier* ofxSimpleHttpNotifier::onFailure(std::function<void (ofxSimpleHttpResponse&)> func){
+    failureFuncs.push_back(func);
+    return this; // returning 'this' to allow for chaining on* methods
+}
+
+ofxSimpleHttpNotifier* ofxSimpleHttpNotifier::onResponse(std::function<void (ofxSimpleHttpResponse&)> func){
+    responseFuncs.push_back(func);
+    return this; // returning 'this' to allow for chaining on* methods
+}
+
+void ofxSimpleHttpNotifier::notify(ofxSimpleHttpResponse &response, bool success){
+    // notify result-ambivalent event listeners...
+    ofNotifyEvent(responseEvent, response);
+    // ...and lambdas
+    for(auto func : responseFuncs){
+        func(response);
+    }
+    
+    if(success){
+        // notify success event listeners...
+        ofNotifyEvent(successEvent, response);
+        // ...and lambdas
+        for(auto func : successFuncs){
+            func(response);
+        }
+        
+        // done
+        return;
+    }
+    
+    // notify faiure listeners/lambdas
+    ofNotifyEvent(failureEvent, response);
+    for(auto func : failureFuncs){
+        func(response);
+    }
 }
