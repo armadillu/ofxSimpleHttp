@@ -454,11 +454,11 @@ string ofxSimpleHttp::extractExtensionFromFileName(const string& fileName){
 }
 
 
-ofxSimpleHttpResponse* ofxSimpleHttp::fetchURL(string url, bool notifyOnSuccess, string customField){
-
+shared_ptr<ofxSimpleHttpNotifier> ofxSimpleHttp::fetchURL(string url, bool notifyOnSuccess, string customField){
 	if (queueLenEstimation >= maxQueueLen){
 		ofLogError("ofxSimpleHttp", "fetchURL can't do that, queue is too long already (%d)!\n", queueLenEstimation );
-		return NULL;
+        // this notifier will never be called
+		return nullptr;
 	}
 
 	ofxSimpleHttpResponse *response = new ofxSimpleHttpResponse();
@@ -469,6 +469,7 @@ ofxSimpleHttpResponse* ofxSimpleHttp::fetchURL(string url, bool notifyOnSuccess,
 	response->fileName = extractFileFromUrl(url);
 	response->extension = extractExtensionFromFileName(response->fileName);
 	response->notifyOnSuccess = notifyOnSuccess;
+    response->notifier = make_shared<ofxSimpleHttpNotifier>();
 
 	lock();
 	q.push(response);
@@ -478,7 +479,7 @@ ofxSimpleHttpResponse* ofxSimpleHttp::fetchURL(string url, bool notifyOnSuccess,
 		startThread(true);
 	}
 
-    return response;
+    return response->notifier;
 }
 
 
@@ -498,12 +499,12 @@ ofxSimpleHttpResponse ofxSimpleHttp::fetchURLBlocking(string  url){
 	return response;
 }
 
-ofxSimpleHttpResponse* ofxSimpleHttp::fetchURLToDisk(string url, string expectedSha1, bool notifyOnSuccess,
+shared_ptr<ofxSimpleHttpNotifier> ofxSimpleHttp::fetchURLToDisk(string url, string expectedSha1, bool notifyOnSuccess,
 								   string dirWhereToSave, string customField){
 
 	if (queueLenEstimation >= maxQueueLen){
 		ofLogError("ofxSimpleHttp", "fetchURL can't do that, queue is too long already (%d)!\n", queueLenEstimation );
-		return NULL;
+		return nullptr;
 	}
 
 	dirWhereToSave = ofFilePath::removeTrailingSlash(dirWhereToSave);
@@ -530,6 +531,7 @@ ofxSimpleHttpResponse* ofxSimpleHttp::fetchURLToDisk(string url, string expected
 	response->extension = extractExtensionFromFileName(response->fileName);
 	response->notifyOnSuccess = notifyOnSuccess;
 	response->downloadToDisk = true;
+    response->notifier = make_shared<ofxSimpleHttpNotifier>();
 
 	lock();
 	q.push(response);
@@ -543,10 +545,10 @@ ofxSimpleHttpResponse* ofxSimpleHttp::fetchURLToDisk(string url, string expected
 		}
 	}
     
-    return response;
+    return response->notifier;
 }
 
-ofxSimpleHttpResponse* ofxSimpleHttp::fetchURLToDisk(string url, bool notifyOnSuccess,
+shared_ptr<ofxSimpleHttpNotifier> ofxSimpleHttp::fetchURLToDisk(string url, bool notifyOnSuccess,
 								   string dirWhereToSave, string customField){
 	return fetchURLToDisk(url, "", notifyOnSuccess, dirWhereToSave, customField);
 }
@@ -934,8 +936,12 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 			if (beingCalledFromMainThread || !notifyFromMainThread){
 
 				ofNotifyEvent(httpResponse, *resp, this);
-                ofNotifyEvent(resp->responseEvent, *resp, this); // notify request-specific callbacks
-                ofNotifyEvent(resp->status >= 200 && resp->status < 300 ? resp->successEvent : resp->failureEvent, *resp, this);
+
+                if(resp->notifier){
+                    // notify request-specific callbacks
+                    ofNotifyEvent(resp->notifier->responseEvent, *resp, this);
+                    ofNotifyEvent(resp->status >= 200 && resp->status < 300 ? resp->notifier->successEvent : resp->notifier->failureEvent, *resp, this);
+                }
 
 			}else{
                 //we are running from a bg thread and
@@ -984,8 +990,12 @@ void ofxSimpleHttp::update(){
 		responsesPendingNotification.pop();
 		unlock();
 		ofNotifyEvent( httpResponse, r, this ); //we want to be able to notify from outside the lock
-        ofNotifyEvent(r.responseEvent, r, this); // notify request-specific callbacks
-        ofNotifyEvent(r.status >= 200 && r.status < 300 ? r.successEvent : r.failureEvent, r, this);
+        
+        if(r.notifier){
+            // notify request-specific callbacks
+            ofNotifyEvent(r.notifier->responseEvent, r, this);
+            ofNotifyEvent(r.status >= 200 && r.status < 300 ? r.notifier->successEvent : r.notifier->failureEvent, r, this);
+        }
 		//otherwise we cant start a new download from the callback (deadlock!)
 	}else{
 		unlock();

@@ -71,9 +71,14 @@ using Poco::Exception;
 using Poco::Net::HTTPClientSession;
 
 class ofxSimpleHttp;
+struct ofxSimpleHttpResponse;
+
+class ofxSimpleHttpNotifier {
+public:
+    ofEvent<ofxSimpleHttpResponse> responseEvent, successEvent, failureEvent;
+};
 
 struct ofxSimpleHttpResponse{
-
 	ofxSimpleHttp * 			who;				//who are you getting the event from?
 	bool						ok;
 	bool						notifyOnSuccess;	// user wants to be notified when download is ready
@@ -107,7 +112,8 @@ struct ofxSimpleHttpResponse{
 	ofxSimpleHttpResponse();
 	void print();
 	string toString();
-    ofEvent<ofxSimpleHttpResponse> responseEvent, successEvent, failureEvent;
+    
+    shared_ptr<ofxSimpleHttpNotifier> notifier;
 };
 
 
@@ -130,19 +136,19 @@ class ofxSimpleHttp : public ofThread{
 		// actions //////////////////////////////////////////////////////////////
 
 		//download to RAM ( download to ofxSimpleHttpResponse->responseBody)
-		ofxSimpleHttpResponse*		fetchURL(string url,
+		shared_ptr<ofxSimpleHttpNotifier> fetchURL(string url,
 											 bool notifyOnSuccess = false,
 											 string customField = ""); //supply any info you need, get it back when you are notified
 
 		ofxSimpleHttpResponse		fetchURLBlocking(string url);
 
 		//download to Disk
-		ofxSimpleHttpResponse*      fetchURLToDisk(string url,
+        shared_ptr<ofxSimpleHttpNotifier> fetchURLToDisk(string url,
 												   bool notifyOnSuccess = false,
 												   string outputDir = ".",
 												   string customField = ""); //supply any info you need, get it back when you are notified
 
-		ofxSimpleHttpResponse*      fetchURLToDisk(string url,
+		 shared_ptr<ofxSimpleHttpNotifier> fetchURLToDisk(string url,
 												   string expectedSha1,
 												   bool notifyOnSuccess = false,
 												   string outputDir = ".", string
