@@ -202,6 +202,8 @@ float ofxSimpleHttp::getCurrentDownloadProgress(){
 void ofxSimpleHttp::threadedFunction(){
 
 	#ifdef TARGET_WIN32
+	#elif defined(TARGET_LINUX)
+	pthread_setname_np(pthread_self(), "ofxSimpleHttp");
 	#else
 	pthread_setname_np("ofxSimpleHttp");
 	#endif
