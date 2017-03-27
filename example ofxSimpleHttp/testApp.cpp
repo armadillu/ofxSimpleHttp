@@ -27,7 +27,7 @@ void testApp::setup(){
 	http.addCustomHttpHeader("Accept", "application/json"); //you can supply custom headers if you need to
 
 	http.setCopyBufferSize(16);
-	http.setSpeedLimit(100);
+	http.setSpeedLimit(300);
 
 	//add download listener
 	ofAddListener(http.httpResponse, this, &testApp::newResponse);
