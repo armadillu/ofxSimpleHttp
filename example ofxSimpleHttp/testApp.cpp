@@ -138,7 +138,7 @@ void testApp::newResponse(ofxSimpleHttpResponse &r){
 		ofDirectory dir;
 		dir.createDirectory("mySortedDownloads");
 
-		ofDirectory f;
+		ofFile f;
 		f.open( r.absolutePath );
 		if( f.exists() ){
 			f.moveTo("mySortedDownloads/" + r.fileName);
