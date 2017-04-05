@@ -150,9 +150,11 @@ void ofxSimpleHttp::setUserAgent( string newUserAgent ){
 }
 
 void ofxSimpleHttp::setCredentials(string username, string password){
-	credentials.setUsername(username);
-	credentials.setPassword(password);
-	useCredentials = true;
+	if(username.size() || password.size()){
+		credentials.setUsername(username);
+		credentials.setPassword(password);
+		useCredentials = true;
+	}
 }
 
 void ofxSimpleHttp::setMaxQueueLength(int len){
