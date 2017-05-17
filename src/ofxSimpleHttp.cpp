@@ -583,7 +583,7 @@ ofxSimpleHttpResponse ofxSimpleHttp::fetchURLtoDiskBlocking(string  url, string 
 
 bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThroughEvents, bool beingCalledFromMainThread, bool saveToDisk){
 
-	bool ok = FALSE;
+	bool ok = false;
 	ofstream myfile;
 	bool fileIsAlreadyHere = false;
 	resp->responseBody = "";
@@ -669,7 +669,7 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 				resp->timeTakenToDownload = ofGetElapsedTimef() - resp->timeDowloadStarted;
 				resp->downloadedBytes = resp->serverReportedSize;
 				rs.close();
-				ok = TRUE;
+				ok = true;
 			}else{
 				ofLogError("ofxSimpleHttp") << "Source File does not exist! " << resp->url;
 				resp->ok = false;
@@ -677,7 +677,7 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 				resp->reasonForStatus = "Source File does not exist!";
 				resp->timeTakenToDownload = 0;
 				resp->checksumOK = false;
-				ok = FALSE;
+				ok = false;
 			}
 			srcOfFile.close();
 			myfile.close();
@@ -867,7 +867,7 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 							}
 						}
 						ofLogVerbose("ofxSimpleHttp") << "ofxSimpleHttp: download finished! " << resp->url << " !";
-						ok = TRUE;
+						ok = true;
 					}
 
 					if (copySize == 0){
@@ -880,7 +880,7 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 					resp->ok = false;
 					resp->reasonForStatus = "Unknown exception at streamCopy";
 					resp->status = -1;
-					ok = FALSE;
+					ok = false;
 				}
 
 				//last check for OK flag
@@ -921,7 +921,7 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 		}
 	}else{
 		resp->timeTakenToDownload = 0;
-		ok = TRUE;
+		ok = true;
 	}
 
 	//enqueue the operation result!
