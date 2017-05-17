@@ -65,10 +65,6 @@
 
 #define OFX_SIMPLEHTTP_UNTITLED_FILENAME	"unnamed.file"
 
-using namespace Poco::Net;
-using namespace Poco;
-using Poco::Exception;
-using Poco::Net::HTTPClientSession;
 
 class ofxSimpleHttp;
 
@@ -237,7 +233,7 @@ private:
 
 		ProxyConfig						proxyConfig;
 		bool							useCredentials;
-		HTTPBasicCredentials			credentials;
+		Poco::Net::HTTPBasicCredentials	credentials;
 
 		queue<ofxSimpleHttpResponse>	responsesPendingNotification; //we store here downloads that arrived so that we can notify from main thread
 		map<string, string>				customHttpHeaders;
@@ -246,7 +242,7 @@ private:
 											   std::streamsize &currentBytes, bool & speedSampled,
 											   float & progress, float &speed, const bool &shouldCancel);
 
-		static Context::Ptr pContext;
+		static Poco::Net::Context::Ptr pContext;
 
 		int COPY_BUFFER_SIZE;
 

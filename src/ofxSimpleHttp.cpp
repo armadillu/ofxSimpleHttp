@@ -22,9 +22,12 @@
 #include <iostream>     // std::cout
 #include <fstream>      // std::ifstream
 
+Poco::Net::Context::Ptr ofxSimpleHttp::pContext = NULL;
 
-Context::Ptr ofxSimpleHttp::pContext = NULL;
-
+using namespace Poco::Net;
+using namespace Poco;
+using Poco::Exception;
+using Poco::Net::HTTPClientSession;
 
 ofxSimpleHttp::ofxSimpleHttp(){
 
@@ -804,7 +807,7 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 					}else{ //download not canceled
 
 						if(saveToDisk){
-							string msg = "downloadURL() downloaded to " + resp->fileName;
+							string msg = "downloadURL() downloaded to \"" + resp->absolutePath + "\"";
 							ofLogNotice("ofxSimpleHttp", msg);
 							//ask the filesystem what is the real size of the file
 							ofFile file;
