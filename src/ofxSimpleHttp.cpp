@@ -544,7 +544,7 @@ void ofxSimpleHttp::fetchURLToDisk(string url, string expectedSha1, bool notifyO
 	if ( !isThreadRunning() ){	//if the queue is not running, lets start it
 		try{
 			startThread(true);
-		}catch(Exception e){
+		}catch(exception e){
 			ofLogError("ofxSimpleHttp") << "ofxSimpleHttp: cant start thread!" << e.what();
 		}
 	}
@@ -728,8 +728,8 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 				
 				try{
 					session->sendRequest(req);
-				}catch(Exception e){
-					ofLogWarning("ofxSimpleHttp") << "ofxSimpleHttp session send request exception: " << e.message() << "\nfor URL:" << request.url;
+				}catch(exception e){
+					ofLogWarning("ofxSimpleHttp") << "ofxSimpleHttp session send request exception: " << e.what() << "\nfor URL:" << request.url;
 				}
 
 				HTTPResponse res;
@@ -738,7 +738,7 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 				resp->status = res.getStatus();
 				try {
 					resp->timestamp = res.getDate();
-				} catch (Exception exc) {
+				} catch (exception exc) {
 					resp->timestamp = 0;
 				}
 
