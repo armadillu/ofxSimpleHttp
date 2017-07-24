@@ -1,8 +1,8 @@
-#include "testApp.h"
+#include "ofApp.h"
 
 
 
-void testApp::setup(){
+void ofApp::setup(){
 
 	ofSetFrameRate(63);
 	ofSetVerticalSync(true);
@@ -30,16 +30,16 @@ void testApp::setup(){
 	http.setSpeedLimit(300);
 
 	//add download listener
-	ofAddListener(http.httpResponse, this, &testApp::newResponse);
+	ofAddListener(http.httpResponse, this, &ofApp::newResponse);
 }
 
 
-void testApp::update(){
+void ofApp::update(){
 
 	http.update();
 }
 
-void testApp::draw(){
+void ofApp::draw(){
 	http.draw(30,30);
 	ofSetColor(255);
 
@@ -70,7 +70,7 @@ void testApp::draw(){
 }
 
 
-void testApp::keyPressed(int key){
+void ofApp::keyPressed(int key){
 
 
 	if(key=='1'){
@@ -122,7 +122,7 @@ void testApp::keyPressed(int key){
 }
 
 
-void testApp::newResponse(ofxSimpleHttpResponse &r){
+void ofApp::newResponse(ofxSimpleHttpResponse &r){
 
 	cout << "#########################################################" << endl;
 	cout << "download of " << r.url << " returned : "<< string(r.ok ? "OK" : "KO") << endl;
@@ -148,6 +148,6 @@ void testApp::newResponse(ofxSimpleHttpResponse &r){
 	}
 }
 
-void testApp::exit(){
+void ofApp::exit(){
 	ofxSimpleHttp::destroySslContext();
 }

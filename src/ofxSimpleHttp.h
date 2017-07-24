@@ -15,13 +15,13 @@
  
  2 - implement http response method:
  
-	void testApp::newResponse(ofxSimpleHttpResponse &response){
+	void ofApp::newResponse(ofxSimpleHttpResponse &response){
 		printf("download of '%s' returned : %s\n", response.url.c_str(), response.ok ? "OK" : "KO" );
 	}
  
  3 - add Listener:
  
-	ofAddListener(http.httpResponse, this, &testApp::newResponse);
+	ofAddListener(http.httpResponse, this, &ofApp::newResponse);
  
  4 - fetch URLs:
 

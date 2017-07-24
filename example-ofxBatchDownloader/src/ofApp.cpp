@@ -1,8 +1,8 @@
-#include "testApp.h"
+#include "ofApp.h"
 
 
 
-void testApp::setup(){
+void ofApp::setup(){
 
 	ofSetFrameRate(63);
 	ofSetVerticalSync(true);
@@ -23,7 +23,7 @@ void testApp::setup(){
 	downloadList.push_back("http://farm6.staticflickr.com/5346/9484309488_11ee39298e_o.jpg");
 
 	//add download listener
-	ofAddListener(downloader.resourcesDownloadFinished, this, &testApp::downloadFinished);
+	ofAddListener(downloader.resourcesDownloadFinished, this, &ofApp::downloadFinished);
 	downloader.setDownloadFolder("tempDownloads");
 	downloader.setNeedsChecksumMatchToSkipDownload(true);
 	downloader.setIdleTimeAfterEachDownload(0.2);
@@ -32,12 +32,12 @@ void testApp::setup(){
 }
 
 
-void testApp::update(){
+void ofApp::update(){
 
 	downloader.update();
 }
 
-void testApp::draw(){
+void ofApp::draw(){
 
 	downloader.draw(30,30);
 	ofSetColor(255);
@@ -55,7 +55,7 @@ void testApp::draw(){
 }
 
 
-void testApp::keyPressed(int key){
+void ofApp::keyPressed(int key){
 
 	if(key=='a'){
 		downloader.addResourcesToDownloadList(downloadList);
@@ -71,7 +71,7 @@ void testApp::keyPressed(int key){
 }
 
 
-void testApp::downloadFinished(ofxBatchDownloaderReport &report){
+void ofApp::downloadFinished(ofxBatchDownloaderReport &report){
 
 	cout << "download Finished!" << endl;
 	cout << report.successfulDownloads.size() << " successful downloads, " <<  report.failedDownloads.size() << " failed downloads." << endl;

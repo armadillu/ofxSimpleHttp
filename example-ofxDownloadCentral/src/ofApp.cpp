@@ -1,8 +1,8 @@
-#include "testApp.h"
+#include "ofApp.h"
 
 
 
-void testApp::setup(){
+void ofApp::setup(){
 
 	ofSetFrameRate(60);
 	ofBackground(22);
@@ -16,7 +16,7 @@ void testApp::setup(){
 }
 
 
-void testApp::downloadFinished(ofxBatchDownloaderReport &report){
+void ofApp::downloadFinished(ofxBatchDownloaderReport &report){
 
 	cout << "#################################################" << endl;
 	cout << "#### download finished!!" << endl;
@@ -45,13 +45,13 @@ void testApp::downloadFinished(ofxBatchDownloaderReport &report){
 	}
 }
 
-void testApp::update(){
+void ofApp::update(){
 
 	downloader.update();
 }
 
 
-void testApp::draw(){
+void ofApp::draw(){
 
 	ofSetColor(255);
 	drawClock();
@@ -66,7 +66,7 @@ void testApp::draw(){
 }
 
 
-void testApp::drawClock(){
+void ofApp::drawClock(){
 
 	ofPushMatrix();
 	ofTranslate(ofGetWidth() - 60,60, 0);
@@ -78,7 +78,7 @@ void testApp::drawClock(){
 }
 
 
-void testApp::keyPressed(int key){
+void ofApp::keyPressed(int key){
 
 	vector<string> allURLS;
 	vector<string> allSha1s;
@@ -110,7 +110,7 @@ void testApp::keyPressed(int key){
 		downloader.downloadResources(allURLS,						//list of urls to download
 									 allSha1s,						//1:1 list of sha1's for those urls
 									 this,							//who will be notified
-									 &testApp::downloadFinished,	//callback method
+									 &ofApp::downloadFinished,	//callback method
 									 "downloads_"					//destination folder
 									 );
 		downloader.startDownloading();
@@ -119,7 +119,7 @@ void testApp::keyPressed(int key){
 		for(int i = 0; i < allURLS.size(); i++){
 			downloader.downloadResources(allURLS[i],						//list of urls to download
 										 this,							//who will be notified
-										 &testApp::downloadFinished,	//callback method
+										 &ofApp::downloadFinished,	//callback method
 										 "downloads_"					//destination folder
 										 );
 		}
