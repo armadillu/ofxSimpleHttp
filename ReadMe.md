@@ -1,10 +1,18 @@
+# ofxSimpleHttp
 
-OpenFrameworks add-on to make http downloads easy; 
+[![Build Status](https://travis-ci.org/armadillu/ofxSimpleHttp.svg?branch=master)](https://travis-ci.org/armadillu/ofxSimpleHttp)
+
+OpenFrameworks addon to make http downloads easy; 
+
+
+
 
 * supports http://, https:// and file://
 * threaded downloads
 * user agent customization
+* proxy support
 * custom timeouts
+* parallel downloads
 * download queues
 * cancel downloads
 * checksum checked downloads (sha1)
