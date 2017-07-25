@@ -1,6 +1,7 @@
 # ofxSimpleHttp
 
 [![Build Status](https://travis-ci.org/armadillu/ofxSimpleHttp.svg?branch=master)](https://travis-ci.org/armadillu/ofxSimpleHttp)
+[![Build status](https://ci.appveyor.com/api/projects/status/d8e634rmni9f7tmr/branch/master?svg=true)](https://ci.appveyor.com/project/armadillu/ofxsimplehttp/branch/master)
 
 OpenFrameworks addon to make http downloads easy; 
 
