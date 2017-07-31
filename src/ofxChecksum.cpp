@@ -14,6 +14,20 @@ bool ofxChecksum::sha1(const string& filePath,
 	}
 
 	Poco::SHA1Engine sha1e;
+	string localHash = calcSha1(filePath);
+	bool match = sha1String.compare(localHash) == 0;
+
+ 	if(verbose){
+		t = ofGetElapsedTimef() - t;
+		ofLogNotice("ofxChecksum") << "ofxChecksum::sha1(" << localHash << ") took " << t << " secs to calc.";
+	}
+	return match;
+}
+
+
+string ofxChecksum::calcSha1(const string & filePath){
+
+	Poco::SHA1Engine sha1e;
 	string localHash;
 	std::ifstream ifHash(ofToDataPath(filePath, true).c_str(), std::ios::binary);
 	if (ifHash.is_open()){
@@ -31,16 +45,5 @@ bool ofxChecksum::sha1(const string& filePath,
 		}
 	}
 
-	bool match = sha1String.compare(localHash) == 0;
-
-	float sec;
- 	if(verbose){
-		sec = ofGetElapsedTimef() - t;
-	}
-
-	if(verbose){
-		ofLog() << "ofxChecksum::sha1(" << localHash << ") took " << sec << " secs to calc ";
-	}
-
-	return match;
+	return localHash;
 }
