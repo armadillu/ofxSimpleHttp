@@ -67,9 +67,9 @@
 
 
 class ofxSimpleHttp;
+class ofxSimpleHttpNotifier;
 
 struct ofxSimpleHttpResponse{
-
 	ofxSimpleHttp * 			who;				//who are you getting the event from?
 	bool						ok;
 	bool						notifyOnSuccess;	// user wants to be notified when download is ready
@@ -103,6 +103,28 @@ struct ofxSimpleHttpResponse{
 	ofxSimpleHttpResponse();
 	void print();
 	string toString();
+    
+    shared_ptr<ofxSimpleHttpNotifier> notifier;
+};
+
+
+class ofxSimpleHttpNotifier {
+        // lets ofxSimpleHttp call the notify function
+        friend ofxSimpleHttp;
+
+    public: // lambda callback adders
+        ofxSimpleHttpNotifier* onSuccess(std::function<void (ofxSimpleHttpResponse&)> func);
+        ofxSimpleHttpNotifier* onFailure(std::function<void (ofxSimpleHttpResponse&)> func);
+        ofxSimpleHttpNotifier* onResponse(std::function<void (ofxSimpleHttpResponse&)> func);
+        
+    public: // events
+        ofEvent<ofxSimpleHttpResponse> responseEvent, successEvent, failureEvent;
+        
+    protected: // resolver method
+        void notify(ofxSimpleHttpResponse &response, bool success);
+
+    private: // attributes
+        std::vector<std::function<void (ofxSimpleHttpResponse&)>> responseFuncs, successFuncs, failureFuncs;
 };
 
 
@@ -125,19 +147,19 @@ class ofxSimpleHttp : public ofThread{
 		// actions //////////////////////////////////////////////////////////////
 
 		//download to RAM ( download to ofxSimpleHttpResponse->responseBody)
-		void						fetchURL(string url,
+		shared_ptr<ofxSimpleHttpNotifier> fetchURL(string url,
 											 bool notifyOnSuccess = false,
 											 string customField = ""); //supply any info you need, get it back when you are notified
 
 		ofxSimpleHttpResponse		fetchURLBlocking(string url);
 
 		//download to Disk
-		void						fetchURLToDisk(string url,
+        shared_ptr<ofxSimpleHttpNotifier> fetchURLToDisk(string url,
 												   bool notifyOnSuccess = false,
 												   string outputDir = ".",
 												   string customField = ""); //supply any info you need, get it back when you are notified
 
-		void						fetchURLToDisk(string url,
+		 shared_ptr<ofxSimpleHttpNotifier> fetchURLToDisk(string url,
 												   string expectedSha1,
 												   bool notifyOnSuccess = false,
 												   string outputDir = ".", string

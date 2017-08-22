@@ -29,6 +29,7 @@ using namespace Poco;
 using Poco::Exception;
 using Poco::Net::HTTPClientSession;
 
+
 ofxSimpleHttp::ofxSimpleHttp(){
 
 	COPY_BUFFER_SIZE = 1024 * 16; //  kb buffer size
@@ -462,11 +463,11 @@ string ofxSimpleHttp::extractExtensionFromFileName(const string& fileName){
 }
 
 
-void ofxSimpleHttp::fetchURL(string url, bool notifyOnSuccess, string customField){
-
+shared_ptr<ofxSimpleHttpNotifier> ofxSimpleHttp::fetchURL(string url, bool notifyOnSuccess, string customField){
 	if (queueLenEstimation >= maxQueueLen){
 		ofLogError("ofxSimpleHttp", "fetchURL can't do that, queue is too long already (%d)!\n", queueLenEstimation );
-		return;
+        // this notifier will never be called
+		return nullptr;
 	}
 
 	ofxSimpleHttpResponse *response = new ofxSimpleHttpResponse();
@@ -477,6 +478,7 @@ void ofxSimpleHttp::fetchURL(string url, bool notifyOnSuccess, string customFiel
 	response->fileName = extractFileFromUrl(url);
 	response->extension = extractExtensionFromFileName(response->fileName);
 	response->notifyOnSuccess = notifyOnSuccess;
+    response->notifier = make_shared<ofxSimpleHttpNotifier>();
 
 	lock();
 	q.push(response);
@@ -485,6 +487,8 @@ void ofxSimpleHttp::fetchURL(string url, bool notifyOnSuccess, string customFiel
 	if ( !isThreadRunning() ){	//if the queue is not running, lets start it
 		startThread(true);
 	}
+
+    return response->notifier;
 }
 
 
@@ -504,12 +508,12 @@ ofxSimpleHttpResponse ofxSimpleHttp::fetchURLBlocking(string  url){
 	return response;
 }
 
-void ofxSimpleHttp::fetchURLToDisk(string url, string expectedSha1, bool notifyOnSuccess,
+shared_ptr<ofxSimpleHttpNotifier> ofxSimpleHttp::fetchURLToDisk(string url, string expectedSha1, bool notifyOnSuccess,
 								   string dirWhereToSave, string customField){
 
 	if (queueLenEstimation >= maxQueueLen){
 		ofLogError("ofxSimpleHttp", "fetchURL can't do that, queue is too long already (%d)!\n", queueLenEstimation );
-		return;
+		return nullptr;
 	}
 
 	dirWhereToSave = ofFilePath::removeTrailingSlash(dirWhereToSave);
@@ -536,6 +540,7 @@ void ofxSimpleHttp::fetchURLToDisk(string url, string expectedSha1, bool notifyO
 	response->extension = extractExtensionFromFileName(response->fileName);
 	response->notifyOnSuccess = notifyOnSuccess;
 	response->downloadToDisk = true;
+    response->notifier = make_shared<ofxSimpleHttpNotifier>();
 
 	lock();
 	q.push(response);
@@ -548,11 +553,13 @@ void ofxSimpleHttp::fetchURLToDisk(string url, string expectedSha1, bool notifyO
 			ofLogError("ofxSimpleHttp") << "ofxSimpleHttp: cant start thread!" << e.what();
 		}
 	}
+    
+    return response->notifier;
 }
 
-void ofxSimpleHttp::fetchURLToDisk(string url, bool notifyOnSuccess,
+shared_ptr<ofxSimpleHttpNotifier> ofxSimpleHttp::fetchURLToDisk(string url, bool notifyOnSuccess,
 								   string dirWhereToSave, string customField){
-	fetchURLToDisk(url, "", notifyOnSuccess, dirWhereToSave, customField);
+	return fetchURLToDisk(url, "", notifyOnSuccess, dirWhereToSave, customField);
 }
 
 
@@ -933,22 +940,25 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 				ofSleepMillis(idleTimeAfterEachDownload * 1000);
 			}
 
-			if (beingCalledFromMainThread){ //we running on main thread, we can just snd the notif from here
+            //We're either running on the main thread, or we can send notifications directly from
+            // the separate thread. Either way; notify directly
+			if (beingCalledFromMainThread || !notifyFromMainThread){
 
-				ofNotifyEvent( httpResponse, *resp, this );
+				ofNotifyEvent(httpResponse, *resp, this);
 
-			}else{ //we are running from a bg thread
-
-				if (notifyFromMainThread){ //user wants to get notified form main thread, we need to enqueue the notification
-					if (timeToStop == false){	//see if we have been destructed! dont forward events if so
-						lock();
-						ofxSimpleHttpResponse tempCopy = *resp;
-						responsesPendingNotification.push(tempCopy);
-						unlock();
-					}
-				}else{ //user doesnt care about main thread, the notificaiton can come from bg thread so we do it from here
-					ofNotifyEvent( httpResponse, *resp, this );
-				}
+                if(resp->notifier){
+                    resp->notifier->notify(*resp, resp->status >= 200 && resp->status < 300);
+                }
+			}else{
+                //we are running from a bg thread and
+                //user wants to get notified from main thread,
+                //we need to enqueue the notification
+                if (timeToStop == false){	//see if we have been destructed! dont forward events if so
+                    lock();
+                    ofxSimpleHttpResponse tempCopy = *resp;
+                    responsesPendingNotification.push(tempCopy);
+                    unlock();
+                }
 			}
 		}
 	}
@@ -986,6 +996,10 @@ void ofxSimpleHttp::update(){
 		responsesPendingNotification.pop();
 		unlock();
 		ofNotifyEvent( httpResponse, r, this ); //we want to be able to notify from outside the lock
+        
+        if(r.notifier){
+            r.notifier->notify(r, r.status >= 200 && r.status < 300 /* success-status */);
+        }
 		//otherwise we cant start a new download from the callback (deadlock!)
 	}else{
 		unlock();
@@ -1137,4 +1151,50 @@ void ofxSimpleHttpResponse::print(){
 void ofxSimpleHttp::setSpeedLimit(float KB_per_sec){
 	speedLimit = KB_per_sec;
 	ofLogNotice("ofxSimpleHttp") << "Setting speed limit to " << KB_per_sec << " Kb/sec";
+}
+
+
+// ofxSimpleHttpNotifier ////////////////////////////////////////////////////////
+
+
+ofxSimpleHttpNotifier* ofxSimpleHttpNotifier::onSuccess(std::function<void (ofxSimpleHttpResponse&)> func){
+    successFuncs.push_back(func);
+    return this; // returning 'this' to allow for chaining on* methods
+}
+
+ofxSimpleHttpNotifier* ofxSimpleHttpNotifier::onFailure(std::function<void (ofxSimpleHttpResponse&)> func){
+    failureFuncs.push_back(func);
+    return this; // returning 'this' to allow for chaining on* methods
+}
+
+ofxSimpleHttpNotifier* ofxSimpleHttpNotifier::onResponse(std::function<void (ofxSimpleHttpResponse&)> func){
+    responseFuncs.push_back(func);
+    return this; // returning 'this' to allow for chaining on* methods
+}
+
+void ofxSimpleHttpNotifier::notify(ofxSimpleHttpResponse &response, bool success){
+    // notify result-ambivalent event listeners...
+    ofNotifyEvent(responseEvent, response);
+    // ...and lambdas
+    for(auto func : responseFuncs){
+        func(response);
+    }
+    
+    if(success){
+        // notify success event listeners...
+        ofNotifyEvent(successEvent, response);
+        // ...and lambdas
+        for(auto func : successFuncs){
+            func(response);
+        }
+        
+        // done
+        return;
+    }
+    
+    // notify faiure listeners/lambdas
+    ofNotifyEvent(failureEvent, response);
+    for(auto func : failureFuncs){
+        func(response);
+    }
 }
