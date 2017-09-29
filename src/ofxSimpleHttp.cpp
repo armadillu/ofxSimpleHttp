@@ -668,6 +668,15 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 				resp->status = 200;
 				resp->timeTakenToDownload = ofGetElapsedTimef() - resp->timeDowloadStarted;
 				resp->downloadedBytes = resp->serverReportedSize;
+
+				if (resp->expectedChecksum.length() > 0){
+					resp->checksumOK = ofxChecksum::sha1(resp->absolutePath, resp->expectedChecksum);
+					if(!resp->checksumOK){
+						ofLogVerbose("ofxSimpleHttp") << "ofxSimpleHttp: file:// copy OK but Checksum FAILED";
+						ofLogVerbose("ofxSimpleHttp") << "ofxSimpleHttp: SHA1 was meant to be: " << resp->expectedChecksum;
+					}
+				}
+
 				rs.close();
 				ok = true;
 			}else{
@@ -681,6 +690,7 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 			}
 			srcOfFile.close();
 			myfile.close();
+
 
 			if(!ok && saveToDisk){
 				ofFile::removeFile(resp->absolutePath, false); //if we failed, dont leave an empty file in there
