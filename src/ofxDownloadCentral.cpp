@@ -201,7 +201,9 @@ string ofxDownloadCentral::getDrawableInfo(bool drawAllPending, bool detailed){
 			ofxBatchDownloader * bd = activeDownloaders[i];
 
 			if(!detailed){
-				httpDownloadersStatus += "\n//   (" + ofToString(i) + ") " + bd->getMinimalDrawableString();
+				char aux[5];
+				sprintf(aux, "%02d", i);
+				httpDownloadersStatus += "\n//   (" + string(aux) + ") " + bd->getMinimalDrawableString();
 				if(i == activeDownloaders.size() - 1) httpDownloadersStatus += "\n\n"; //last line more spce
 			}else{
 				httpDownloadersStatus += bd->getDrawableString();
