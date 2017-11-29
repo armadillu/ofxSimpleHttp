@@ -273,10 +273,6 @@ void ofxSimpleHttp::stopCurrentDownload(bool emptyQueue){
 }
 
 
-float ofxSimpleHttp::getCurrentDownloadSpeed(bool * isGoodSample){
-	if (isGoodSample != NULL) *isGoodSample = goodSample;
-	return avgSpeedNow;
-}
 
 
 float ofxSimpleHttp::getAvgDownloadSpeed(){
@@ -834,13 +830,10 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 						}
 
 						if(resp->timeTakenToDownload > 0.01f){
-							resp->avgDownloadSpeed = (resp->downloadedBytes ) / resp->timeTakenToDownload; //kb/sec
+							resp->avgDownloadSpeed = (resp->downloadedBytes ) / resp->timeTakenToDownload; //bytes/sec
+							ofLogNotice("ofxSimpleHttp") << "download completed - avg download speed: " << bytesToHumanReadable(resp->avgDownloadSpeed,1) << " - Dl Size: " << bytesToHumanReadable(resp->downloadedBytes, 1);
 						}
-						if (avgDownloadSpeed == 0.0f){
-							avgDownloadSpeed = resp->avgDownloadSpeed;
-						}else{
-							avgDownloadSpeed = avgDownloadSpeed * 0.75f + 0.25f * resp->avgDownloadSpeed;
-						}
+						avgDownloadSpeed = resp->avgDownloadSpeed;
 
 						bool isAPI = (resp->contentType == "text/json");
 						bool sizeMissmatch = resp->serverReportedSize > 0 && resp->serverReportedSize != resp->downloadedBytes;
@@ -971,25 +964,9 @@ void ofxSimpleHttp::update(){
 
 	ofxSimpleHttpResponse r;
 	lock();
-
-	avgDownloadSpeed = 0.01 * avgSpeedNow + 0.99 * avgDownloadSpeed;
 	
-	int n = q.size();
-	if ( isThreadRunning() && n > 0){
-		ofxSimpleHttpResponse * r = q.front();
-		if(r->chunkTested == false){
-			avgSpeedNow = r->downloadSpeed;
-			r->chunkTested = true;
-			goodSample = true;
-		}else{
-			avgSpeedNow *= 0.95; //slowly drop the speed if we are not getting new data
-			goodSample = false;
-		}
-
-	}else{
-		avgSpeedNow = 0;
-		goodSample = false;
-	}
+	avgDownloadSpeed = 0.95f * avgDownloadSpeed + 0.05f * avgSpeedNow;
+	//cout << this << " now: " << avgSpeedNow / float(1024.0f*1024) << "Mb/sec  avg: " << avgDownloadSpeed / float(1024.0f*1024) << "Mb/sec" << endl;
 
 	if(responsesPendingNotification.size()){
 		r = responsesPendingNotification.front();
@@ -1014,9 +991,12 @@ std::streamsize ofxSimpleHttp::streamCopyWithProgress(std::istream & istr, std::
 		istr.read(buffer.begin(), COPY_BUFFER_SIZE);
 		std::streamsize n = istr.gcount();
 		float avgSpeed = 0;
+		float avgdCurrentSpeed = 0;
 		bool first = true;
 		float sleepError = 0; //in sec
 
+		float timeB4Start = ofGetElapsedTimef();
+		
 		while (n > 0 && !cancel){
 			float t1 = ofGetElapsedTimef();
 			currentBytes = len;
@@ -1038,7 +1018,8 @@ std::streamsize ofxSimpleHttp::streamCopyWithProgress(std::istream & istr, std::
 				progress = 0.0;
 			}
 
-			float time = (ofGetElapsedTimef() - t1);
+			float timeThisChunk = ofGetElapsedTimef();
+			float time = (timeThisChunk - t1);
 
 			if(speedLimit > 0.0f && n > 0){ //apply speed limit if defined
 
@@ -1063,19 +1044,29 @@ std::streamsize ofxSimpleHttp::streamCopyWithProgress(std::istream & istr, std::
 				}
 				//cout << "sleepError: " << sleepError * 1000 << endl;
 			}
+			
+			if(totalBytes >= COPY_BUFFER_SIZE){ //at least COPY_BUFFER_SIZE bytes of download
+				float newSpeed = 0;
+				float timeSoLong = timeThisChunk - timeB4Start;
+				newSpeed = (totalBytes) / (timeSoLong); //bytes / sec
+				if(chunkTested){
+					avgSpeed = 0.05 * newSpeed + 0.95 * avgSpeed;
+				}else{
+					avgSpeed = newSpeed;
+				}
+				avgSpeedNow = avgSpeed;
+				chunkTested = true;
+			}
+			
+			if(n >= COPY_BUFFER_SIZE){ //at least COPY_BUFFER_SIZE bytes of download
+				if(time > 0.01f){
+					float tSpeed = (n) / (time); //bytes / sec
+					avgdCurrentSpeed = 0.05 * tSpeed + 0.95 * avgdCurrentSpeed;
+					speed = avgdCurrentSpeed;
+					chunkTested = true;
+				}
+			}
 
-			float newSpeed = 0;
-			if(time > 0.0f){
-				newSpeed = (n) / time;
-			}
-			if(first){
-				avgSpeed = newSpeed;
-			}else{
-				avgSpeed = 0.01 * newSpeed + 0.99 * avgSpeed;
-			}
-			speed = avgSpeed;
-			avgSpeedNow = avgSpeed;
-			chunkTested = false;
 			first = false;
 		}
 	}catch(Exception& exc){
@@ -1097,6 +1088,7 @@ ofxSimpleHttpResponse::ofxSimpleHttpResponse(){
 	status = -1;
 	fileWasHere = false;
 	timeDowloadStarted = ofGetElapsedTimef();
+	chunkTested = false;
 }
 
 string ofxSimpleHttpResponse::toString(){

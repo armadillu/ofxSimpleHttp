@@ -161,8 +161,7 @@ class ofxSimpleHttp : public ofThread{
 		int							getPendingDownloads();
 		float						getCurrentDownloadProgress();	//retuns [0..1] how complete is the download
 		string						getCurrentDownloadFileName();	//only while downloading
-		float						getCurrentDownloadSpeed(bool * isGoodSample = NULL);		// kb/sec - only whilde downloading will be > 0!
-		float						getAvgDownloadSpeed();			// kb/sec - also when not download
+		float						getAvgDownloadSpeed();			// bytes/sec - also when not download
 
 		// properties //////////////////////////////////////////////////////////
 
@@ -247,6 +246,5 @@ private:
 		int COPY_BUFFER_SIZE;
 
 		float avgSpeedNow;
-		bool goodSample;
 
 };
