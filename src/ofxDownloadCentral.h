@@ -184,7 +184,7 @@ class ofxDownloadCentral{
 		int									failedJobsStartNumber;
 		int									failedJobsSoFar;
 
-		map<int, float>						avgSpeed;	 //bytes/sec
+		std::map<int, float>				avgSpeed;	 //bytes/sec
 		int									maxURLsToList;
 
 		int									maxConcurrentDownloads;

@@ -161,7 +161,7 @@ private:
 		int								timeOut;
 		std::string						userAgent;
 		std::string						acceptString;
-		queue<ofxSimpleHttpResponse*>	q;		//the pending requests
+		std::queue<ofxSimpleHttpResponse*>	q;		//the pending requests
 		bool							timeToStop;
 		int								queueLenEstimation;
 		int								maxQueueLen;
@@ -177,8 +177,8 @@ private:
 		bool							useCredentials;
 		Poco::Net::HTTPBasicCredentials	credentials;
 
-		queue<ofxSimpleHttpResponse>	responsesPendingNotification; //we store here downloads that arrived so that we can notify from main thread
-		map<std::string, std::string>				customHttpHeaders;
+		std::queue<ofxSimpleHttpResponse>	responsesPendingNotification; //we store here downloads that arrived so that we can notify from main thread
+		std::map<std::string, std::string>				customHttpHeaders;
 
 		std::streamsize streamCopyWithProgress(std::istream & in, std::ostream & out, std::streamsize totalBytes,
 											   std::streamsize &currentBytes, bool & speedSampled,

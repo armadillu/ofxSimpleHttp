@@ -234,7 +234,7 @@ void ofxSimpleHttp::threadedFunction(){
 		lock();
 		q.pop();
 		if(r->emptyWholeQueue){
-			queue<ofxSimpleHttpResponse*> tempQ;
+			std::queue<ofxSimpleHttpResponse*> tempQ;
 			q = tempQ;
 		}
 		delete r;
@@ -722,7 +722,7 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 				req.set( "User-Agent", userAgent.c_str() );
 
 				//add custom headers to the request
-				map<std::string, std::string>::iterator it = customHttpHeaders.begin();
+				std::map<std::string, std::string>::iterator it = customHttpHeaders.begin();
 				while(it != customHttpHeaders.end()){
 					req.set( it->first, it->second );
 					++it;
