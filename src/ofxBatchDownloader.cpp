@@ -33,7 +33,7 @@ void ofxBatchDownloader::setProxyConfiguration(const ofxSimpleHttp::ProxyConfig 
 }
 
 
-void ofxBatchDownloader::setCredentials(const string& user, const string& password){
+void ofxBatchDownloader::setCredentials(const std::string& user, const std::string& password){
 	http.setCredentials(user, password);
 }
 
@@ -80,7 +80,7 @@ void ofxBatchDownloader::cancelBatch(bool notify){
 }
 
 
-void ofxBatchDownloader::setDownloadFolder(string f){
+void ofxBatchDownloader::setDownloadFolder(std::string f){
 	downloadFolder = f;
 }
 
@@ -97,12 +97,12 @@ string ofxBatchDownloader::getMinimalDrawableString(){
 	return http.minimalDrawableString();
 }
 
-void ofxBatchDownloader::addResourcesToDownloadList( vector<string> _urlList ){
-	vector<string>_sha1List;
+void ofxBatchDownloader::addResourcesToDownloadList( vector<std::string> _urlList ){
+	vector<std::string>_sha1List;
 	addResourcesToDownloadList(_urlList, _sha1List);
 }
 
-void ofxBatchDownloader::addResourcesToDownloadList( vector<string> _urlList, vector<string>_sha1List ){
+void ofxBatchDownloader::addResourcesToDownloadList( vector<std::string> _urlList, vector<std::string>_sha1List ){
 
 	if ( _sha1List.size() > 0 && (_urlList.size() != _sha1List.size()) ){
 		ofLogWarning("ofxBatchDownloader") << "addResourcesToDownloadList >> urlList & shaList element num missmatch!";
@@ -153,7 +153,7 @@ void ofxBatchDownloader::startDownloading(){
 		http.setMaxQueueLength(originalUrlList.size() * 2); //just in case
 
 		for(int i = 0; i < originalUrlList.size(); i++){
-			string sha = "";
+			std::string sha = "";
 			if (originalSha1List.size()){
 				sha = originalSha1List[i];
 			}
@@ -204,9 +204,9 @@ float ofxBatchDownloader::getAverageSpeed(){
 }
 
 
-vector<string> ofxBatchDownloader::pendingURLs(){
+vector<std::string> ofxBatchDownloader::pendingURLs(){
 
-	vector<string> res;
+	vector<std::string> res;
 	for (int i = 0; i < originalUrlList.size(); i++){
 		bool found = false;
 		for (int j = 0; j < okList.size(); j++){

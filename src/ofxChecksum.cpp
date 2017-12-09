@@ -4,8 +4,8 @@
 #include <Poco/SHA1Engine.h>
 #include <Poco/DigestStream.h>
 
-bool ofxChecksum::sha1(const string& filePath,
-					   const string& sha1String,
+bool ofxChecksum::sha1(const std::string& filePath,
+					   const std::string& sha1String,
 					   bool verbose){
 
 	float t;
@@ -14,7 +14,7 @@ bool ofxChecksum::sha1(const string& filePath,
 	}
 
 	Poco::SHA1Engine sha1e;
-	string localHash = calcSha1(filePath);
+	std::string localHash = calcSha1(filePath);
 	bool match = sha1String.compare(localHash) == 0;
 
  	if(verbose){
@@ -25,10 +25,10 @@ bool ofxChecksum::sha1(const string& filePath,
 }
 
 
-string ofxChecksum::calcSha1(const string & filePath){
+string ofxChecksum::calcSha1(const std::string & filePath){
 
 	Poco::SHA1Engine sha1e;
-	string localHash;
+	std::string localHash;
 	std::ifstream ifHash(ofToDataPath(filePath, true).c_str(), std::ios::binary);
 	if (ifHash.is_open()){
 		Poco::DigestInputStream isSha1(sha1e, ifHash);

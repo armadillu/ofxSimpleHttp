@@ -6,9 +6,7 @@
 //
 //
 
-#ifndef emptyExample_ofxDownloadCentral_h
-#define emptyExample_ofxDownloadCentral_h
-
+#pragma once
 #include "ofMain.h"
 #include "ofxBatchDownloader.h"
 #include "ofxSimpleHttp.h"
@@ -16,8 +14,6 @@
 #include "ofEventUtils.h"
 
 /*
-
-
 // WHAT IS THIS?
 
  Centralised downloads from any number of objects.
@@ -35,7 +31,7 @@
 	void downloadsFinished(ofxBatchDownloaderReport &report){}
 
  3 - fill in a list of url with assets you need downloaded
-	vector<string> urlList;
+	vector<std::string> urlList;
  
  4 - supply a list the download
  
@@ -55,8 +51,9 @@
 	
 	and wait for the notification to arrive
 
-
  */
+
+class ofxBatchDownloader;
 
 class ofxDownloadCentral{
 
@@ -67,7 +64,7 @@ class ofxDownloadCentral{
 
 		void update();
 		void draw(float x, float y, bool drawAllPending = false, bool detailedDownloadInfo = true);
-		string getDrawableInfo(bool drawAllPending = false, bool detailedDownloadInfo = true); //draw with a monospaced font!
+		std::string getDrawableInfo(bool drawAllPending = false, bool detailedDownloadInfo = true); //draw with a monospaced font!
 
 		void cancelCurrentDownload();
 		void cancelAllDownloads();
@@ -85,7 +82,7 @@ class ofxDownloadCentral{
 		void setMaxConcurrentDownloads(int numConcurrentDownloads);
 
 		void setProxyConfiguration(const ofxSimpleHttp::ProxyConfig & c);
-		void setCredentials(const string& user, const string& password);
+		void setCredentials(const std::string& user, const std::string& password);
 
 		void setIdleTimeAfterEachDownload(float seconds);		//wait a bit before notifying once the dowload is over
 		void setMaxURLsToList(int max);
@@ -94,28 +91,28 @@ class ofxDownloadCentral{
 
 		///////////////////////////////////////////////////////////////////////////////
 		template <typename ArgumentsType, class ListenerClass>
-		void downloadResources(	const string & url,
+		void downloadResources(	const std::string & url,
 							   ListenerClass  * listener,
 							   void (ListenerClass::*listenerMethod)(ArgumentsType&),
-							   const string & destinationFolder = "ofxDownloadCentral_downloads"
+							   const std::string & destinationFolder = "ofxDownloadCentral_downloads"
 							   ){
 
-			vector<string> list;
+			vector<std::string> list;
 			list.push_back(url);
 			downloadResources(list, listener, listenerMethod, destinationFolder);
 		}
 
 		///////////////////////////////////////////////////////////////////////////////
 		template <typename ArgumentsType, class ListenerClass>
-		void downloadResources( const string & url,
-								const string & sha1String,
+		void downloadResources( const std::string & url,
+								const std::string & sha1String,
 							   ListenerClass  * listener,
 							   void (ListenerClass::*listenerMethod)(ArgumentsType&),
-							   const string & destinationFolder = "ofxDownloadCentral_downloads"
+							   const std::string & destinationFolder = "ofxDownloadCentral_downloads"
 							   ){
 
-			vector<string> list;
-			vector<string> shas;
+			vector<std::string> list;
+			vector<std::string> shas;
 			list.push_back(url);
 			shas.push_back(sha1String);
 			downloadResources(list, shas, listener, listenerMethod, destinationFolder);
@@ -124,11 +121,11 @@ class ofxDownloadCentral{
 
 		///////////////////////////////////////////////////////////////////////////////
 		template <typename ArgumentsType, class ListenerClass>
-		void downloadResources(	const vector<string> & urlList,
-								const vector<string> & sha1List,
+		void downloadResources(	const vector<std::string> & urlList,
+								const vector<std::string> & sha1List,
 								ListenerClass  * listener,
 								void (ListenerClass::*listenerMethod)(ArgumentsType&),
-								const string & destinationFolder = "ofxDownloadCentral_downloads"
+								const std::string & destinationFolder = "ofxDownloadCentral_downloads"
 							   ){
 
 			if (urlList.size() > 0 ){
@@ -158,13 +155,13 @@ class ofxDownloadCentral{
 
 		///////////////////////////////////////////////////////////////////////////////
 		template <typename ArgumentsType, class ListenerClass>
-		void downloadResources(const vector<string> & urlList,
+		void downloadResources(const vector<std::string> & urlList,
 							   ListenerClass  * listener,
 							   void (ListenerClass::*listenerMethod)(ArgumentsType&),
-							   const string & destinationFolder = "ofxDownloadCentral_downloads"
+							   const std::string & destinationFolder = "ofxDownloadCentral_downloads"
 							   ){
 
-			vector<string> shas;
+			vector<std::string> shas;
 			downloadResources(urlList, shas, listener, listenerMethod, destinationFolder);
 		}
 
@@ -195,8 +192,7 @@ class ofxDownloadCentral{
 		float								timeOut;
 
 		ofxSimpleHttp::ProxyConfig			proxyConfig;
-		std::pair<string,string> 			credentials;
+		std::pair<std::string,std::string> 	credentials;
 };
 
-#endif
 

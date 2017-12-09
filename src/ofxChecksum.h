@@ -5,10 +5,10 @@
 
 class ofxChecksum{
 public:
-	static bool sha1(const string & filePath,
-					 const string & sha1String,
+	static bool sha1(const std::string & filePath,
+					 const std::string & sha1String,
 					 bool verbose = false);
 
-	static string calcSha1(const string & filePath);
+	static std::string calcSha1(const std::string & filePath);
 };
 

@@ -10,17 +10,19 @@
 
 #include "ofxSimpleHttp.h"
 #include "ofEvents.h"
+#include "ofxChecksum.h"
+
 #include "Poco/Net/HTTPStreamFactory.h"
 #include "Poco/Net/HTTPSStreamFactory.h"
 #include "Poco/Net/HTTPSClientSession.h"
 #include "Poco/Buffer.h"
-#include "ofxChecksum.h"
 #include "Poco/Net/SSLManager.h"
-#include "Poco/Net/KeyConsoleHandler.h"
-#include "Poco/Net/ConsoleCertificateHandler.h"
 #include "Poco/Net/NetException.h"
-#include <iostream>     // std::cout
-#include <fstream>      // std::ifstream
+#include "Poco/URI.h"
+#include "Poco/SHA1Engine.h"
+#include "Poco/Net/HTTPRequest.h"
+#include "Poco/Net/HTTPResponse.h"
+
 
 Poco::Net::Context::Ptr ofxSimpleHttp::pContext = NULL;
 
@@ -93,7 +95,7 @@ void ofxSimpleHttp::createSslContext(Poco::Net::Context::Usage usage, Poco::Net:
 	if(!pContext){
 		ofLogNotice("ofxSimpleHttp") << "Initing Poco SSLManager";
 		//pContext = new Context(usage, "", Context::VERIFY_RELAXED, 9, true, "ALL:!ADH:!LOW:!EXP:!MD5:@STRENGTH");
-		string certFilePath = ofToDataPath("ssl/cacert.pem", true);
+		std::string certFilePath = ofToDataPath("ssl/cacert.pem", true);
 		if (!ofFile::doesFileExist(certFilePath)){
 			certFilePath = "";
 			ofLogWarning("ofxSimpleHttp") << "CA Root Certificate not found. Place in data/ssl/cacert.pem.";
@@ -148,11 +150,11 @@ void ofxSimpleHttp::setTimeOut(int seconds){
 }
 
 
-void ofxSimpleHttp::setUserAgent( string newUserAgent ){
+void ofxSimpleHttp::setUserAgent( std::string newUserAgent ){
 	userAgent = newUserAgent;
 }
 
-void ofxSimpleHttp::setCredentials(string username, string password){
+void ofxSimpleHttp::setCredentials(std::string username, std::string password){
 	if(username.size() || password.size()){
 		credentials.setUsername(username);
 		credentials.setPassword(password);
@@ -164,13 +166,13 @@ void ofxSimpleHttp::setMaxQueueLength(int len){
 	maxQueueLen = len;
 }
 
-void ofxSimpleHttp::addCustomHttpHeader(string headerName, string headerContent){
+void ofxSimpleHttp::addCustomHttpHeader(std::string headerName, std::string headerContent){
 	customHttpHeaders[headerName] = headerContent;
 }
 
-string ofxSimpleHttp::getCurrentDownloadFileName(){
+std::string ofxSimpleHttp::getCurrentDownloadFileName(){
 
-	string download = "";
+	std::string download = "";
 	lock();
 	int n = q.size();
 	if ( isThreadRunning() && n > 0 ){
@@ -280,23 +282,23 @@ float ofxSimpleHttp::getAvgDownloadSpeed(){
 }
 
 
-string ofxSimpleHttp::minimalDrawableString(){
+std::string ofxSimpleHttp::minimalDrawableString(){
 
-	string msg;
+	std::string msg;
 	lock();
 	int n = q.size();
 	if( isThreadRunning() && n > 0 ){
 		ofxSimpleHttpResponse * r = q.front();
 		char aux[16];
 		sprintf(aux, "% 4d%%", (int)(r->downloadProgress * 100.0f));
-		msg += string(aux) + " [";
+		msg += std::string(aux) + " [";
 		float barLen = 12;
 		float numFill =  r->downloadProgress * barLen;
 		for(int i = 0; i < barLen; i++){
-			msg += string(i < numFill ? "*" : " ");
+			msg += std::string(i < numFill ? "*" : " ");
 		}
 		msg += "] ";
-		msg += string( r->downloadToDisk ? ofFilePath::getFileName(r->absolutePath) : "");
+		msg += std::string( r->downloadToDisk ? ofFilePath::getFileName(r->absolutePath) : "");
 		msg += " (" + bytesToHumanReadable((long long)r->downloadSpeed, 1) + "/s)";
 
 	}
@@ -305,9 +307,9 @@ string ofxSimpleHttp::minimalDrawableString(){
 }
 
 
-string ofxSimpleHttp::drawableString(int urlLen){
+std::string ofxSimpleHttp::drawableString(int urlLen){
 
-	string aux;
+	std::string aux;
 	lock();
 	int n = q.size();
 	if( isThreadRunning() && n > 0 ){
@@ -318,8 +320,8 @@ string ofxSimpleHttp::drawableString(int urlLen){
 		if(r->downloadedSoFar > 100){
 			timeRemaining = (timeSoFar / r->downloadProgress) - timeSoFar;
 		}
-		string remTime;
-		string serverSize;
+		std::string remTime;
+		std::string serverSize;
 
 		if(r->serverReportedSize != -1){
 			serverSize = bytesToHumanReadable(r->serverReportedSize, 2);
@@ -327,24 +329,24 @@ string ofxSimpleHttp::drawableString(int urlLen){
 		}else{
 			remTime = "unknown";
 			if (r->downloadedSoFar == 0){
-				string anim[] = {"   ", ".  ", ".. ", "...", " ..", "  ."}; //6 anim states
+				std::string anim[] = {"   ", ".  ", ".. ", "...", " ..", "  ."}; //6 anim states
 				serverSize = "waiting for server " + anim[ int(0.2 * ofGetFrameNum())%6 ];
 			}else{
 				serverSize = "";
 			}
 		}
-		string spa = "      ";
-		string url = r->url;
+		std::string spa = "      ";
+		std::string url = r->url;
 		if (urlLen > 0){
 			url = url.substr(0, MIN(url.size(), urlLen)) + "...";
 		}
 		aux = "//// ofxSimpleHttp now fetching //////////////////////////////////\n"
 		"//\n"
 		"//   URL: " + url + "\n" +
-		string( r->downloadToDisk ? "//   Save To: " + r->absolutePath + "\n" : "") +
-		string(serverSize.length() ?
-		"//   Progress:                 " + spa + string((r->downloadProgress >= 0.0) ? ofToString(100.0f * r->downloadProgress, 2) : "") + "%\n" : "") +
-		string(serverSize.length() ?
+		std::string( r->downloadToDisk ? "//   Save To: " + r->absolutePath + "\n" : "") +
+		std::string(serverSize.length() ?
+		"//   Progress:                 " + spa + std::string((r->downloadProgress >= 0.0) ? ofToString(100.0f * r->downloadProgress, 2) : "") + "%\n" : "") +
+		std::string(serverSize.length() ?
 		"//   Server Reported Size:     " + spa + serverSize + "\n" : "")+
 		"//   Downloaded:               " + spa + bytesToHumanReadable((long long)r->downloadedSoFar, 2) + "\n" +
 		"//   Download Speed:           " + spa + bytesToHumanReadable((long long)r->downloadSpeed, 2) + "/sec\n" +
@@ -362,8 +364,8 @@ string ofxSimpleHttp::drawableString(int urlLen){
 }
 
 
-string ofxSimpleHttp::bytesToHumanReadable(long long bytes, int decimalPrecision){
-	string ret;
+std::string ofxSimpleHttp::bytesToHumanReadable(long long bytes, int decimalPrecision){
+	std::string ret;
 	if (bytes < 1024 ){ //if in bytes range
 		ret = ofToString(bytes) + " bytes";
 	}else{
@@ -381,8 +383,8 @@ string ofxSimpleHttp::bytesToHumanReadable(long long bytes, int decimalPrecision
 }
 
 
-string ofxSimpleHttp::secondsToHumanReadable(float secs, int decimalPrecision){
-	string ret;
+std::string ofxSimpleHttp::secondsToHumanReadable(float secs, int decimalPrecision){
+	std::string ret;
 	if (secs < 60.0f ){ //if in seconds
 		ret = ofToString(secs, decimalPrecision) + " seconds";
 	}else{
@@ -402,7 +404,7 @@ string ofxSimpleHttp::secondsToHumanReadable(float secs, int decimalPrecision){
 
 
 void ofxSimpleHttp::draw(float x, float y , float w , float h  )  {
-	string aux = drawableString();
+	std::string aux = drawableString();
 	ofDrawBitmapString(aux, x + 3, y + 12 );
 }
 
@@ -413,7 +415,7 @@ void ofxSimpleHttp::draw(float x, float y) {
 
 
 void ofxSimpleHttp::drawMinimal(float x, float y, bool withBg, ofColor fontColor, ofColor bgColor) {
-	string aux = minimalDrawableString();
+	std::string aux = minimalDrawableString();
 	if(withBg){
 		if(aux.size()){
 			ofDrawBitmapStringHighlight(aux, x + 3, y + 12, bgColor, fontColor );
@@ -424,31 +426,31 @@ void ofxSimpleHttp::drawMinimal(float x, float y, bool withBg, ofColor fontColor
 }
 
 
-string ofxSimpleHttp::getFileSystemSafeString(const string & input){
+std::string ofxSimpleHttp::getFileSystemSafeString(const std::string & input){
 	static char invalidChars[] = {'?', '\\', '/', '*', '<', '>', '"', ';', ':', '#' };
 	int howMany = sizeof(invalidChars) / sizeof(invalidChars[0]);
 	char replacementChar = '_';
-	string output = input;
+	std::string output = input;
 	for(int i = 0; i < howMany; i++){
 		std::replace( output.begin(), output.end(), invalidChars[i], replacementChar);
 	}
 	return output;
 }
 
-string ofxSimpleHttp::extractFileFromUrl(const string& url){
+std::string ofxSimpleHttp::extractFileFromUrl(const std::string& url){
 	int found = url.find_last_of("/");
-	string file = url.substr(found + 1);
+	std::string file = url.substr(found + 1);
 	file = getFileSystemSafeString(file);
 	if (file.length() == 0){
-		file = OFX_SIMPLEHTTP_UNTITLED_FILENAME;
+		file = "unnamed.file";
 	}
 	return file;
 }
 
 
-string ofxSimpleHttp::extractExtensionFromFileName(const string& fileName){
+std::string ofxSimpleHttp::extractExtensionFromFileName(const std::string& fileName){
 	int found = fileName.find_last_of(".");
-	string file;
+	std::string file;
 	if (found > 0){
 		file = fileName.substr(found + 1, fileName.size() - found);
 	}else{
@@ -458,7 +460,7 @@ string ofxSimpleHttp::extractExtensionFromFileName(const string& fileName){
 }
 
 
-void ofxSimpleHttp::fetchURL(string url, bool notifyOnSuccess, string customField){
+void ofxSimpleHttp::fetchURL(std::string url, bool notifyOnSuccess, std::string customField){
 
 	if (queueLenEstimation >= maxQueueLen){
 		ofLogError("ofxSimpleHttp", "fetchURL can't do that, queue is too long already (%d)!\n", queueLenEstimation );
@@ -484,7 +486,7 @@ void ofxSimpleHttp::fetchURL(string url, bool notifyOnSuccess, string customFiel
 }
 
 
-ofxSimpleHttpResponse ofxSimpleHttp::fetchURLBlocking(string  url){
+ofxSimpleHttpResponse ofxSimpleHttp::fetchURLBlocking(std::string  url){
 
 	response.url = url;
 	response.who = this;
@@ -500,8 +502,8 @@ ofxSimpleHttpResponse ofxSimpleHttp::fetchURLBlocking(string  url){
 	return response;
 }
 
-void ofxSimpleHttp::fetchURLToDisk(string url, string expectedSha1, bool notifyOnSuccess,
-								   string dirWhereToSave, string customField){
+void ofxSimpleHttp::fetchURLToDisk(std::string url, std::string expectedSha1, bool notifyOnSuccess,
+								   std::string dirWhereToSave, std::string customField){
 
 	if (queueLenEstimation >= maxQueueLen){
 		ofLogError("ofxSimpleHttp", "fetchURL can't do that, queue is too long already (%d)!\n", queueLenEstimation );
@@ -519,7 +521,7 @@ void ofxSimpleHttp::fetchURLToDisk(string url, string expectedSha1, bool notifyO
 		}
 	}
 
-	string savePath = dirWhereToSave == "" ? extractFileFromUrl(url) : ofToDataPath(dirWhereToSave, true) + "/" + extractFileFromUrl(url);
+	std::string savePath = dirWhereToSave == "" ? extractFileFromUrl(url) : ofToDataPath(dirWhereToSave, true) + "/" + extractFileFromUrl(url);
 
 	ofxSimpleHttpResponse *response = new ofxSimpleHttpResponse();
 	response->who = this;
@@ -546,15 +548,15 @@ void ofxSimpleHttp::fetchURLToDisk(string url, string expectedSha1, bool notifyO
 	}
 }
 
-void ofxSimpleHttp::fetchURLToDisk(string url, bool notifyOnSuccess,
-								   string dirWhereToSave, string customField){
+void ofxSimpleHttp::fetchURLToDisk(std::string url, bool notifyOnSuccess,
+								   std::string dirWhereToSave, std::string customField){
 	fetchURLToDisk(url, "", notifyOnSuccess, dirWhereToSave, customField);
 }
 
 
-ofxSimpleHttpResponse ofxSimpleHttp::fetchURLtoDiskBlocking(string  url, string dirWhereToSave, string expectedSha1){
+ofxSimpleHttpResponse ofxSimpleHttp::fetchURLtoDiskBlocking(std::string  url, std::string dirWhereToSave, std::string expectedSha1){
 
-	string savePath = dirWhereToSave == "" ? extractFileFromUrl(url) : ofToDataPath(dirWhereToSave) + "/" + extractFileFromUrl(url);
+	std::string savePath = dirWhereToSave == "" ? extractFileFromUrl(url) : ofToDataPath(dirWhereToSave) + "/" + extractFileFromUrl(url);
 
 	ofDirectory d;
 	d.createDirectory(dirWhereToSave, true, true); //create the download dir first
@@ -622,7 +624,7 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 
 	if (!fileIsAlreadyHere){ //if file is not here, download it!
 
-		string protocol = resp->url.substr(0,7);
+		std::string protocol = resp->url.substr(0,7);
 
 		if(saveToDisk || protocol == "file://"){
 			myfile.open( resp->absolutePath.c_str(), ios_base::binary );
@@ -630,7 +632,7 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 
 		if(protocol == "file://"){
 
-			string srcFilePath = resp->url.substr(7, resp->url.length() - 7);
+			std::string srcFilePath = resp->url.substr(7, resp->url.length() - 7);
 
 #ifdef TARGET_WIN32
 			ofStringReplace(srcFilePath, "\\", "/"); //for windows, replace escaped backslashes
@@ -720,7 +722,7 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 				req.set( "User-Agent", userAgent.c_str() );
 
 				//add custom headers to the request
-				map<string, string>::iterator it = customHttpHeaders.begin();
+				map<std::string, std::string>::iterator it = customHttpHeaders.begin();
 				while(it != customHttpHeaders.end()){
 					req.set( it->first, it->second );
 					++it;
@@ -753,7 +755,7 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 				resp->serverReportedSize = res.getContentLength();
 				resp->timeDowloadStarted = ofGetElapsedTimef();
 
-				string msg;
+				std::string msg;
 				if (resp->serverReportedSize == -1){
 					msg = "downloadURL(" + resp->fileName + ") >> Server doesn't report download size...";
 					ofLogWarning("ofxSimpleHttp", msg);
@@ -813,7 +815,7 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 					}else{ //download not canceled
 
 						if(saveToDisk){
-							string msg = "downloadURL() downloaded to \"" + resp->absolutePath + "\"";
+							std::string msg = "downloadURL() downloaded to \"" + resp->absolutePath + "\"";
 							ofLogNotice("ofxSimpleHttp", msg);
 							//ask the filesystem what is the real size of the file
 							ofFile file;
@@ -822,7 +824,7 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 								resp->downloadedBytes = file.getSize();
 								file.close();
 							}catch(Exception& exc){
-								string msg = "downloadURL(" + resp->fileName + ") >> Exception at file.open: " + exc.displayText();
+								std::string msg = "downloadURL(" + resp->fileName + ") >> Exception at file.open: " + exc.displayText();
 								ofLogError("ofxSimpleHttp", msg );
 							}
 						}else{
@@ -840,7 +842,7 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 
 						//check download file size missmatch
 						if ( sizeMissmatch && !isAPI ) {
-							string msg;
+							std::string msg;
 
 							if (resp->downloadedBytes == 0){
 								if (resp->timeTakenToDownload > timeOut){
@@ -896,7 +898,7 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 
 				if (session) session->reset();
 				myfile.close();
-				string msg = "downloadURL(" + resp->fileName +  ") >> Exception: " + exc.displayText();
+				std::string msg = "downloadURL(" + resp->fileName +  ") >> Exception: " + exc.displayText();
 				resp->timeTakenToDownload = ofGetElapsedTimef() - resp->timeDowloadStarted;
 				if (resp->timeTakenToDownload > timeOut){
 					msg = "downloadURLtoDiskBlocking() >> TimeOut! (" + resp->fileName + ")";
@@ -1091,7 +1093,7 @@ ofxSimpleHttpResponse::ofxSimpleHttpResponse(){
 	chunkTested = false;
 }
 
-string ofxSimpleHttpResponse::toString(){
+std::string ofxSimpleHttpResponse::toString(){
 
 	std::stringstream ss;
 	ss << "URL: " << url << endl;
@@ -1111,7 +1113,7 @@ string ofxSimpleHttpResponse::toString(){
 			ss << "    Content Type: " << contentType << endl;
 			if(expectedChecksum.length()){
 				ss << "    Expected Checksum: " << expectedChecksum << endl;
-				ss << "    Checksum Match: " << string(checksumOK ? "YES" : "NO") << endl;
+				ss << "    Checksum Match: " << std::string(checksumOK ? "YES" : "NO") << endl;
 			}
 			ss << "    Download Time taken: " << timeTakenToDownload << " seconds" << endl;
 			if (serverReportedSize != -1){
