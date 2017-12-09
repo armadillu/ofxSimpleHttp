@@ -25,7 +25,7 @@ bool ofxChecksum::sha1(const std::string& filePath,
 }
 
 
-string ofxChecksum::calcSha1(const std::string & filePath){
+std::string ofxChecksum::calcSha1(const std::string & filePath){
 
 	Poco::SHA1Engine sha1e;
 	std::string localHash;

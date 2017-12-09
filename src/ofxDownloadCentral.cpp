@@ -172,7 +172,7 @@ void ofxDownloadCentral::setCredentials(const std::string& user, const std::stri
 }
 
 
-string ofxDownloadCentral::getDrawableInfo(bool drawAllPending, bool detailed){
+std::string ofxDownloadCentral::getDrawableInfo(bool drawAllPending, bool detailed){
 
 	int total = 0;
 	for(int i = 0; i < activeDownloaders.size(); i++){

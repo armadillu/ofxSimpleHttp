@@ -89,11 +89,11 @@ void ofxBatchDownloader::draw(float x, float y){
 	http.draw(x, y);
 }
 
-string ofxBatchDownloader::getDrawableString(){
+std::string ofxBatchDownloader::getDrawableString(){
 	return http.drawableString();
 }
 
-string ofxBatchDownloader::getMinimalDrawableString(){
+std::string ofxBatchDownloader::getMinimalDrawableString(){
 	return http.minimalDrawableString();
 }
 
