@@ -31,10 +31,10 @@ class ofxBatchDownloader;
 struct ofxBatchDownloaderReport{
 	std::string downloadPath;						//full path to the directory that holds the downloads
 	ofxBatchDownloader* owner;					//pointer to the object in charge of the downloads
-	vector<std::string> attemptedDownloads;			//this vector contains all the user supplied urls
-	vector<std::string> successfulDownloads;			//this vector contains all the urls that got downloaded correctly
-	vector<std::string> failedDownloads;				//this vector contains all the urls that failed to download
-	vector<ofxSimpleHttpResponse> responses;	//this vector contains a list of all url responses, with statuses, filenames, etc
+	std::vector<std::string> attemptedDownloads;			//this vector contains all the user supplied urls
+	std::vector<std::string> successfulDownloads;			//this vector contains all the urls that got downloaded correctly
+	std::vector<std::string> failedDownloads;				//this vector contains all the urls that failed to download
+	std::vector<ofxSimpleHttpResponse> responses;	//this vector contains a list of all url responses, with statuses, filenames, etc
 	bool wasCanceled;
 	ofxBatchDownloaderReport(){
 		wasCanceled = false;
@@ -58,8 +58,8 @@ public:
 	void setSpeedLimit(float KB_per_sec);
 	void setTimeOut(float timeOut);
 
-	void addResourcesToDownloadList( vector<std::string>urlList );
-	void addResourcesToDownloadList( vector<std::string>urlList, vector<std::string>sha1List );
+	void addResourcesToDownloadList( std::vector<std::string>urlList );
+	void addResourcesToDownloadList( std::vector<std::string>urlList, std::vector<std::string>sha1List );
 	void startDownloading();
 	void cancelBatch(bool notify = false);
 
@@ -76,7 +76,7 @@ public:
 	int pendingDownloads();
 	bool isBusy();
 	float getAverageSpeed(); //bytes/sec
-	vector<std::string> pendingURLs();
+	std::vector<std::string> pendingURLs();
 
 	ofEvent<ofxBatchDownloaderReport>	resourcesDownloadFinished;
 
@@ -88,11 +88,11 @@ private:
 	//bool								verbose;
 	std::string								downloadFolder;
 
-	vector<std::string>						originalUrlList;
-	vector<std::string>						originalSha1List;
-	vector<std::string>						failedList;
-	vector<std::string>						okList;
-	vector<ofxSimpleHttpResponse>		responses;
+	std::vector<std::string>						originalUrlList;
+	std::vector<std::string>						originalSha1List;
+	std::vector<std::string>						failedList;
+	std::vector<std::string>						okList;
+	std::vector<ofxSimpleHttpResponse>		responses;
 
 
 	void httpResult(ofxSimpleHttpResponse &response);

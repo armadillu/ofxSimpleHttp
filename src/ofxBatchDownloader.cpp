@@ -97,12 +97,12 @@ string ofxBatchDownloader::getMinimalDrawableString(){
 	return http.minimalDrawableString();
 }
 
-void ofxBatchDownloader::addResourcesToDownloadList( vector<std::string> _urlList ){
-	vector<std::string>_sha1List;
+void ofxBatchDownloader::addResourcesToDownloadList( std::vector<std::string> _urlList ){
+	std::vector<std::string>_sha1List;
 	addResourcesToDownloadList(_urlList, _sha1List);
 }
 
-void ofxBatchDownloader::addResourcesToDownloadList( vector<std::string> _urlList, vector<std::string>_sha1List ){
+void ofxBatchDownloader::addResourcesToDownloadList( std::vector<std::string> _urlList, std::vector<std::string>_sha1List ){
 
 	if ( _sha1List.size() > 0 && (_urlList.size() != _sha1List.size()) ){
 		ofLogWarning("ofxBatchDownloader") << "addResourcesToDownloadList >> urlList & shaList element num missmatch!";
@@ -204,9 +204,9 @@ float ofxBatchDownloader::getAverageSpeed(){
 }
 
 
-vector<std::string> ofxBatchDownloader::pendingURLs(){
+std::vector<std::string> ofxBatchDownloader::pendingURLs(){
 
-	vector<std::string> res;
+	std::vector<std::string> res;
 	for (int i = 0; i < originalUrlList.size(); i++){
 		bool found = false;
 		for (int j = 0; j < okList.size(); j++){

@@ -31,7 +31,7 @@
 	void downloadsFinished(ofxBatchDownloaderReport &report){}
 
  3 - fill in a list of url with assets you need downloaded
-	vector<std::string> urlList;
+	std::vector<std::string> urlList;
  
  4 - supply a list the download
  
@@ -97,7 +97,7 @@ class ofxDownloadCentral{
 							   const std::string & destinationFolder = "ofxDownloadCentral_downloads"
 							   ){
 
-			vector<std::string> list;
+			std::vector<std::string> list;
 			list.push_back(url);
 			downloadResources(list, listener, listenerMethod, destinationFolder);
 		}
@@ -111,8 +111,8 @@ class ofxDownloadCentral{
 							   const std::string & destinationFolder = "ofxDownloadCentral_downloads"
 							   ){
 
-			vector<std::string> list;
-			vector<std::string> shas;
+			std::vector<std::string> list;
+			std::vector<std::string> shas;
 			list.push_back(url);
 			shas.push_back(sha1String);
 			downloadResources(list, shas, listener, listenerMethod, destinationFolder);
@@ -121,8 +121,8 @@ class ofxDownloadCentral{
 
 		///////////////////////////////////////////////////////////////////////////////
 		template <typename ArgumentsType, class ListenerClass>
-		void downloadResources(	const vector<std::string> & urlList,
-								const vector<std::string> & sha1List,
+		void downloadResources(	const std::vector<std::string> & urlList,
+								const std::vector<std::string> & sha1List,
 								ListenerClass  * listener,
 								void (ListenerClass::*listenerMethod)(ArgumentsType&),
 								const std::string & destinationFolder = "ofxDownloadCentral_downloads"
@@ -155,13 +155,13 @@ class ofxDownloadCentral{
 
 		///////////////////////////////////////////////////////////////////////////////
 		template <typename ArgumentsType, class ListenerClass>
-		void downloadResources(const vector<std::string> & urlList,
+		void downloadResources(const std::vector<std::string> & urlList,
 							   ListenerClass  * listener,
 							   void (ListenerClass::*listenerMethod)(ArgumentsType&),
 							   const std::string & destinationFolder = "ofxDownloadCentral_downloads"
 							   ){
 
-			vector<std::string> shas;
+			std::vector<std::string> shas;
 			downloadResources(urlList, shas, listener, listenerMethod, destinationFolder);
 		}
 
@@ -170,8 +170,8 @@ class ofxDownloadCentral{
 
 		void startQueue();
 
-		vector<ofxBatchDownloader*>			downloaders;
-		vector<ofxBatchDownloader*>			activeDownloaders;
+		std::vector<ofxBatchDownloader*>			downloaders;
+		std::vector<ofxBatchDownloader*>			activeDownloaders;
 
 		bool								busy;
 		bool								verbose;

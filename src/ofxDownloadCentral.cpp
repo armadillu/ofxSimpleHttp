@@ -140,7 +140,7 @@ int ofxDownloadCentral::getNumPendingDownloads(){
 
 	int c = 0;
 	for(int i = 0; i < downloaders.size(); i++){
-		vector<std::string> pending = downloaders[i]->pendingURLs();
+		std::vector<std::string> pending = downloaders[i]->pendingURLs();
 		c+= pending.size();
 	}
 	return c;
@@ -187,8 +187,8 @@ string ofxDownloadCentral::getDrawableInfo(bool drawAllPending, bool detailed){
 	std::string pendingDownloadsList;
 	int numQueuedJobs = downloaders.size() + activeDownloaders.size();
 
-	vector<std::string> allURLs;
-	vector<std::string> allPending;
+	std::vector<std::string> allURLs;
+	std::vector<std::string> allPending;
 	bool reachedListMaxLen = false;
 	int c = 0; //count how many pending urls have we printed
 	bool printingList = false; //are we printing a pending list?
@@ -215,7 +215,7 @@ string ofxDownloadCentral::getDrawableInfo(bool drawAllPending, bool detailed){
 			printingList = true;
 			pendingDownloadsList += "//// Remaining Downloads (" + ofToString(total) + ") /////////////////////////////////////\n";
 			for(int i = 0; i < activeDownloaders.size(); i++){
-				vector<std::string> pending = activeDownloaders[i]->pendingURLs();
+				std::vector<std::string> pending = activeDownloaders[i]->pendingURLs();
 				for(int j = 0; j < pending.size(); j++){
 					allPending.push_back(pending[j]);
 					if (c < maxURLsToList){
@@ -235,7 +235,7 @@ string ofxDownloadCentral::getDrawableInfo(bool drawAllPending, bool detailed){
 	if(drawAllPending){
 		if(downloaders.size() > 0 && !reachedListMaxLen){
 			for(int i = 0; i < downloaders.size(); i++){
-				vector<std::string> pending = downloaders[i]->pendingURLs();
+				std::vector<std::string> pending = downloaders[i]->pendingURLs();
 				for(int j = 0; j < pending.size(); j++){
 					allPending.push_back(pending[j]);
 					if (c < maxURLsToList){
