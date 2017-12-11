@@ -1140,5 +1140,9 @@ void ofxSimpleHttpResponse::print(){
 
 void ofxSimpleHttp::setSpeedLimit(float KB_per_sec){
 	speedLimit = KB_per_sec;
-	ofLogNotice("ofxSimpleHttp") << "Setting speed limit to " << KB_per_sec << " Kb/sec";
+	if(KB_per_sec > 0.0){
+		ofLogNotice("ofxSimpleHttp") << "Setting speed limit to " << KB_per_sec << " Kb/sec";
+	}else{
+		ofLogNotice("ofxSimpleHttp") << "Removing any download speed limits!";
+	}
 }
