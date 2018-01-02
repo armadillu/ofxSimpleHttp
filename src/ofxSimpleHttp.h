@@ -44,8 +44,9 @@
 #include "ofxSimpleHttpResponse.h"
 #include "ofThread.h"
 #include "ofEvents.h"
+#include "ofColor.h"
 #include <queue>
-
+#include <map>
 
 class ofxSimpleHttp : public ofThread{
 

@@ -8,6 +8,7 @@
 
 
 #include "ofxBatchDownloader.h"
+#include "ofLog.h"
 
 ofxBatchDownloader::ofxBatchDownloader(){
 	busy = false;
