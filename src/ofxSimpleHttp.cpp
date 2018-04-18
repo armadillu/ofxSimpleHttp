@@ -737,7 +737,7 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 				try{
 					session->sendRequest(req);
 				}catch(exception e){
-					ofLogWarning("ofxSimpleHttp") << "ofxSimpleHttp session send request exception: " << e.what() << "\nfor URL:" << request.url;
+					ofLogWarning("ofxSimpleHttp") << "ofxSimpleHttp session send request exception: " << e.what() << "\nfor URL: " << request.url;
 				}
 
 				HTTPResponse res;
