@@ -758,16 +758,16 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 				std::string msg;
 				if (resp->serverReportedSize == -1){
 					msg = "downloadURL(" + resp->fileName + ") >> Server doesn't report download size...";
-					ofLogWarning("ofxSimpleHttp", msg);
+					ofLogWarning("ofxSimpleHttp") << msg;
 				}
 
 				if (resp->serverReportedSize == 0){
-					ofLogWarning("ofxSimpleHttp", "Server reports file size 0 bytes!");
+					ofLogWarning("ofxSimpleHttp") << "Server reports file size 0 bytes!";
 				}
 				msg = "downloadURL() >> about to start download (" + resp->fileName + ", " + ofToString(res.getContentLength()) + " bytes)";
-				ofLogVerbose("ofxSimpleHttp", msg);
+				ofLogVerbose("ofxSimpleHttp") << msg;
 				msg = "downloadURL() >> server reports request status: " +ofToString(resp->status) + " - ", resp->reasonForStatus + ")";
-				ofLogVerbose("ofxSimpleHttp", msg );
+				ofLogVerbose("ofxSimpleHttp") << msg ;
 
 				int copySize = 0;
 				if(saveToDisk){
