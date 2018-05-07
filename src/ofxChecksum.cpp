@@ -27,23 +27,19 @@ bool ofxChecksum::sha1(const std::string& filePath,
 
 std::string ofxChecksum::calcSha1(const std::string & filePath){
 
-	Poco::SHA1Engine sha1e;
-	std::string localHash;
-	std::ifstream ifHash(ofToDataPath(filePath, true).c_str(), std::ios::binary);
-	if (ifHash.is_open()){
-		Poco::DigestInputStream isSha1(sha1e, ifHash);
-		const size_t bufSize = 1024 * 50; //50kb buffer
-		char buf[bufSize];
-
-		isSha1.read(buf, bufSize);
-		while ( (isSha1.rdstate() & std::ifstream::failbit) == 0 ){
-			isSha1.read(buf, bufSize);
-		}
-
-		if ( (isSha1.rdstate() & std::ifstream::eofbit) != 0){
-			localHash = Poco::DigestEngine::digestToHex(sha1e.digest());
-		}
+	Poco::SHA1Engine e;
+	auto f = fopen(filePath.c_str(), "rb");
+	if(f == NULL){
+		ofLogError("ofxChecksum") << "can't calcSha1(); can't open file at \"" << filePath << "\"";
+		return "";
 	}
-
-	return localHash;
+	vector<char> buf(10 * 1024 * 1024);
+	size_t bytes_read;
+	do {
+		bytes_read = fread(buf.data(), 1, buf.size(), f);
+		if (ferror(f)) ofLogError("ofxChecksum") << "Error reading " << filePath << " for SHA calculation.";
+		e.update(buf.data(), bytes_read);
+	} while (bytes_read == buf.size());
+	fclose(f);
+	return Poco::DigestEngine::digestToHex(e.digest());
 }
