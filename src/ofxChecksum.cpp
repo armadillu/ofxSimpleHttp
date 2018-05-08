@@ -49,8 +49,7 @@ std::string ofxChecksum::calcSha1(const std::string & filePath){
 		} while (bytes_read == buf.size());
 		fclose(f);
 	}
-	string sha11 = Poco::DigestEngine::digestToHex(e.digest());;
-	return sha11;
+	return Poco::DigestEngine::digestToHex(e.digest());
 
 //	TS_STOP_NIF("sha1_1");
 
