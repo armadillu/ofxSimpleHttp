@@ -10,5 +10,7 @@ public:
 					 bool verbose = false);
 
 	static std::string calcSha1(const std::string & filePath);
+	static std::string calcSha1FromString(const std::string & data);
+
 };
 

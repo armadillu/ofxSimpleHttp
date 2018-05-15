@@ -88,3 +88,10 @@ std::string ofxChecksum::calcSha1(const std::string & filePath){
 	return sha12;
 	 */
 }
+
+
+std::string ofxChecksum::calcSha1FromString(const std::string & data){
+	Poco::SHA1Engine e;
+	e.update(data);
+	return Poco::DigestEngine::digestToHex(e.digest());
+}
