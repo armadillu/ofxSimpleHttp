@@ -4,6 +4,8 @@
 #include <Poco/SHA1Engine.h>
 #include <Poco/DigestStream.h>
 
+#include "../libs/xxHash/xxhash.h"
+
 //#include "ofxTimeMeasurements.h"
 //extern "C" {
 //#include "sha1.h"
@@ -95,3 +97,42 @@ std::string ofxChecksum::calcSha1FromString(const std::string & data){
 	e.update(data);
 	return Poco::DigestEngine::digestToHex(e.digest());
 }
+
+
+std::string ofxChecksum::xxHash(const std::string & filePath) {
+
+	size_t const blockSize = 64 * 1024;
+	FILE * f = fopen( filePath.c_str(), "rb" );
+	if(f == NULL){
+		ofLogError("ofxChecksum") << "can't xxHash(); can't open file at \"" << filePath << "\"";
+		return 0;
+	}
+
+	int seed = 0;
+	vector<char> buf(1024 * 1024);
+
+	XXH64_state_t* const state = XXH64_createState();
+
+	XXH_errorcode const resetResult = XXH64_reset(state, seed);
+	if (resetResult == XXH_ERROR) abort();
+
+	size_t bytes_read = 0;
+	do {
+		bytes_read = fread(buf.data(), 1, buf.size(), f);
+		if (ferror(f)) ofLogError("ofxChecksum") << "Error reading " << filePath << " for xxHash calculation.";
+		XXH_errorcode const addResult = XXH64_update(state, buf.data(), bytes_read);
+		if (addResult == XXH_ERROR) abort();
+	} while (bytes_read == buf.size());
+
+	unsigned long long const hash = XXH64_digest(state);
+
+	XXH64_freeState(state);
+	fclose(f);
+
+	//convert long long to hex string
+	char buff[128];
+	sprintf(buff, "%llx", hash);
+	return string(buff);
+}
+
+
