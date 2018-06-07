@@ -11,4 +11,5 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 ###Dependencies:
 
-__xxHash:__ `xxhash.c` and `xxhash.h` BSD licensed
+__xxHash:__ `xxhash.c` and `xxhash.h` BSD licensed  
+__Sha1:__ steve reid's public domain SHA-1 implementation
