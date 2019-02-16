@@ -463,7 +463,7 @@ std::string ofxSimpleHttp::extractExtensionFromFileName(const std::string& fileN
 void ofxSimpleHttp::fetchURL(std::string url, bool notifyOnSuccess, std::string customField){
 
 	if (queueLenEstimation >= maxQueueLen){
-		ofLogError("ofxSimpleHttp", "fetchURL can't do that, queue is too long already (%d)!\n", queueLenEstimation );
+		ofLogError("ofxSimpleHttp", "fetchURL can't do that, queue is too long already (%d)!", queueLenEstimation );
 		return;
 	}
 
@@ -506,7 +506,7 @@ void ofxSimpleHttp::fetchURLToDisk(std::string url, std::string expectedSha1, bo
 								   std::string dirWhereToSave, std::string customField){
 
 	if (queueLenEstimation >= maxQueueLen){
-		ofLogError("ofxSimpleHttp", "fetchURL can't do that, queue is too long already (%d)!\n", queueLenEstimation );
+		ofLogError("ofxSimpleHttp", "fetchURL can't do that, queue is too long already (%d)!", queueLenEstimation );
 		return;
 	}
 
@@ -737,7 +737,7 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 				try{
 					session->sendRequest(req);
 				}catch(exception e){
-					ofLogWarning("ofxSimpleHttp") << "ofxSimpleHttp session send request exception: " << e.what() << "\nfor URL: " << request.url;
+					ofLogWarning("ofxSimpleHttp") << "ofxSimpleHttp session send request exception: " << e.what() << " for URL: " << request.url;
 				}
 
 				HTTPResponse res;
