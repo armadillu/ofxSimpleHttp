@@ -72,7 +72,7 @@ ofxSimpleHttp::~ofxSimpleHttp(){
 		try {
 			waitForThread(false); //wait for the thread to completelly finish
 		} catch (Exception& exc) {
-			ofLogError("ofxSimpleHttp", "Exception at waitForThread %s", exc.displayText().c_str());
+			ofLogError("ofxSimpleHttp") << "Exception at waitForThread " << exc.displayText();
 		}
 	}
 
@@ -267,7 +267,7 @@ void ofxSimpleHttp::stopCurrentDownload(bool emptyQueue){
 				r->emptyWholeQueue = emptyQueue;
 				r->downloadCanceled = true;
 			}catch(Exception& exc){
-				ofLogError("ofxSimpleHttp", "stopCurrentDownload(" + r->fileName + ") >> Exception: " + exc.displayText() );
+				ofLogError("ofxSimpleHttp") << "stopCurrentDownload(" << r->fileName << ") >> Exception: " << exc.displayText() ;
 			}
 		}
 	}
@@ -463,7 +463,7 @@ std::string ofxSimpleHttp::extractExtensionFromFileName(const std::string& fileN
 void ofxSimpleHttp::fetchURL(std::string url, bool notifyOnSuccess, std::string customField){
 
 	if (queueLenEstimation >= maxQueueLen){
-		ofLogError("ofxSimpleHttp", "fetchURL can't do that, queue is too long already (%d)!", queueLenEstimation );
+		ofLogError("ofxSimpleHttp") << "fetchURL can't do that, queue is too long already (" << queueLenEstimation << ")!";
 		return;
 	}
 
@@ -506,7 +506,7 @@ void ofxSimpleHttp::fetchURLToDisk(std::string url, std::string expectedSha1, bo
 								   std::string dirWhereToSave, std::string customField){
 
 	if (queueLenEstimation >= maxQueueLen){
-		ofLogError("ofxSimpleHttp", "fetchURL can't do that, queue is too long already (%d)!", queueLenEstimation );
+		ofLogError("ofxSimpleHttp") << "fetchURL can't do that, queue is too long already (" << queueLenEstimation << ")!";
 		return;
 	}
 
@@ -825,7 +825,7 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 								file.close();
 							}catch(Exception& exc){
 								std::string msg = "downloadURL(" + resp->fileName + ") >> Exception at file.open: " + exc.displayText();
-								ofLogError("ofxSimpleHttp", msg );
+								ofLogError("ofxSimpleHttp") << msg ;
 							}
 						}else{
 							resp->downloadedBytes = resp->responseBody.size();
@@ -914,9 +914,8 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 				}
 				resp->ok = false;
 				ok = false;
-				ofLogError("ofxSimpleHttp", "failed to download " + resp->url );
-				ofLogError("ofxSimpleHttp", msg );
-
+				ofLogError("ofxSimpleHttp") << "failed to download " + resp->url;
+				ofLogError("ofxSimpleHttp") << msg ;
 			}
             
             if(session != NULL){
@@ -1008,7 +1007,7 @@ std::streamsize ofxSimpleHttp::streamCopyWithProgress(std::istream & istr, std::
 				istr.read(buffer.begin(), COPY_BUFFER_SIZE);
 				n = istr.gcount();
 				if (istr.fail() && !istr.eof()){
-					ofLogError("ofxSimpleHttp", "streamCopyWithProgress() >> iostream Fail!");
+					ofLogError("ofxSimpleHttp") << "streamCopyWithProgress() >> iostream Fail!";
 					return -1;
 				}
 			}else{
@@ -1072,7 +1071,7 @@ std::streamsize ofxSimpleHttp::streamCopyWithProgress(std::istream & istr, std::
 			first = false;
 		}
 	}catch(Exception& exc){
-		ofLogError("ofxSimpleHttp", "streamCopyWithProgress() >> Exception: %s", exc.displayText().c_str() );
+		ofLogError("ofxSimpleHttp") << "streamCopyWithProgress() >> Exception: " << exc.displayText() ;
 		return -1;
 	}
 	return len;
