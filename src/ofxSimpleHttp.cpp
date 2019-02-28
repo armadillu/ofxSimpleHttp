@@ -914,8 +914,8 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 				}
 				resp->ok = false;
 				ok = false;
-				ofLogError("ofxSimpleHttp") << "failed to download " + resp->url;
-				ofLogError("ofxSimpleHttp") << msg ;
+				ofLogError("ofxSimpleHttp") << "failed to download " << resp->url;
+				ofLogError("ofxSimpleHttp") << msg;
 			}
             
             if(session != NULL){
