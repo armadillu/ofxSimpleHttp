@@ -157,3 +157,11 @@ std::string ofxChecksum::calcSha1(const std::string & filePath) {
 	string sha12 = bufferHash2;
 	return sha12;
 }
+
+std::string ofxChecksum::toString(ofxChecksum::Type type){
+	switch (type) {
+		case ofxChecksum::Type::SHA1: return "SHA1";
+		case ofxChecksum::Type::XX_HASH: return "xxHash";
+  		default: return "Unknown Checksum Type";
+	}
+}

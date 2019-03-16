@@ -10,7 +10,6 @@
 
 #include "ofxSimpleHttp.h"
 #include "ofEvents.h"
-#include "ofxChecksum.h"
 
 #include "Poco/Net/HTTPStreamFactory.h"
 #include "Poco/Net/HTTPSStreamFactory.h"
@@ -19,7 +18,6 @@
 #include "Poco/Net/SSLManager.h"
 #include "Poco/Net/NetException.h"
 #include "Poco/URI.h"
-#include "Poco/SHA1Engine.h"
 #include "Poco/Net/HTTPRequest.h"
 #include "Poco/Net/HTTPResponse.h"
 
@@ -149,6 +147,9 @@ void ofxSimpleHttp::setTimeOut(int seconds){
 	timeOut = seconds;
 }
 
+void ofxSimpleHttp::setChecksumType(ofxChecksum::Type type){
+	checksumType = type;
+}
 
 void ofxSimpleHttp::setUserAgent( std::string newUserAgent ){
 	userAgent = newUserAgent;
@@ -475,6 +476,7 @@ void ofxSimpleHttp::fetchURL(std::string url, bool notifyOnSuccess, std::string 
 	response->fileName = extractFileFromUrl(url);
 	response->extension = extractExtensionFromFileName(response->fileName);
 	response->notifyOnSuccess = notifyOnSuccess;
+	response->checksumType = checksumType;
 
 	lock();
 	q.push(response);
@@ -494,6 +496,7 @@ ofxSimpleHttpResponse ofxSimpleHttp::fetchURLBlocking(std::string  url){
 	response.fileName = extractFileFromUrl(url);
 	response.extension = extractExtensionFromFileName(response.fileName);
 	response.notifyOnSuccess = true;
+	response.checksumType = checksumType;
 	bool ok = downloadURL(&response,
 						  false/*send res through events*/,
 						  true/*beingCalledFromMainThread*/,
@@ -502,7 +505,7 @@ ofxSimpleHttpResponse ofxSimpleHttp::fetchURLBlocking(std::string  url){
 	return response;
 }
 
-void ofxSimpleHttp::fetchURLToDisk(std::string url, std::string expectedSha1, bool notifyOnSuccess,
+void ofxSimpleHttp::fetchURLToDisk(std::string url, std::string expectedChecksum, bool notifyOnSuccess,
 								   std::string dirWhereToSave, std::string customField){
 
 	if (queueLenEstimation >= maxQueueLen){
@@ -526,7 +529,8 @@ void ofxSimpleHttp::fetchURLToDisk(std::string url, std::string expectedSha1, bo
 	ofxSimpleHttpResponse *response = new ofxSimpleHttpResponse();
 	response->who = this;
 	response->customField = customField;
-	response->expectedChecksum = expectedSha1;
+	response->expectedChecksum = expectedChecksum;
+	response->checksumType = checksumType;
 	response->absolutePath = savePath;
 	response->url = url;
 	response->downloadCanceled = false;
@@ -543,7 +547,7 @@ void ofxSimpleHttp::fetchURLToDisk(std::string url, std::string expectedSha1, bo
 		try{
 			startThread(true);
 		}catch(exception e){
-			ofLogError("ofxSimpleHttp") << "ofxSimpleHttp: cant start thread!" << e.what();
+			ofLogError("ofxSimpleHttp") << "can NOT start thread!" << e.what();
 		}
 	}
 }
@@ -554,7 +558,7 @@ void ofxSimpleHttp::fetchURLToDisk(std::string url, bool notifyOnSuccess,
 }
 
 
-ofxSimpleHttpResponse ofxSimpleHttp::fetchURLtoDiskBlocking(std::string  url, std::string dirWhereToSave, std::string expectedSha1){
+ofxSimpleHttpResponse ofxSimpleHttp::fetchURLtoDiskBlocking(std::string  url, std::string dirWhereToSave, std::string expectedChecksum){
 
 	std::string savePath = dirWhereToSave == "" ? extractFileFromUrl(url) : ofToDataPath(dirWhereToSave) + "/" + extractFileFromUrl(url);
 
@@ -564,7 +568,8 @@ ofxSimpleHttpResponse ofxSimpleHttp::fetchURLtoDiskBlocking(std::string  url, st
 	response.absolutePath = savePath;
 	response.url = url;
 	response.who = this;
-	response.expectedChecksum = expectedSha1;
+	response.expectedChecksum = expectedChecksum;
+	response.checksumType = checksumType;
 	response.downloadCanceled = false;
 	response.fileName = extractFileFromUrl(url);
 	response.extension = extractExtensionFromFileName(response.fileName);
@@ -593,14 +598,18 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 			ofFile f;
 			f.open(resp->absolutePath);
 			if (f.exists()){
-				fileIsAlreadyHere = ofxChecksum::sha1(resp->absolutePath, resp->expectedChecksum);
+				switch(resp->checksumType){
+					case ofxChecksum::Type::SHA1: fileIsAlreadyHere = ofxChecksum::sha1(resp->absolutePath, resp->expectedChecksum); break;
+					case ofxChecksum::Type::XX_HASH: fileIsAlreadyHere = ofxChecksum::xxHash(resp->absolutePath) == resp->expectedChecksum; break;
+					default: break;
+				}
 				if(fileIsAlreadyHere){
 					resp->checksumOK = true;
 					resp->status = 0;
 					resp->ok = true;
 					resp->fileWasHere = true;
-					ofLogVerbose("ofxSimpleHttp") << "ofxSimpleHttp: about to download " << resp->url << " but a file with same name and correct checksum is already here!";
-					ofLogVerbose("ofxSimpleHttp") << "ofxSimpleHttp: skipping download (" << resp->expectedChecksum << ")";
+					ofLogVerbose("ofxSimpleHttp") << "about to download \"" << resp->url << "\" but a file with same name and correct checksum is already here!";
+					ofLogVerbose("ofxSimpleHttp") << "skipping download (" << resp->expectedChecksum << ")";
 				}
 			}
 			f.close();
@@ -614,8 +623,8 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 					resp->ok = true;
 					resp->fileWasHere = true;
 					fileIsAlreadyHere = true;
-					ofLogVerbose("ofxSimpleHttp") << "ofxSimpleHttp: about to download "<< resp->url << " but a file with same name and (size > 0) is already here!";
-					ofLogVerbose("ofxSimpleHttp") << "ofxSimpleHttp: skipping download (missing checksum)";
+					ofLogVerbose("ofxSimpleHttp") << "about to download \""<< resp->url << "\" but a file with same name and (size > 0) is already here!";
+					ofLogVerbose("ofxSimpleHttp") << "skipping download (missing checksum)";
 				}
 				f.close();
 			}
@@ -668,10 +677,14 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 				resp->downloadedBytes = resp->serverReportedSize;
 
 				if (resp->expectedChecksum.length() > 0){
-					resp->checksumOK = ofxChecksum::sha1(resp->absolutePath, resp->expectedChecksum);
+					switch(resp->checksumType){
+						case ofxChecksum::Type::SHA1: resp->checksumOK = ofxChecksum::sha1(resp->absolutePath, resp->expectedChecksum); break;
+						case ofxChecksum::Type::XX_HASH: resp->checksumOK = ofxChecksum::xxHash(resp->absolutePath) == resp->expectedChecksum; break;
+						default: break;
+					}
 					if(!resp->checksumOK){
-						ofLogVerbose("ofxSimpleHttp") << "ofxSimpleHttp: file:// copy OK but Checksum FAILED";
-						ofLogVerbose("ofxSimpleHttp") << "ofxSimpleHttp: SHA1 was meant to be: " << resp->expectedChecksum;
+						ofLogVerbose("ofxSimpleHttp") << "file:// copy OK but Checksum FAILED";
+						ofLogVerbose("ofxSimpleHttp") << "Checksum (" + ofxChecksum::toString(resp->checksumType) + ") was meant to be: \"" << resp->expectedChecksum << "\"";
 					}
 				}
 
@@ -791,10 +804,16 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 
 					resp->timeTakenToDownload = ofGetElapsedTimef() - resp->timeDowloadStarted;
 					if (resp->expectedChecksum.length() > 0){
-						resp->checksumOK = ofxChecksum::sha1(resp->absolutePath, resp->expectedChecksum);
+
+						switch(resp->checksumType){
+							case ofxChecksum::Type::SHA1: resp->checksumOK = ofxChecksum::sha1(resp->absolutePath, resp->expectedChecksum); break;
+							case ofxChecksum::Type::XX_HASH: resp->checksumOK = ofxChecksum::xxHash(resp->absolutePath) == resp->expectedChecksum; break;
+							default: break;
+						}
+
 						if(!resp->checksumOK){
-							ofLogVerbose("ofxSimpleHttp") << "ofxSimpleHttp: downloaded OK but Checksum FAILED";
-							ofLogVerbose("ofxSimpleHttp") << "ofxSimpleHttp: SHA1 was meant to be: " << resp->expectedChecksum;
+							ofLogVerbose("ofxSimpleHttp") << "downloaded OK but Checksum FAILED";
+							ofLogVerbose("ofxSimpleHttp") << "Checksum (" + ofxChecksum::toString(resp->checksumType) + ") was meant to be: " << resp->expectedChecksum;
 						}
 					}
 
@@ -833,7 +852,7 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 
 						if(resp->timeTakenToDownload > 0.01f){
 							resp->avgDownloadSpeed = (resp->downloadedBytes ) / resp->timeTakenToDownload; //bytes/sec
-							ofLogNotice("ofxSimpleHttp") << "download completed - avg download speed: " << bytesToHumanReadable(resp->avgDownloadSpeed,1) << " - Dl Size: " << bytesToHumanReadable(resp->downloadedBytes, 1);
+							ofLogNotice("ofxSimpleHttp") << "downloadURL() >> download completed - avg download speed: " << bytesToHumanReadable(resp->avgDownloadSpeed,1) << " - Dl Size: " << bytesToHumanReadable(resp->downloadedBytes, 1);
 						}
 						avgDownloadSpeed = resp->avgDownloadSpeed;
 
@@ -871,7 +890,7 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 								resp->ok = false;
 							}
 						}
-						ofLogVerbose("ofxSimpleHttp") << "ofxSimpleHttp: download finished! " << resp->url << " !";
+						ofLogVerbose("ofxSimpleHttp") << "download finished! " << resp->url << " !";
 						ok = true;
 					}
 
@@ -891,7 +910,7 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 				//last check for OK flag
 				if(!resp->checksumOK){
 					resp->ok = false;
-					resp->reasonForStatus += " / SHA1 missmatch!";
+					resp->reasonForStatus += " / Checksum missmatch! (" + ofxChecksum::toString(resp->checksumType) + ")";
 				}
 
 			}catch(Exception& exc){

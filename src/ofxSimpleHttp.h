@@ -47,6 +47,8 @@
 #include "ofColor.h"
 #include <queue>
 #include <map>
+#include "ofxChecksum.h"
+
 
 class ofxSimpleHttp : public ofThread{
 
@@ -67,56 +69,56 @@ class ofxSimpleHttp : public ofThread{
 		// actions //////////////////////////////////////////////////////////////
 
 		//download to RAM ( download to ofxSimpleHttpResponse->responseBody)
-		void						fetchURL(std::string url,
-											 bool notifyOnSuccess = false,
-											 std::string customField = ""); //supply any info you need, get it back when you are notified
+		void						fetchURL(	std::string url,
+											bool notifyOnSuccess = false,
+											std::string customField = ""); //supply any info you need, get it back when you are notified
 
 		ofxSimpleHttpResponse		fetchURLBlocking(std::string url);
 
-		//download to Disk
-		void						fetchURLToDisk(std::string url,
-												   bool notifyOnSuccess = false,
-												   std::string outputDir = ".",
-												   std::string customField = ""); //supply any info you need, get it back when you are notified
+		void						fetchURLToDisk(	std::string url,
+												bool notifyOnSuccess = false,
+												std::string outputDir = ".",
+												std::string customField = ""); //supply any info you need, get it back when you are notified
 
-		void						fetchURLToDisk(std::string url,
-												   std::string expectedSha1,
-												   bool notifyOnSuccess = false,
-												   std::string outputDir = ".", std::string
-												   customField = ""); //supply any info you need, get it back when you are notified
+		void						fetchURLToDisk(	std::string url,
+												std::string expectedChecksum, //by default, ofxSimpleHttp uses SHA1
+												bool notifyOnSuccess = false,
+												std::string outputDir = ".", std::string
+												customField = ""); //supply any info you need, get it back when you are notified
 
-		ofxSimpleHttpResponse		fetchURLtoDiskBlocking(std::string url,
-														   std::string outputDir = ".",
-														   std::string expectedSha1 = "");
+		ofxSimpleHttpResponse		fetchURLtoDiskBlocking(	std::string url,
+														std::string outputDir = ".",
+														std::string expectedChecksum = ""); //by default, ofxSimpleHttp uses SHA1
 
 		void						update(); //this is mainly used to get notifications in the main thread
 
 		void						draw(float x, float y , float w , float h);	//draws a box
 		void						draw(float x, float y);	//draws a box
-		std::string					drawableString(int urlLen = 0);
+		std::string				drawableString(int urlLen = 0);
 		void						drawMinimal(float x, float y,
-												bool withBg = false,
-												ofColor fontColor = ofColor::white,
-												ofColor bgColor = ofColor::black);	//draws a one-line status
-		std::string						minimalDrawableString();
+											bool withBg = false,
+											ofColor fontColor = ofColor::white,
+											ofColor bgColor = ofColor::black);	//draws a one-line status
+		std::string				minimalDrawableString();
 
 		void						stopCurrentDownload(bool emptyQueue); //if there's more downloads on queue, next will start immediatelly
 
-		int							getPendingDownloads();
-		float						getCurrentDownloadProgress();	//retuns [0..1] how complete is the download
-		std::string					getCurrentDownloadFileName();	//only while downloading
-		float						getAvgDownloadSpeed();			// bytes/sec - also when not download
+		int						getPendingDownloads();
+		float					getCurrentDownloadProgress();	//retuns [0..1] how complete is the download
+		std::string				getCurrentDownloadFileName();	//only while downloading
+		float					getAvgDownloadSpeed();			// bytes/sec - also when not download
 
 		// properties //////////////////////////////////////////////////////////
 
-		void 						setProxyConfiguration(const ProxyConfig & c);
+		void 					setProxyConfiguration(const ProxyConfig & c);
 
 		void						setTimeOut(int seconds);
 		void						setUserAgent(std::string newUserAgent );
 		void						setCredentials(std::string username, std::string password);
 		void						setMaxQueueLength(int len);
-		void 						setCopyBufferSize(float KB); /*in KiloBytes (1 -> 1024 bytes)*/
+		void 					setCopyBufferSize(float KB); /*in KiloBytes (1 -> 1024 bytes)*/
 		void						setIdleTimeAfterEachDownload(float seconds); //wait a bit before notifying once the dowload is over
+		void						setChecksumType(ofxChecksum::Type); //when you supply a checksum to compare a downloaded file against, what type will it be?
 
 		void						setCancelCurrentDownloadOnDestruction(bool doIt);
 		void						setCancelPendingDownloadsOnDestruction(bool cancelAll);
@@ -124,14 +126,14 @@ class ofxSimpleHttp : public ofThread{
 		void						addCustomHttpHeader(std::string headerName, std::string headerContent);
 		void						setNotifyFromMainThread(bool mainThread);
 
-									//if a download is requested and file already exists on disk,
-									//do we require a checksum match to assume the file is good?
-									//ie, if the user doesnt provide a checksum, what do we do?
+								//if a download is requested and file already exists on disk,
+								//do we require a checksum match to assume the file is good?
+								//ie, if the user doesnt provide a checksum, what do we do?
 		void						setNeedsChecksumMatchToSkipDownload(bool needs);
 		void						setSpeedLimit(float KB_per_sec);
 
 
-		ofEvent<ofxSimpleHttpResponse>		httpResponse;
+		ofEvent<ofxSimpleHttpResponse> httpResponse;
 
 		// https support //////////////////////////////////////////////////////////////
 
@@ -140,55 +142,54 @@ class ofxSimpleHttp : public ofThread{
 													 Poco::Net::Context::VerificationMode verMode = Poco::Net::Context::VERIFY_NONE);
 
 		static void 				destroySslContext(); //call once when no longer need https, once all trasnfers are finished
-														//or just b4 app exit
+													//or just b4 app exit
 
 		// STATIC Utility Methods ////////////////////////////////////////////////////////
 
-		static std::string				bytesToHumanReadable(long long bytes, int decimalPrecision);
-		static std::string				secondsToHumanReadable(float sec, int decimalPrecision);
-		static std::string				extractFileFromUrl(const std::string & url);
-		static std::string				extractExtensionFromFileName(const std::string& fileName);
-		static std::string				getFileSystemSafeString(const std::string & input);
+		static std::string		bytesToHumanReadable(long long bytes, int decimalPrecision);
+		static std::string		secondsToHumanReadable(float sec, int decimalPrecision);
+		static std::string		extractFileFromUrl(const std::string & url);
+		static std::string		extractExtensionFromFileName(const std::string& fileName);
+		static std::string		getFileSystemSafeString(const std::string & input);
 
-private:
+	protected:
 
 		bool downloadURL( ofxSimpleHttpResponse * resp, bool sendResultThroughEvents, bool beingCalledFromMainThread, bool saveToDisk );
 		void threadedFunction();	//the queue runs here
 
-		//bool							debug;	//should we print lots of stuff?
-		bool							notifyFromMainThread;
-		bool							onlySkipDownloadIfChecksumMatches;
+	ofxChecksum::Type 		checksumType = ofxChecksum::Type::SHA1;
+		bool						notifyFromMainThread;
+		bool						onlySkipDownloadIfChecksumMatches;
 
-		int								timeOut;
-		std::string						userAgent;
-		std::string						acceptString;
+		int						timeOut;
+		std::string				userAgent;
+		std::string				acceptString;
 		std::queue<ofxSimpleHttpResponse*>	q;		//the pending requests
-		bool							timeToStop;
-		int								queueLenEstimation;
-		int								maxQueueLen;
-		float							idleTimeAfterEachDownload;	//seconds
-		float							avgDownloadSpeed;
-		bool							cancelCurrentDownloadOnDestruction;
-		bool							flushPendingRequestsOnDestruction;
+		bool						timeToStop;
+		int						queueLenEstimation;
+		int						maxQueueLen;
+		float					idleTimeAfterEachDownload;	//seconds
+		float					avgDownloadSpeed;
+		bool						cancelCurrentDownloadOnDestruction;
+		bool						flushPendingRequestsOnDestruction;
 
-		float							speedLimit; //in KiloBytes / sec
-		ofxSimpleHttpResponse			response;
+		float					speedLimit; //in KiloBytes / sec
+		ofxSimpleHttpResponse		response; //used by blocking fetch() methods
 
-		ProxyConfig						proxyConfig;
-		bool							useCredentials;
-		Poco::Net::HTTPBasicCredentials	credentials;
+		ProxyConfig				proxyConfig;
+		bool						useCredentials;
+		Poco::Net::HTTPBasicCredentials		credentials;
 
-		std::queue<ofxSimpleHttpResponse>	responsesPendingNotification; //we store here downloads that arrived so that we can notify from main thread
-		std::map<std::string, std::string>				customHttpHeaders;
+		std::queue<ofxSimpleHttpResponse>		responsesPendingNotification; //we store here downloads that arrived so that we can notify from main thread
+		std::map<std::string, std::string> 	customHttpHeaders;
+
+		static 					Poco::Net::Context::Ptr pContext;
+		int 						COPY_BUFFER_SIZE;
+		float 					avgSpeedNow;
 
 		std::streamsize streamCopyWithProgress(std::istream & in, std::ostream & out, std::streamsize totalBytes,
 											   std::streamsize &currentBytes, bool & speedSampled,
 											   float & progress, float &speed, const bool &shouldCancel);
 
-		static Poco::Net::Context::Ptr pContext;
-
-		int COPY_BUFFER_SIZE;
-
-		float avgSpeedNow;
 
 };

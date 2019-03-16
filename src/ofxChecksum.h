@@ -26,5 +26,11 @@ public:
 	static std::string xxHash(const std::string & filePath);
 
 
+	enum class Type{
+		SHA1,
+		XX_HASH
+	};
+
+	static string toString(Type t);
 };
 
