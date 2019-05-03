@@ -157,7 +157,7 @@ class ofxSimpleHttp : public ofThread{
 		bool downloadURL( ofxSimpleHttpResponse * resp, bool sendResultThroughEvents, bool beingCalledFromMainThread, bool saveToDisk );
 		void threadedFunction();	//the queue runs here
 
-	ofxChecksum::Type 		checksumType = ofxChecksum::Type::SHA1;
+		ofxChecksum::Type 		checksumType = ofxChecksum::Type::SHA1;
 		bool						notifyFromMainThread;
 		bool						onlySkipDownloadIfChecksumMatches;
 

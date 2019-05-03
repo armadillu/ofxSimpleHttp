@@ -19,6 +19,11 @@ ofxBatchDownloader::ofxBatchDownloader(){
 }
 
 
+void ofxBatchDownloader::setChecksumType(ofxChecksum::Type t){
+	checksumType = t;
+	http.setChecksumType(t);
+}
+
 void ofxBatchDownloader::setNeedsChecksumMatchToSkipDownload(bool needsChecksum){
 	http.setNeedsChecksumMatchToSkipDownload(needsChecksum); 
 }
@@ -99,13 +104,13 @@ std::string ofxBatchDownloader::getMinimalDrawableString(){
 }
 
 void ofxBatchDownloader::addResourcesToDownloadList( std::vector<std::string> _urlList ){
-	std::vector<std::string>_sha1List;
-	addResourcesToDownloadList(_urlList, _sha1List);
+	std::vector<std::string>_checksumList;
+	addResourcesToDownloadList(_urlList, _checksumList);
 }
 
-void ofxBatchDownloader::addResourcesToDownloadList( std::vector<std::string> _urlList, std::vector<std::string>_sha1List ){
+void ofxBatchDownloader::addResourcesToDownloadList( std::vector<std::string> _urlList, std::vector<std::string>_checksumList ){
 
-	if ( _sha1List.size() > 0 && (_urlList.size() != _sha1List.size()) ){
+	if ( _checksumList.size() > 0 && (_urlList.size() != _checksumList.size()) ){
 		ofLogWarning("ofxBatchDownloader") << "addResourcesToDownloadList >> urlList & shaList element num missmatch!";
 		return;
 	}
@@ -114,8 +119,8 @@ void ofxBatchDownloader::addResourcesToDownloadList( std::vector<std::string> _u
 
 		for(int i = 0; i < _urlList.size(); i++){
 			originalUrlList.push_back(_urlList[i]);
-			if (_sha1List.size()){
-				originalSha1List.push_back(_sha1List[i]);
+			if (_checksumList.size()){
+				originalChecksumList.push_back(_checksumList[i]);
 			}
 			ofLogVerbose("ofxBatchDownloader") << "queueing " << _urlList[i] << " for download";
 		}
@@ -155,8 +160,8 @@ void ofxBatchDownloader::startDownloading(){
 
 		for(int i = 0; i < originalUrlList.size(); i++){
 			std::string sha = "";
-			if (originalSha1List.size()){
-				sha = originalSha1List[i];
+			if (originalChecksumList.size()){
+				sha = originalChecksumList[i];
 			}
 			http.fetchURLToDisk(originalUrlList[i], sha, true, downloadFolder);
 		}
@@ -177,7 +182,7 @@ void ofxBatchDownloader::httpResult(ofxSimpleHttpResponse &r){
 	}else{
 		failedList.push_back( r.url );
 		if (!r.checksumOK){
-			ofLogError("ofxBatchDownloader") << "checksum missmatch! [" << r.url << "] expectedSha1: " << r.expectedChecksum << ")";
+			ofLogError("ofxBatchDownloader") << "checksum missmatch! [" << r.url << "] expectedChecksum: " << r.expectedChecksum << ")";
 		}else{
 			ofLogError("ofxBatchDownloader") << "FAILED TO download [" << r.url << "]";
 		}

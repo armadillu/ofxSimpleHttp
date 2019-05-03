@@ -36,6 +36,11 @@ void ofxDownloadCentral::setMaxConcurrentDownloads(int numConcurrentDownloads){
 }
 
 
+void ofxDownloadCentral::setChecksumType(ofxChecksum::Type type){
+	checksumType = type;
+}
+
+
 void ofxDownloadCentral::startDownloading(){
 	if (!busy){
 		downloadStartJobsNumber = downloaders.size();

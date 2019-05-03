@@ -37,7 +37,7 @@
  
 	dlc.downloadResources( urlList, this, &myClass::downloadsFinished, destinationFolder );
 
-	it will all will be downloaded in a bg thread
+	it will all be downloaded in a bg thread
 	you will be notified from the main thread when they are done
 	you will get a report
  
@@ -75,12 +75,13 @@ class ofxDownloadCentral{
 
 		void setVerbose(bool b);
 		void setNeedsChecksumMatchToSkipDownload(bool needs);	//if downloaded file is on disk, should I assume its good?
-																//or only if you provided sha1 checksum and it matches
+															//or only if you provided sha1 checksum and it matches
 
 		void setSpeedLimit(float KB_per_sec);
 		void setTimeOut(float timeoutSecs);
 		void setMaxConcurrentDownloads(int numConcurrentDownloads);
 
+		void setChecksumType(ofxChecksum::Type); //when you supply a checksum to compare a downloaded file against, what type will it be?
 		void setProxyConfiguration(const ofxSimpleHttp::ProxyConfig & c);
 		void setCredentials(const std::string& user, const std::string& password);
 
@@ -140,6 +141,7 @@ class ofxDownloadCentral{
 				d->setDownloadFolder(destinationFolder);
 				d->setVerbose(verbose);
 				d->setNeedsChecksumMatchToSkipDownload(onlySkipDownloadIfChecksumMatches);
+				d->setChecksumType(checksumType);
 				d->setIdleTimeAfterEachDownload(idleTimeAfterDownload);
 				d->addResourcesToDownloadList(urlList, sha1List);
 				ofAddListener(d->resourcesDownloadFinished, listener, listenerMethod); //set the notification to hit our original caller
@@ -165,17 +167,16 @@ class ofxDownloadCentral{
 			downloadResources(urlList, shas, listener, listenerMethod, destinationFolder);
 		}
 
-
 	private:
 
 		void startQueue();
 
-		std::vector<ofxBatchDownloader*>			downloaders;
-		std::vector<ofxBatchDownloader*>			activeDownloaders;
+		std::vector<ofxBatchDownloader*>		downloaders;
+		std::vector<ofxBatchDownloader*>		activeDownloaders;
 
-		bool								busy;
-		bool								verbose;
-		bool								onlySkipDownloadIfChecksumMatches;
+		bool									busy;
+		bool									verbose;
+		bool									onlySkipDownloadIfChecksumMatches;
 		float								idleTimeAfterDownload; //float sec
 		float								downloadStartTime;
 		unsigned long int					downloadedSoFar; //bytes
@@ -184,7 +185,7 @@ class ofxDownloadCentral{
 		int									failedJobsStartNumber;
 		int									failedJobsSoFar;
 
-		std::map<int, float>				avgSpeed;	 //bytes/sec
+		std::map<int, float>					avgSpeed;	 //bytes/sec
 		int									maxURLsToList;
 
 		int									maxConcurrentDownloads;
@@ -193,6 +194,8 @@ class ofxDownloadCentral{
 
 		ofxSimpleHttp::ProxyConfig			proxyConfig;
 		std::pair<std::string,std::string> 	credentials;
+
+		ofxChecksum::Type 					checksumType = ofxChecksum::Type::SHA1;
 };
 
 

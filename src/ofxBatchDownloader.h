@@ -58,8 +58,10 @@ public:
 	void setSpeedLimit(float KB_per_sec);
 	void setTimeOut(float timeOut);
 
+	void setChecksumType(ofxChecksum::Type); //when you supply a checksum to compare a downloaded file against, what type will it be?
+
 	void addResourcesToDownloadList( std::vector<std::string>urlList );
-	void addResourcesToDownloadList( std::vector<std::string>urlList, std::vector<std::string>sha1List );
+	void addResourcesToDownloadList( std::vector<std::string>urlList, std::vector<std::string>checksumList );
 	void startDownloading();
 	void cancelBatch(bool notify = false);
 
@@ -82,24 +84,24 @@ public:
 
 private:
 
-	ofxSimpleHttp						http;
-	bool								busy;
-	bool								needToStop; //user wants to cancel!
-	//bool								verbose;
-	std::string								downloadFolder;
+	ofxSimpleHttp http;
+	bool busy;
+	bool needToStop; //user wants to cancel!
 
-	std::vector<std::string>						originalUrlList;
-	std::vector<std::string>						originalSha1List;
-	std::vector<std::string>						failedList;
-	std::vector<std::string>						okList;
-	std::vector<ofxSimpleHttpResponse>		responses;
+	std::string downloadFolder;
 
+	std::vector<std::string>	originalUrlList;
+	std::vector<std::string>	originalChecksumList;
+	std::vector<std::string>	failedList;
+	std::vector<std::string> okList;
+	std::vector<ofxSimpleHttpResponse> responses;
 
 	void httpResult(ofxSimpleHttpResponse &response);
 	void reset();
 
-	unsigned long int					downloadedSoFar; //bytes
+	unsigned long int downloadedSoFar; //bytes
 
+	ofxChecksum::Type checksumType = ofxChecksum::Type::SHA1;
 
 };
 
