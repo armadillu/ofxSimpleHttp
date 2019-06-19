@@ -982,13 +982,13 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 
 void ofxSimpleHttp::update(){
 
-	ofxSimpleHttpResponse r;
 	lock();
 	
 	avgDownloadSpeed = 0.95f * avgDownloadSpeed + 0.05f * avgSpeedNow;
 	//cout << this << " now: " << avgSpeedNow / float(1024.0f*1024) << "Mb/sec  avg: " << avgDownloadSpeed / float(1024.0f*1024) << "Mb/sec" << endl;
 
 	if(responsesPendingNotification.size()){
+		ofxSimpleHttpResponse r;
 		r = responsesPendingNotification.front();
 		responsesPendingNotification.pop();
 		unlock();
