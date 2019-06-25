@@ -95,7 +95,7 @@ std::string ofxChecksum::xxHash(const std::string & filePath) {
 
 	//convert long long to hex string
 	char buff[64];
-	sprintf(buff, "%llx", hash);
+	sprintf(buff, "%016llx", hash); //output a 16 char hash string, note it will have leading zeroes to reach 16 characters
 	return string(buff);
 }
 
@@ -130,7 +130,7 @@ std::string ofxChecksum::calcSha1(const std::string & filePath) {
 	size_t const blockSize = 64 * 1024; //128 kb
 	FILE * f = fopen( filePath.c_str(), "rb" );
 	if(f == NULL){
-		ofLogError("ofxChecksum") << "can't xxHash(); can't open file at \"" << filePath << "\"";
+		ofLogError("ofxChecksum") << "can't calcSha1(); can't open file at \"" << filePath << "\"";
 		return 0;
 	}
 
@@ -143,7 +143,7 @@ std::string ofxChecksum::calcSha1(const std::string & filePath) {
 	size_t bytes_read = 0;
 	do {
 		bytes_read = fread(buf.data(), 1, buf.size(), f);
-		if (ferror(f)) ofLogError("ofxChecksum") << "Error reading " << filePath << " for xxHash calculation.";
+		if (ferror(f)) ofLogError("ofxChecksum") << "Error reading " << filePath << " for calcSha1 calculation.";
 		SHA1_Update(&context, (uint8_t*)buf.data(), bytes_read);
 	} while (bytes_read == buf.size());
 

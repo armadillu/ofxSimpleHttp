@@ -6,6 +6,11 @@
 class ofxChecksum{
 public:
 
+	enum class Type{
+		SHA1,
+		XX_HASH
+	};
+
 	//checks if sha1 match between file & expected sha1
 	static bool sha1(const std::string & filePath,
 					 const std::string & sha1String,
@@ -21,15 +26,8 @@ public:
 	//calc sha1 of a std::string
 	static std::string calcSha1FromString(const std::string & data);
 
-
 	//muuuuch faster than sha1 checksum
 	static std::string xxHash(const std::string & filePath);
-
-
-	enum class Type{
-		SHA1,
-		XX_HASH
-	};
 
 	static string toString(Type t);
 };

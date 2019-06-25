@@ -111,7 +111,7 @@ void ofxBatchDownloader::addResourcesToDownloadList( std::vector<std::string> _u
 void ofxBatchDownloader::addResourcesToDownloadList( std::vector<std::string> _urlList, std::vector<std::string>_checksumList ){
 
 	if ( _checksumList.size() > 0 && (_urlList.size() != _checksumList.size()) ){
-		ofLogWarning("ofxBatchDownloader") << "addResourcesToDownloadList >> urlList & shaList element num missmatch!";
+		ofLogWarning("ofxBatchDownloader") << "addResourcesToDownloadList >> urlList & shaList element num mismatch!";
 		return;
 	}
 
@@ -182,7 +182,7 @@ void ofxBatchDownloader::httpResult(ofxSimpleHttpResponse &r){
 	}else{
 		failedList.push_back( r.url );
 		if (!r.checksumOK){
-			ofLogError("ofxBatchDownloader") << "checksum missmatch! [" << r.url << "] expectedChecksum: " << r.expectedChecksum << ")";
+			ofLogError("ofxBatchDownloader") << "checksum mismatch! [" << r.url << "] expectedChecksum: " << r.expectedChecksum << ")";
 		}else{
 			ofLogError("ofxBatchDownloader") << "FAILED TO download [" << r.url << "]";
 		}

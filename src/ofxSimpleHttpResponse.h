@@ -16,8 +16,9 @@ struct ofxSimpleHttpResponse{
 	bool						checksumOK;			// SHA1 checksum matches
 	bool						fileWasHere;		// didnt even have to download the file!
 
-	std::string				expectedChecksum;	// sha1
+	std::string				expectedChecksum;	// checksum type as defined above
 	ofxChecksum::Type		checksumType = ofxChecksum::Type::SHA1;
+	std::string				calculatedChecksum; //from downloaded file on disk
 
 	int						status; 			// return code for the response ie: 200 = OK
 	long int					serverReportedSize;

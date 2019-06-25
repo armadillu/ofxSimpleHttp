@@ -263,7 +263,7 @@ void ofxSimpleHttp::stopCurrentDownload(bool emptyQueue){
 	if ( isThreadRunning() && n > 0){
 		ofxSimpleHttpResponse * r = q.front();
 		if (!r->downloadCanceled){ //dont cancel it twice!
-			ofLogVerbose("ofxSimpleHttp") << "stopCurrentDownload() >> about to stop download of " + r->fileName + " ...";
+			ofLogNotice("ofxSimpleHttp") << "stopCurrentDownload() >> about to stop download of " + r->fileName + " ...";
 			try{
 				r->emptyWholeQueue = emptyQueue;
 				r->downloadCanceled = true;
@@ -599,10 +599,17 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 			f.open(resp->absolutePath);
 			if (f.exists()){
 				switch(resp->checksumType){
-					case ofxChecksum::Type::SHA1: fileIsAlreadyHere = ofxChecksum::sha1(resp->absolutePath, resp->expectedChecksum); break;
-					case ofxChecksum::Type::XX_HASH: fileIsAlreadyHere = ofxChecksum::xxHash(resp->absolutePath) == resp->expectedChecksum; break;
+					case ofxChecksum::Type::SHA1:
+						resp->calculatedChecksum = ofxChecksum::calcSha1(resp->absolutePath);
+						break;
+					case ofxChecksum::Type::XX_HASH:
+						resp->calculatedChecksum = ofxChecksum::xxHash(resp->absolutePath);
+						break;
 					default: break;
 				}
+
+				fileIsAlreadyHere = resp->calculatedChecksum == resp->expectedChecksum;
+
 				if(fileIsAlreadyHere){
 					resp->checksumOK = true;
 					resp->status = 0;
@@ -678,13 +685,19 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 
 				if (resp->expectedChecksum.length() > 0){
 					switch(resp->checksumType){
-						case ofxChecksum::Type::SHA1: resp->checksumOK = ofxChecksum::sha1(resp->absolutePath, resp->expectedChecksum); break;
-						case ofxChecksum::Type::XX_HASH: resp->checksumOK = ofxChecksum::xxHash(resp->absolutePath) == resp->expectedChecksum; break;
+						case ofxChecksum::Type::SHA1:
+							resp->calculatedChecksum = ofxChecksum::calcSha1(resp->absolutePath);
+							break;
+						case ofxChecksum::Type::XX_HASH:
+							resp->calculatedChecksum = ofxChecksum::xxHash(resp->absolutePath);
 						default: break;
 					}
+
+					resp->checksumOK = resp->expectedChecksum == resp->calculatedChecksum;
+
 					if(!resp->checksumOK){
-						ofLogVerbose("ofxSimpleHttp") << "file:// copy OK but Checksum FAILED";
-						ofLogVerbose("ofxSimpleHttp") << "Checksum (" + ofxChecksum::toString(resp->checksumType) + ") was meant to be: \"" << resp->expectedChecksum << "\"";
+						ofLogNotice("ofxSimpleHttp") << "file:// copy OK but Checksum FAILED";
+						ofLogNotice("ofxSimpleHttp") << "Checksum (" + ofxChecksum::toString(resp->checksumType) + ") was meant to be: \"" << resp->expectedChecksum << "\" but is: \"" << resp->calculatedChecksum<< "\"";
 					}
 				}
 
@@ -806,14 +819,20 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 					if (resp->expectedChecksum.length() > 0){
 
 						switch(resp->checksumType){
-							case ofxChecksum::Type::SHA1: resp->checksumOK = ofxChecksum::sha1(resp->absolutePath, resp->expectedChecksum); break;
-							case ofxChecksum::Type::XX_HASH: resp->checksumOK = ofxChecksum::xxHash(resp->absolutePath) == resp->expectedChecksum; break;
+							case ofxChecksum::Type::SHA1:
+								resp->calculatedChecksum = ofxChecksum::calcSha1(resp->absolutePath);
+								break;
+							case ofxChecksum::Type::XX_HASH:
+								resp->calculatedChecksum = ofxChecksum::xxHash(resp->absolutePath);
+								break;
 							default: break;
 						}
 
+						resp->checksumOK = resp->expectedChecksum == resp->calculatedChecksum;
+
 						if(!resp->checksumOK){
-							ofLogVerbose("ofxSimpleHttp") << "downloaded OK but Checksum FAILED";
-							ofLogVerbose("ofxSimpleHttp") << "Checksum (" + ofxChecksum::toString(resp->checksumType) + ") was meant to be: " << resp->expectedChecksum;
+							ofLogNotice("ofxSimpleHttp") << "downloaded OK but Checksum FAILED";
+							ofLogNotice("ofxSimpleHttp") << "Checksum (" + ofxChecksum::toString(resp->checksumType) + ") was meant to be: \"" << resp->expectedChecksum << "\" but is: \"" << resp->calculatedChecksum<< "\"";
 						}
 					}
 
@@ -859,7 +878,7 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 						bool isAPI = (resp->contentType == "text/json");
 						bool sizeMissmatch = resp->serverReportedSize > 0 && resp->serverReportedSize != resp->downloadedBytes;
 
-						//check download file size missmatch
+						//check download file size mismatch
 						if ( sizeMissmatch && !isAPI ) {
 							std::string msg;
 
@@ -910,7 +929,7 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 				//last check for OK flag
 				if(!resp->checksumOK){
 					resp->ok = false;
-					resp->reasonForStatus += " / Checksum missmatch! (" + ofxChecksum::toString(resp->checksumType) + ")";
+					resp->reasonForStatus += " / Checksum mismatch! (" + ofxChecksum::toString(resp->checksumType) + ")";
 				}
 
 			}catch(Exception& exc){
