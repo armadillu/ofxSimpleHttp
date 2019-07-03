@@ -731,7 +731,7 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 				std::string path(uri.getPathAndQuery());
 				if (path.empty()) path = "/";
 
-				if(uri.getScheme()=="https"){
+				if(uri.getScheme() == "https"){
 					session = new HTTPSClientSession(uri.getHost(), uri.getPort(), pContext);
 				}else{
 					session = new HTTPClientSession(uri.getHost(), uri.getPort());
@@ -744,6 +744,8 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 					}
 				}
 
+				session->setKeepAlive(true);
+
 				HTTPRequest req(HTTPRequest::HTTP_GET, path, HTTPMessage::HTTP_1_1);
 				req.set( "User-Agent", userAgent.c_str() );
 
@@ -755,13 +757,21 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 				}
 
 				session->setTimeout( Poco::Timespan(timeOut,0) );
-
 				if(useCredentials){
 					credentials.authenticate(req);
 				}
 				
 				try{
 					session->sendRequest(req);
+					try{
+						session->socket().setLinger(true, 2);
+						session->socket().setReuseAddress(true);
+						session->socket().setNoDelay(true);
+						session->socket().setReceiveBufferSize(COPY_BUFFER_SIZE);
+					}catch(exception rr){
+						ofLogWarning("ofxSimpleHttp") << "cant set socket options : " <<  rr.what();
+					}
+
 				}catch(exception e){
 					ofLogWarning("ofxSimpleHttp") << "ofxSimpleHttp session send request exception: " << e.what() << " for URL: " << request.url;
 				}
