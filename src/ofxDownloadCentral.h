@@ -81,9 +81,11 @@ class ofxDownloadCentral{
 		void setTimeOut(float timeoutSecs);
 		void setMaxConcurrentDownloads(int numConcurrentDownloads);
 
-		void setChecksumType(ofxChecksum::Type); //when you supply a checksum to compare a downloaded file against, what type will it be?
+		void setChecksumType(ofxChecksum::Type type); //when you supply a checksum to compare a downloaded file against, what type will it be?
 		void setProxyConfiguration(const ofxSimpleHttp::ProxyConfig & c);
 		void setCredentials(const std::string& user, const std::string& password);
+
+		void setCopyBufferSize(float bufferInKb);
 
 		void setIdleTimeAfterEachDownload(float seconds);		//wait a bit before notifying once the dowload is over
 		void setMaxURLsToList(int max);
@@ -142,6 +144,7 @@ class ofxDownloadCentral{
 				d->setVerbose(verbose);
 				d->setNeedsChecksumMatchToSkipDownload(onlySkipDownloadIfChecksumMatches);
 				d->setChecksumType(checksumType);
+				d->setCopyBufferSize(copyBufferSize);
 				d->setIdleTimeAfterEachDownload(idleTimeAfterDownload);
 				d->addResourcesToDownloadList(urlList, sha1List);
 				ofAddListener(d->resourcesDownloadFinished, listener, listenerMethod); //set the notification to hit our original caller
@@ -191,11 +194,13 @@ class ofxDownloadCentral{
 		int									maxConcurrentDownloads;
 		float								speedLimit;
 		float								timeOut;
+		float								copyBufferSize = 1024.0f; //Kb
+		ofxChecksum::Type 					checksumType = ofxChecksum::Type::SHA1;
 
 		ofxSimpleHttp::ProxyConfig			proxyConfig;
 		std::pair<std::string,std::string> 	credentials;
 
-		ofxChecksum::Type 					checksumType = ofxChecksum::Type::SHA1;
+
 };
 
 

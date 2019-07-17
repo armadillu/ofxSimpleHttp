@@ -57,6 +57,7 @@ public:
 	void setDownloadFolder(std::string f);
 	void setSpeedLimit(float KB_per_sec);
 	void setTimeOut(float timeOut);
+	void setCopyBufferSize(float bufferSizeKb);
 
 	void setChecksumType(ofxChecksum::Type); //when you supply a checksum to compare a downloaded file against, what type will it be?
 

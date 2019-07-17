@@ -36,8 +36,7 @@ bool ofxChecksum::sha1(const std::string& filePath,
 std::string ofxChecksum::calcSha1_poco(const std::string & filePath){
 
 //	TS_START_NIF("sha1_1");
-	Poco::SHA1Engine e;
-	{
+	Poco::SHA1Engine e;{
 		auto f = fopen(filePath.c_str(), "rb");
 		if(f == NULL){
 			ofLogError("ofxChecksum") << "can't calcSha1(); can't open file at \"" << filePath << "\"";
@@ -99,31 +98,22 @@ std::string ofxChecksum::xxHash(const std::string & filePath) {
 	return string(buff);
 }
 
-#define ARRAY_SIZE(x) (sizeof(x)/sizeof(x[0]))
 
-char *sha1_to_hex_r(char *buffer, const unsigned char *sha1)
-{
-	static const char hex[] = "0123456789abcdef";
-	char *buf = buffer;
-	int i;
+void digest_to_hex(const uint8_t digest[SHA1_DIGEST_SIZE], char *output){
+	int i,j;
+	char *c = output;
 
-	for (i = 0; i < 20; i++) {
-		unsigned int val = *sha1++;
-		*buf++ = hex[val >> 4];
-		*buf++ = hex[val & 0xf];
+	for (i = 0; i < SHA1_DIGEST_SIZE/4; i++) {
+		for (j = 0; j < 4; j++) {
+			sprintf(c,"%02X", digest[i*4+j]);
+			c += 2;
+		}
+		sprintf(c, " ");
+		c += 1;
 	}
-	*buf = '\0';
-
-	return buffer;
+	*(c - 1) = '\0';
 }
 
-char*  sha1_to_hex(const unsigned char *sha1){
-	static int bufno;
-	static char hexbuffer[4][20 + 1];
-	bufno = (bufno + 1) % ARRAY_SIZE(hexbuffer);
-	return sha1_to_hex_r(hexbuffer[bufno], sha1);
-}
-#undef ARRAY_SIZE
 
 std::string ofxChecksum::calcSha1(const std::string & filePath) {
 
@@ -131,10 +121,9 @@ std::string ofxChecksum::calcSha1(const std::string & filePath) {
 	FILE * f = fopen( filePath.c_str(), "rb" );
 	if(f == NULL){
 		ofLogError("ofxChecksum") << "can't calcSha1(); can't open file at \"" << filePath << "\"";
-		return 0;
+		return "";
 	}
 
-	int seed = 0;
 	vector<char> buf(blockSize);
 
 	SHA1_CTX context;
@@ -152,10 +141,9 @@ std::string ofxChecksum::calcSha1(const std::string & filePath) {
 
 	fclose(f);
 
-	//convert long long to hex string
-	char * bufferHash2 = sha1_to_hex(digest);
-	string sha12 = bufferHash2;
-	return sha12;
+	char output[80];
+	digest_to_hex(digest, output);
+	return string(output);
 }
 
 std::string ofxChecksum::toString(ofxChecksum::Type type){

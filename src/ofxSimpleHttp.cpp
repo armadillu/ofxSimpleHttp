@@ -31,7 +31,7 @@ using Poco::Net::HTTPClientSession;
 
 ofxSimpleHttp::ofxSimpleHttp(){
 
-	COPY_BUFFER_SIZE = 1024 * 16; //  kb buffer size
+	COPY_BUFFER_SIZE = 1024 * 512; //  kb buffer size
 	cancelCurrentDownloadOnDestruction = true;
 	flushPendingRequestsOnDestruction = true;
 	timeOut = 10;
@@ -148,6 +148,9 @@ void ofxSimpleHttp::setTimeOut(int seconds){
 }
 
 void ofxSimpleHttp::setChecksumType(ofxChecksum::Type type){
+	if(type == ofxChecksum::Type::SHA1){
+		ofLogNotice() << "sha1!";
+	}
 	checksumType = type;
 }
 
@@ -690,6 +693,7 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 							break;
 						case ofxChecksum::Type::XX_HASH:
 							resp->calculatedChecksum = ofxChecksum::xxHash(resp->absolutePath);
+							break;
 						default: break;
 					}
 
@@ -1110,7 +1114,11 @@ std::streamsize ofxSimpleHttp::streamCopyWithProgress(std::istream & istr, std::
 			if(n >= COPY_BUFFER_SIZE){ //at least COPY_BUFFER_SIZE bytes of download
 				if(time > 0.01f){
 					float tSpeed = (n) / (time); //bytes / sec
-					avgdCurrentSpeed = 0.05 * tSpeed + 0.95 * avgdCurrentSpeed;
+					if(first){
+						avgdCurrentSpeed = tSpeed;
+					}else{
+						avgdCurrentSpeed = 0.05 * tSpeed + 0.95 * avgdCurrentSpeed;
+					}
 					speed = avgdCurrentSpeed;
 					chunkTested = true;
 				}

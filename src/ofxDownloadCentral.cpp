@@ -35,9 +35,13 @@ void ofxDownloadCentral::setMaxConcurrentDownloads(int numConcurrentDownloads){
 	maxConcurrentDownloads = ofClamp(numConcurrentDownloads, 1, INT_MAX);
 }
 
+void ofxDownloadCentral::setCopyBufferSize(float bufferInKb){
+	copyBufferSize = bufferInKb;
+}
 
 void ofxDownloadCentral::setChecksumType(ofxChecksum::Type type){
 	checksumType = type;
+	ofLogNotice() << "setChecksumType " << (int) type;
 }
 
 

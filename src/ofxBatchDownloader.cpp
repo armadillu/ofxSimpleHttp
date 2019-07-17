@@ -28,6 +28,9 @@ void ofxBatchDownloader::setNeedsChecksumMatchToSkipDownload(bool needsChecksum)
 	http.setNeedsChecksumMatchToSkipDownload(needsChecksum); 
 }
 
+void ofxBatchDownloader::setCopyBufferSize(float bufferSizeKb){
+	http.setCopyBufferSize(bufferSizeKb);
+}
 
 void ofxBatchDownloader::setIdleTimeAfterEachDownload(float seconds){
 	http.setIdleTimeAfterEachDownload( seconds );
