@@ -771,7 +771,8 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 						session->socket().setLinger(true, 2);
 						session->socket().setReuseAddress(true);
 						session->socket().setNoDelay(true);
-						session->socket().setReceiveBufferSize(COPY_BUFFER_SIZE);
+						//cout << "buf: " << session->socket().getReceiveBufferSize() << " - " << COPY_BUFFER_SIZE << endl;
+						//session->socket().setReceiveBufferSize(COPY_BUFFER_SIZE);
 					}catch(exception rr){
 						ofLogWarning("ofxSimpleHttp") << "cant set socket options : " <<  rr.what();
 					}
