@@ -41,7 +41,6 @@ void ofxDownloadCentral::setCopyBufferSize(float bufferInKb){
 
 void ofxDownloadCentral::setChecksumType(ofxChecksum::Type type){
 	checksumType = type;
-	ofLogNotice() << "setChecksumType " << (int) type;
 }
 
 
