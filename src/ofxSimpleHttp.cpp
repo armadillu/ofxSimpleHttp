@@ -810,7 +810,7 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 				msg = "downloadURL() >> server reports request status: " +ofToString(resp->status) + " - ", resp->reasonForStatus + ")";
 				ofLogVerbose("ofxSimpleHttp") << msg ;
 
-				int copySize = 0;
+				std::streamsize copySize = 0;
 				if(saveToDisk){
 					copySize = streamCopyWithProgress(rs, myfile, resp->serverReportedSize, resp->downloadedSoFar, resp->chunkTested,
 													  resp->downloadProgress, resp->downloadSpeed, resp->downloadCanceled);
