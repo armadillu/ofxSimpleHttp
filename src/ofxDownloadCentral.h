@@ -182,7 +182,7 @@ class ofxDownloadCentral{
 		bool									onlySkipDownloadIfChecksumMatches;
 		float								idleTimeAfterDownload; //float sec
 		float								downloadStartTime;
-		unsigned long int					downloadedSoFar; //bytes
+		std::streamsize						downloadedSoFar; //bytes
 		int									downloadStartJobsNumber;
 
 		int									failedJobsStartNumber;

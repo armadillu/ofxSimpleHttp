@@ -73,7 +73,7 @@ public:
 	void setProxyConfiguration(const ofxSimpleHttp::ProxyConfig & c);
 	void setCredentials(const std::string& user, const std::string& password);
 
-	unsigned long int getDownloadedBytesSoFar(){ return downloadedSoFar;}
+	uint64_t getDownloadedBytesSoFar(){ return downloadedSoFar;}
 	int getNumSuppliedUrls();
 	int getNumFailedUrls();
 	int pendingDownloads();
@@ -100,7 +100,7 @@ private:
 	void httpResult(ofxSimpleHttpResponse &response);
 	void reset();
 
-	unsigned long int downloadedSoFar; //bytes
+	uint64_t downloadedSoFar; //bytes
 
 	ofxChecksum::Type checksumType = ofxChecksum::Type::SHA1;
 

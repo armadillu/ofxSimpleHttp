@@ -21,7 +21,7 @@ struct ofxSimpleHttpResponse{
 	std::string				calculatedChecksum; //from downloaded file on disk
 
 	int						status; 			// return code for the response ie: 200 = OK
-	long int					serverReportedSize;
+	std::streamsize			serverReportedSize;
 	std::string				reasonForStatus;	// text explaining the status
 	std::string				responseBody;		// the actual response << DATA IS HERE!
 	std::string				contentType;		// the mime type of the response
@@ -31,7 +31,7 @@ struct ofxSimpleHttpResponse{
 	float					downloadSpeed;		// bytes/sec, only >0 when downloading, immediate
 	bool						chunkTested;
 	float					avgDownloadSpeed;	// bytes/sec, read after download happened
-	long int					downloadedBytes;
+	std::streamsize			downloadedBytes;
 	std::string				url;
 	std::string				fileName;			// file + extension, no path
 	std::string				extension;			// file extension (no dot)

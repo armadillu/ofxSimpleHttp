@@ -303,7 +303,8 @@ std::string ofxSimpleHttp::minimalDrawableString(){
 		}
 		msg += "] ";
 		msg += std::string( r->downloadToDisk ? ofFilePath::getFileName(r->absolutePath) : "");
-		msg += " (" + bytesToHumanReadable((long long)r->downloadSpeed, 1) + "/s)";
+		msg += " (" + bytesToHumanReadable((long long)r->downloadSpeed, 1) + "/s, ";
+		msg += bytesToHumanReadable(r->serverReportedSize, 1) + " size)";
 
 	}
 	unlock();
@@ -890,7 +891,7 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 						}
 						avgDownloadSpeed = resp->avgDownloadSpeed;
 
-						bool isAPI = (resp->contentType == "text/json");
+						bool isAPI = (resp->contentType == "text/json" || resp->contentType == "application/json;charset=UTF-8");
 						bool sizeMissmatch = resp->serverReportedSize > 0 && resp->serverReportedSize != resp->downloadedBytes;
 
 						//check download file size mismatch
