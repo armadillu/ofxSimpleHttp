@@ -768,6 +768,8 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 				if(useCredentials){
 					credentials.authenticate(req);
 				}
+
+				resp->timeDowloadStarted = ofGetElapsedTimef();
 				
 				try{
 					session->sendRequest(req);
@@ -798,7 +800,6 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 				resp->reasonForStatus = res.getReasonForStatus( res.getStatus() );
 				resp->contentType = res.getContentType();
 				resp->serverReportedSize = res.getContentLength();
-				resp->timeDowloadStarted = ofGetElapsedTimef();
 
 				std::string msg;
 				if (resp->serverReportedSize == -1){
