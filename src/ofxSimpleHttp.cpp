@@ -890,7 +890,9 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 
 						if(resp->timeTakenToDownload > 0.01f){
 							resp->avgDownloadSpeed = (resp->downloadedBytes ) / resp->timeTakenToDownload; //bytes/sec
-							ofLogNotice("ofxSimpleHttp") << "downloadURL() >> download completed - avg download speed: " << bytesToHumanReadable(resp->avgDownloadSpeed,1) << " - Dl Size: " << bytesToHumanReadable(resp->downloadedBytes, 1);
+							ofLogNotice("ofxSimpleHttp") << "downloadURL() >> download completed - avg Dl speed: " <<
+								bytesToHumanReadable(resp->avgDownloadSpeed,1) << " - Dl Size: " << bytesToHumanReadable(resp->downloadedBytes, 1) <<
+								" - dur: " << secondsToHumanReadable(resp->timeTakenToDownload, 1);
 						}
 						avgDownloadSpeed = resp->avgDownloadSpeed;
 
