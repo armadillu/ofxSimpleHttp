@@ -132,6 +132,8 @@ class ofxSimpleHttp : public ofThread{
 		void						setNeedsChecksumMatchToSkipDownload(bool needs);
 		void						setSpeedLimit(float KB_per_sec);
 
+		void						setSilent(bool noLogging);
+
 
 		ofEvent<ofxSimpleHttpResponse> httpResponse;
 
@@ -161,6 +163,7 @@ class ofxSimpleHttp : public ofThread{
 		bool						notifyFromMainThread;
 		bool						onlySkipDownloadIfChecksumMatches;
 
+		bool 					silent = false; //if true, no ofLog calls
 		int						timeOut;
 		std::string				userAgent;
 		std::string				acceptString;

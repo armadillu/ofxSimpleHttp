@@ -53,18 +53,18 @@ ofxSimpleHttp::ofxSimpleHttp(){
 ofxSimpleHttp::~ofxSimpleHttp(){
 
 	if(flushPendingRequestsOnDestruction){
-		if(queueLenEstimation > 0) ofLogWarning("ofxSimpleHttp") << "Destructor canceling pending downloads (" << queueLenEstimation << ")";
+		if(queueLenEstimation > 0 && !silent) ofLogWarning("ofxSimpleHttp") << "Destructor canceling pending downloads (" << queueLenEstimation << ")";
 		timeToStop = true;	//lets flag the thread so that it doesnt try access stuff while we delete things around
 	}
 
 	if(cancelCurrentDownloadOnDestruction && isThreadRunning()){
-		ofLogWarning("ofxSimpleHttp") << "Destructor stopping current download...";
+		if(!silent) ofLogWarning("ofxSimpleHttp") << "Destructor stopping current download...";
 		stopCurrentDownload(true);
 	}
 
 	
 	if (queueLenEstimation > 0) {
-		ofLogWarning("ofxSimpleHttp") << "Destructor finishing all pending downloads (" << queueLenEstimation << ")";
+		if(!silent) ofLogWarning("ofxSimpleHttp") << "Destructor finishing all pending downloads (" << queueLenEstimation << ")";
 	}
 	if (isThreadRunning()) {
 		try {
@@ -148,9 +148,6 @@ void ofxSimpleHttp::setTimeOut(int seconds){
 }
 
 void ofxSimpleHttp::setChecksumType(ofxChecksum::Type type){
-	if(type == ofxChecksum::Type::SHA1){
-		ofLogNotice() << "sha1!";
-	}
 	checksumType = type;
 }
 
@@ -219,7 +216,7 @@ void ofxSimpleHttp::threadedFunction(){
 	pthread_setname_np("ofxSimpleHttp");
 	#endif
 
-	ofLogVerbose("ofxSimpleHttp") << "start threadedFunction";
+	if(!silent) ofLogVerbose("ofxSimpleHttp") << "start threadedFunction";
 	queueLenEstimation = 0;
 
 	lock();
@@ -248,7 +245,7 @@ void ofxSimpleHttp::threadedFunction(){
 	unlock();
 
 	//if no more pending requests, let the thread die...
-	ofLogVerbose("ofxSimpleHttp", "exiting threadedFunction (queue len %d)", queueLenEstimation);
+	if(!silent) ofLogVerbose("ofxSimpleHttp", "exiting threadedFunction (queue len %d)", queueLenEstimation);
 
 //not needed anymore, only for 0.81 and below I think
 //#if  defined(TARGET_OSX) || defined(TARGET_LINUX) /*I'm not 100% sure of linux*/
@@ -266,7 +263,7 @@ void ofxSimpleHttp::stopCurrentDownload(bool emptyQueue){
 	if ( isThreadRunning() && n > 0){
 		ofxSimpleHttpResponse * r = q.front();
 		if (!r->downloadCanceled){ //dont cancel it twice!
-			ofLogNotice("ofxSimpleHttp") << "stopCurrentDownload() >> about to stop download of " + r->fileName + " ...";
+			if(!silent) ofLogNotice("ofxSimpleHttp") << "stopCurrentDownload() >> about to stop download of " + r->fileName + " ...";
 			try{
 				r->emptyWholeQueue = emptyQueue;
 				r->downloadCanceled = true;
@@ -494,6 +491,9 @@ void ofxSimpleHttp::fetchURL(std::string url, bool notifyOnSuccess, std::string 
 	}
 }
 
+void ofxSimpleHttp::setSilent(bool noLogging){
+	silent = noLogging;
+}
 
 ofxSimpleHttpResponse ofxSimpleHttp::fetchURLBlocking(std::string  url){
 
@@ -622,8 +622,8 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 					resp->status = 0;
 					resp->ok = true;
 					resp->fileWasHere = true;
-					ofLogVerbose("ofxSimpleHttp") << "about to download \"" << resp->url << "\" but a file with same name and correct checksum is already here!";
-					ofLogVerbose("ofxSimpleHttp") << "skipping download (" << resp->expectedChecksum << ")";
+					if(!silent) ofLogVerbose("ofxSimpleHttp") << "about to download \"" << resp->url << "\" but a file with same name and correct checksum is already here!";
+					if(!silent) ofLogVerbose("ofxSimpleHttp") << "skipping download (" << resp->expectedChecksum << ")";
 				}
 			}
 			f.close();
@@ -637,8 +637,8 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 					resp->ok = true;
 					resp->fileWasHere = true;
 					fileIsAlreadyHere = true;
-					ofLogVerbose("ofxSimpleHttp") << "about to download \""<< resp->url << "\" but a file with same name and (size > 0) is already here!";
-					ofLogVerbose("ofxSimpleHttp") << "skipping download (missing checksum)";
+					if(!silent) ofLogVerbose("ofxSimpleHttp") << "about to download \""<< resp->url << "\" but a file with same name and (size > 0) is already here!";
+					if(!silent) ofLogVerbose("ofxSimpleHttp") << "skipping download (missing checksum)";
 				}
 				f.close();
 			}
@@ -704,8 +704,8 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 					resp->checksumOK = resp->expectedChecksum == resp->calculatedChecksum;
 
 					if(!resp->checksumOK){
-						ofLogNotice("ofxSimpleHttp") << "file:// copy OK but Checksum FAILED";
-						ofLogNotice("ofxSimpleHttp") << "Checksum (" + ofxChecksum::toString(resp->checksumType) + ") was meant to be: \"" << resp->expectedChecksum << "\" but is: \"" << resp->calculatedChecksum<< "\"";
+						if(!silent) ofLogNotice("ofxSimpleHttp") << "file:// copy OK but Checksum FAILED";
+						if(!silent) ofLogNotice("ofxSimpleHttp") << "Checksum (" + ofxChecksum::toString(resp->checksumType) + ") was meant to be: \"" << resp->expectedChecksum << "\" but is: \"" << resp->calculatedChecksum<< "\"";
 					}
 				}
 
@@ -804,11 +804,11 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 				std::string msg;
 				if (resp->serverReportedSize == -1){
 					msg = "downloadURL(" + resp->fileName + ") >> Server doesn't report download size...";
-					ofLogVerbose("ofxSimpleHttp") << msg;
+					if(!silent) ofLogVerbose("ofxSimpleHttp") << msg;
 				}
 
 				if (resp->serverReportedSize == 0){
-					ofLogWarning("ofxSimpleHttp") << "Server reports file size 0 bytes!";
+					if(!silent) ofLogWarning("ofxSimpleHttp") << "Server reports file size 0 bytes!";
 				}
 
 				std::streamsize copySize = 0;
@@ -870,7 +870,7 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 
 						if(saveToDisk){
 							std::string msg = "downloadURL() downloaded to \"" + resp->absolutePath + "\"";
-							ofLogNotice("ofxSimpleHttp", msg);
+							if(!silent) ofLogNotice("ofxSimpleHttp", msg);
 							//ask the filesystem what is the real size of the file
 							ofFile file;
 							try{
@@ -887,7 +887,7 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 
 						if(resp->timeTakenToDownload > 0.01f){
 							resp->avgDownloadSpeed = (resp->downloadedBytes ) / resp->timeTakenToDownload; //bytes/sec
-							ofLogNotice("ofxSimpleHttp") << "downloadURL() >> download completed - avg Dl speed: " <<
+							if(!silent) ofLogNotice("ofxSimpleHttp") << "downloadURL() >> download completed - \"" << resp->url << "\" - avg Dl speed: " <<
 								bytesToHumanReadable(resp->avgDownloadSpeed,1) << " - Dl Size: " << bytesToHumanReadable(resp->downloadedBytes, 1) <<
 								" - dur: " << secondsToHumanReadable(resp->timeTakenToDownload, 1);
 						}
@@ -915,7 +915,7 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 								resp->reasonForStatus = "Download size mismatch";
 							}
 
-							ofLogWarning("ofxSimpleHttp", msg);
+							if(!silent) ofLogWarning("ofxSimpleHttp", msg);
 							resp->status = -1;
 							resp->ok = false;
 
@@ -927,7 +927,7 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 								resp->ok = false;
 							}
 						}
-						ofLogVerbose("ofxSimpleHttp") << "download finished! " << resp->url << " !";
+						if(!silent) ofLogVerbose("ofxSimpleHttp") << "download finished! " << resp->url << " !";
 						ok = true;
 					}
 
@@ -1200,8 +1200,8 @@ void ofxSimpleHttpResponse::print(){
 void ofxSimpleHttp::setSpeedLimit(float KB_per_sec){
 	speedLimit = KB_per_sec;
 	if(KB_per_sec > 0.0){
-		ofLogNotice("ofxSimpleHttp") << "Setting speed limit to " << KB_per_sec << " Kb/sec";
+		if(!silent) ofLogNotice("ofxSimpleHttp") << "Setting speed limit to " << KB_per_sec << " Kb/sec";
 	}else{
-		ofLogNotice("ofxSimpleHttp") << "Removing any download speed limits!";
+		if(!silent) ofLogNotice("ofxSimpleHttp") << "Removing any download speed limits!";
 	}
 }
