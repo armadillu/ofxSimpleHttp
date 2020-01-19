@@ -1019,20 +1019,22 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 
 void ofxSimpleHttp::update(){
 
-	lock();
-	
 	avgDownloadSpeed = 0.95f * avgDownloadSpeed + 0.05f * avgSpeedNow;
-	//cout << this << " now: " << avgSpeedNow / float(1024.0f*1024) << "Mb/sec  avg: " << avgDownloadSpeed / float(1024.0f*1024) << "Mb/sec" << endl;
+	bool done = false;
 
-	if(responsesPendingNotification.size()){
-		ofxSimpleHttpResponse r;
-		r = responsesPendingNotification.front();
-		responsesPendingNotification.pop();
-		unlock();
-		ofNotifyEvent( httpResponse, r, this ); //we want to be able to notify from outside the lock
-		//otherwise we cant start a new download from the callback (deadlock!)
-	}else{
-		unlock();
+	while(!done){
+		lock();
+		int numPending = responsesPendingNotification.size();
+		if(numPending > 0){
+			ofxSimpleHttpResponse r;
+			r = responsesPendingNotification.front();
+			responsesPendingNotification.pop();
+			unlock();
+			ofNotifyEvent( httpResponse, r, this ); //we want to be able to notify from outside the lock
+		}else{
+			unlock();
+			done = true;
+		}
 	}
 }
 
