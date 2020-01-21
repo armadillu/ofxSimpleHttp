@@ -354,7 +354,8 @@ std::string ofxSimpleHttp::drawableString(int urlLen){
 		std::string(serverSize.length() ?
 		"//   Server Reported Size:     " + spa + serverSize + "\n" : "")+
 		"//   Downloaded:               " + spa + bytesToHumanReadable((long long)r->downloadedSoFar, 2) + "\n" +
-		"//   Download Speed:           " + spa + bytesToHumanReadable((long long)r->downloadSpeed, 2) + "/sec\n" +
+		"//   Download Speed:           " + spa + bytesToHumanReadable(r->downloadSpeed, 2) + "/sec" +
+		string(speedLimit > 0 ? " Limit: " + bytesToHumanReadable(speedLimit * 1024, 1) + "/sec\n" : "\n") +
 		"//   Time Taken so far:        " + spa + secondsToHumanReadable(timeSoFar, 1) + "\n" +
 		//"//   Timeout after:            " + spa + secondsToHumanReadable(timeOut, 1) + "\n" +
 		"//   Estimated Remaining Time: " + spa + remTime + "\n" +
