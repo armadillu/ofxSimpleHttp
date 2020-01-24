@@ -1050,7 +1050,6 @@ std::streamsize ofxSimpleHttp::streamCopyWithProgress(std::istream & istr, std::
 		Buffer<char> buffer(COPY_BUFFER_SIZE);
 		istr.read(buffer.begin(), COPY_BUFFER_SIZE);
 		std::streamsize n = istr.gcount();
-		float avgSpeed = 0;
 		float avgdCurrentSpeed = 0;
 		bool first = true;
 		float sleepError = 0; //in sec
@@ -1090,45 +1089,24 @@ std::streamsize ofxSimpleHttp::streamCopyWithProgress(std::istream & istr, std::
 				//cout << "calculated sleep time: " << sleepTime << endl;
 				if(sleepTime - sleepError * 1000.0f > 0.0f){
 					ofSleepMillis(sleepTime - sleepError * 1000.0f);
-					//cout << "sleeping " << sleepTime - sleepError * 1000.0f << endl;
 				}else{
 					sleepError = 0.0;
 				}
 				time = (ofGetElapsedTimef() - t1);
 				float overslept = (time - expectedTimeToDLCopyBuffer);
-				//cout << "overslept: " << overslept << endl;
 				if(first){
 					sleepError = overslept;
 				}else{
-					sleepError = 0.5 * sleepError + 0.5 * overslept;
+					sleepError = 0.5f * sleepError + 0.5f * overslept;
 				}
-				//cout << "sleepError: " << sleepError * 1000 << endl;
 			}
-			
-			if(totalBytes >= COPY_BUFFER_SIZE){ //at least COPY_BUFFER_SIZE bytes of download
-				float newSpeed = 0;
-				float timeSoLong = timeThisChunk - timeB4Start;
-				newSpeed = (totalBytes) / (timeSoLong); //bytes / sec
-				if(chunkTested){
-					avgSpeed = 0.05 * newSpeed + 0.95 * avgSpeed;
-				}else{
-					avgSpeed = newSpeed;
-				}
-				avgSpeedNow = avgSpeed;
-				chunkTested = true;
-			}
-			
+
 			if(n >= COPY_BUFFER_SIZE){ //at least COPY_BUFFER_SIZE bytes of download
-				if(time > 0.01f){
-					float tSpeed = (n) / (time); //bytes / sec
-					if(first){
-						avgdCurrentSpeed = tSpeed;
-					}else{
-						avgdCurrentSpeed = 0.05 * tSpeed + 0.95 * avgdCurrentSpeed;
-					}
-					speed = avgdCurrentSpeed;
-					chunkTested = true;
+				float timeSinceStart = (ofGetElapsedTimef() - timeB4Start);
+				if(timeSinceStart > 0.5 && currentBytes > 1024){
+					avgSpeedNow = speed = currentBytes / timeSinceStart;
 				}
+				chunkTested = true;
 			}
 
 			first = false;
