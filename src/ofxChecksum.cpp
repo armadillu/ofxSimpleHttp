@@ -71,6 +71,8 @@ std::string ofxChecksum::xxHash(const std::string & filePath) {
 		return 0;
 	}
 
+	float t = ofGetElapsedTimef();
+
 	int seed = 0;
 	vector<char> buf(blockSize);
 
@@ -95,6 +97,10 @@ std::string ofxChecksum::xxHash(const std::string & filePath) {
 	//convert long long to hex string
 	char buff[64];
 	sprintf(buff, "%016llx", hash); //output a 16 char hash string, note it will have leading zeroes to reach 16 characters
+	float totalTime = ofGetElapsedTimef() - t;
+	if(totalTime > 3.0){
+		ofLogNotice("ofxChecksum") << "xxHash() of \"" << filePath << "\" is \"" << buff << "\" and it took " << ofGetElapsedTimef() - t << " seconds.";
+	}
 	return string(buff);
 }
 
