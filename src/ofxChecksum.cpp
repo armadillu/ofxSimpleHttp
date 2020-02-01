@@ -4,7 +4,10 @@
 #include <Poco/SHA1Engine.h>
 #include <Poco/DigestStream.h>
 
+#define XXH_INLINE_ALL
 #include "../libs/xxHash/xxhash.h"
+#undef XXH_INLINE_ALL
+
 #include "../libs/sha1/sha1.h"
 
 //#include "ofxTimeMeasurements.h"
@@ -81,25 +84,24 @@ std::string ofxChecksum::xxHash(const std::string & filePath) {
 	XXH_errorcode const resetResult = XXH64_reset(state, seed);
 	if (resetResult == XXH_ERROR) abort();
 
-	size_t bytes_read = 0;
-	do {
-		bytes_read = fread(buf.data(), 1, buf.size(), f);
-		if (ferror(f)) ofLogError("ofxChecksum") << "Error reading " << filePath << " for xxHash calculation.";
-		XXH_errorcode const addResult = XXH64_update(state, buf.data(), bytes_read);
-		if (addResult == XXH_ERROR) abort();
-	} while (bytes_read == buf.size());
+	size_t bytes_read = 1;
+	void * bufferData = buf.data();
 
-	unsigned long long const hash = XXH64_digest(state);
+	while (bytes_read) {
+		bytes_read = fread(bufferData, 1, blockSize, f);
+		XXH64_update(state, bufferData, bytes_read);
+	}
 
-	XXH64_freeState(state);
 	fclose(f);
+	unsigned long long const hash = XXH64_digest(state);
+	XXH64_freeState(state);
 
 	//convert long long to hex string
 	char buff[64];
 	sprintf(buff, "%016llx", hash); //output a 16 char hash string, note it will have leading zeroes to reach 16 characters
 	float totalTime = ofGetElapsedTimef() - t;
 	if(totalTime > 3.0){
-		ofLogNotice("ofxChecksum") << "xxHash() of \"" << filePath << "\" is \"" << buff << "\" and it took " << ofGetElapsedTimef() - t << " seconds.";
+		ofLogNotice("ofxChecksum") << "xxHash() of \"" << filePath << "\" is \"" << buff << "\" and it took " << ofGetElapsedTimef() - t << " seconds with a blocksize of " << blockSize / 1024 << " Kb";
 	}
 	return string(buff);
 }

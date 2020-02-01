@@ -26,7 +26,7 @@ public:
 	//calc sha1 of a std::string
 	static std::string calcSha1FromString(const std::string & data);
 
-	//muuuuch faster than sha1 checksum
+	//muuuuch faster than sha1 checksum, xxhash64
 	static std::string xxHash(const std::string & filePath);
 
 	static string toString(Type t);
