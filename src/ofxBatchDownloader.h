@@ -58,11 +58,12 @@ public:
 	void setSpeedLimit(float KB_per_sec);
 	void setTimeOut(float timeOut);
 	void setCopyBufferSize(float bufferSizeKb);
+	void setMaxRetries(int ret);
 
 	void setChecksumType(ofxChecksum::Type); //when you supply a checksum to compare a downloaded file against, what type will it be?
 
-	void addResourcesToDownloadList( std::vector<std::string>urlList );
-	void addResourcesToDownloadList( std::vector<std::string>urlList, std::vector<std::string>checksumList );
+	void addResourcesToDownloadList( const std::vector<std::string> & urlList );
+	void addResourcesToDownloadList( const std::vector<std::string> & urlList, const std::vector<std::string> & checksumList );
 	void startDownloading();
 	void cancelBatch(bool notify = false);
 
@@ -83,19 +84,21 @@ public:
 
 	ofEvent<ofxBatchDownloaderReport>	resourcesDownloadFinished;
 
-private:
+protected:
 
 	ofxSimpleHttp http;
 	bool busy;
 	bool needToStop; //user wants to cancel!
+	int maxTry = 5; //how many retry do we get if a download fails
 
 	std::string downloadFolder;
 
 	std::vector<std::string>	originalUrlList;
 	std::vector<std::string>	originalChecksumList;
 	std::vector<std::string>	failedList;
-	std::vector<std::string> okList;
+	std::vector<std::string> 	okList;
 	std::vector<ofxSimpleHttpResponse> responses;
+	std::map<std::string, int>  numFails;
 
 	void httpResult(ofxSimpleHttpResponse &response);
 	void reset();

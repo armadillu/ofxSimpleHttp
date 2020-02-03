@@ -106,12 +106,12 @@ std::string ofxBatchDownloader::getMinimalDrawableString(){
 	return http.minimalDrawableString();
 }
 
-void ofxBatchDownloader::addResourcesToDownloadList( std::vector<std::string> _urlList ){
+void ofxBatchDownloader::addResourcesToDownloadList( const std::vector<std::string> & _urlList ){
 	std::vector<std::string>_checksumList;
 	addResourcesToDownloadList(_urlList, _checksumList);
 }
 
-void ofxBatchDownloader::addResourcesToDownloadList( std::vector<std::string> _urlList, std::vector<std::string>_checksumList ){
+void ofxBatchDownloader::addResourcesToDownloadList( const std::vector<std::string> & _urlList, const std::vector<std::string> & _checksumList ){
 
 	if ( _checksumList.size() > 0 && (_urlList.size() != _checksumList.size()) ){
 		ofLogWarning("ofxBatchDownloader") << "addResourcesToDownloadList >> urlList & shaList element num mismatch!";
@@ -151,6 +151,11 @@ int ofxBatchDownloader::getNumFailedUrls(){
 	return failedList.size();
 }
 
+void ofxBatchDownloader::setMaxRetries(int n){
+	maxTry = std::max(0, n);
+}
+
+
 void ofxBatchDownloader::startDownloading(){
 
 	if (!busy){
@@ -189,6 +194,15 @@ void ofxBatchDownloader::httpResult(ofxSimpleHttpResponse &r){
 		}else{
 			ofLogError("ofxBatchDownloader") << "FAILED TO download [" << r.url << "]";
 		}
+		if(numFails[r.url] < maxTry){
+			ofLogWarning("ofxBatchDownloader") << "retrying download of " << r.url << " - " << maxTry - numFails[r.url] << " retries left.";
+			http.fetchURLToDisk(r.url, r.expectedChecksum, true, downloadFolder);
+			originalUrlList.push_back(r.url);
+			if(r.expectedChecksum.size()){
+				originalChecksumList.push_back(r.expectedChecksum);
+			}
+		}
+		numFails[r.url]++;
 	}
 
 	downloadedSoFar += r.downloadedBytes;
@@ -216,21 +230,11 @@ float ofxBatchDownloader::getAverageSpeed(){
 std::vector<std::string> ofxBatchDownloader::pendingURLs(){
 
 	std::vector<std::string> res;
-	for (int i = 0; i < originalUrlList.size(); i++){
-		bool found = false;
-		for (int j = 0; j < okList.size(); j++){
-			if ( okList[j] == originalUrlList[i] ){
-				found = true;
-				continue;
-			}
+	int numRun = okList.size() + failedList.size();
+	if (originalUrlList.size() > numRun){
+		for(int i = numRun; i < originalUrlList.size(); i++){
+			res.push_back(originalUrlList[i]);
 		}
-		for (int j = 0; j < failedList.size(); j++){
-			if ( failedList[j] == originalUrlList[i] ){
-				found = true;
-				continue;
-			}
-		}
-		if (!found) res.push_back(originalUrlList[i]);
 	}
 	return res;
 }
@@ -240,4 +244,5 @@ void ofxBatchDownloader::reset(){
 	failedList.clear();
 	okList.clear();
 	responses.clear();
+	numFails.clear();
 }

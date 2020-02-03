@@ -160,6 +160,10 @@ int ofxDownloadCentral::getNumActiveDownloads(){
 }
 
 
+void ofxDownloadCentral::setMaxRetries(int maxRet){
+	maxRetries = std::max(0, maxRet);
+}
+
 void ofxDownloadCentral::setSpeedLimit(float KB_per_sec){
 	speedLimit = KB_per_sec;
 }

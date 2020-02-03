@@ -80,6 +80,7 @@ class ofxDownloadCentral{
 		void setSpeedLimit(float KB_per_sec);
 		void setTimeOut(float timeoutSecs);
 		void setMaxConcurrentDownloads(int numConcurrentDownloads);
+		void setMaxRetries(int maxRet);
 
 		void setChecksumType(ofxChecksum::Type type); //when you supply a checksum to compare a downloaded file against, what type will it be?
 		void setProxyConfiguration(const ofxSimpleHttp::ProxyConfig & c);
@@ -147,6 +148,7 @@ class ofxDownloadCentral{
 				d->setCopyBufferSize(copyBufferSize);
 				d->setIdleTimeAfterEachDownload(idleTimeAfterDownload);
 				d->addResourcesToDownloadList(urlList, sha1List);
+				d->setMaxRetries(maxRetries);
 				ofAddListener(d->resourcesDownloadFinished, listener, listenerMethod); //set the notification to hit our original caller
 				if(downloaders.size() == 0){
 					downloadStartTime = ofGetElapsedTimef();
@@ -170,7 +172,7 @@ class ofxDownloadCentral{
 			downloadResources(urlList, shas, listener, listenerMethod, destinationFolder);
 		}
 
-	private:
+	protected:
 
 		void startQueue();
 
@@ -187,6 +189,7 @@ class ofxDownloadCentral{
 
 		int									failedJobsStartNumber;
 		int									failedJobsSoFar;
+		int 								maxRetries = 5;
 
 		std::map<int, float>					avgSpeed;	 //bytes/sec
 		int									maxURLsToList;

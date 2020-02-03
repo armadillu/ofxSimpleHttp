@@ -350,7 +350,7 @@ std::string ofxSimpleHttp::drawableString(int urlLen){
 		"//   URL: " + url + "\n" +
 		std::string( r->downloadToDisk ? "//   Save To: " + r->absolutePath + "\n" : "") +
 		std::string(serverSize.length() ?
-		"//   Progress:                 " + spa + std::string((r->downloadProgress >= 0.0) ? ofToString(100.0f * r->downloadProgress, 2) : "") + "%\n" : "") +
+		"//   Progress:                 " + spa + std::string((r->downloadProgress >= 0.0) ? ofToString(100.0f * r->downloadProgress, 1) : "") + "%\n" : "") +
 		std::string(serverSize.length() ?
 		"//   Server Reported Size:     " + spa + serverSize + "\n" : "")+
 		"//   Downloaded:               " + spa + bytesToHumanReadable((long long)r->downloadedSoFar, 2) + "\n" +
