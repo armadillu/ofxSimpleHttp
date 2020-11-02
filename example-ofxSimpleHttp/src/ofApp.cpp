@@ -113,6 +113,12 @@ void ofApp::keyPressed(int key){
 		http.fetchURLToDisk("file:///System/Library/Fonts/Optima.ttc", true, OUTPUT_DIRECTORY );
 	}
 
+	if(key=='8'){ //also supports file:// urls for local filesystem
+		ofLogNotice() << "xxhash():" << ofxChecksum::xxHash(ofToDataPath("../../config.make"));
+		ofLogNotice() << "xxHash3_64():" << ofxChecksum::xxHash3_64(ofToDataPath("../../config.make"));
+		ofLogNotice() << "xxHash3_128():" << ofxChecksum::xxHash3_128(ofToDataPath("../../config.make"));
+	}
+
 	if(key=='c'){
 		http.stopCurrentDownload(false);
 	}

@@ -8,7 +8,9 @@ public:
 
 	enum class Type{
 		SHA1,
-		XX_HASH
+		XX_HASH, //xxhash64
+		XX_HASH3_64,
+		XX_HASH3_128
 	};
 
 	//checks if sha1 match between file & expected sha1
@@ -26,8 +28,10 @@ public:
 	//calc sha1 of a std::string
 	static std::string calcSha1FromString(const std::string & data);
 
-	//muuuuch faster than sha1 checksum, xxhash64
-	static std::string xxHash(const std::string & filePath);
+	//muuuuch faster than sha1 checksum, xxhash64, need to supply absolute path
+	static std::string xxHash(const std::string & filePath); //xxhash64
+	static std::string xxHash3_64(const std::string & filePath);
+	static std::string xxHash3_128(const std::string & filePath);
 
 	static string toString(Type t);
 };
