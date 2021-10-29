@@ -182,7 +182,7 @@ std::string ofxChecksum::xxHash3_128(const std::string & filePath) {
 	XXH3_freeState(state);
 
 	//convert long long to hex string
-	char buff[32];
+	char buff[64];
 	sprintf(buff, "%016llx%016llx", hash.high64, hash.low64); //note the leading zeroes
 	float totalTime = ofGetElapsedTimef() - t;
 	if(totalTime > 3.0){
