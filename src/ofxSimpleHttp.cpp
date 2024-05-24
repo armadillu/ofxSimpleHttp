@@ -554,7 +554,7 @@ void ofxSimpleHttp::fetchURLToDisk(std::string url, std::string expectedChecksum
 	if ( !isThreadRunning() ){	//if the queue is not running, lets start it
 		try{
 			startThread(true);
-		}catch(exception e){
+		}catch(std::exception e){
 			ofLogError("ofxSimpleHttp") << "can NOT start thread!" << e.what();
 		}
 	}
@@ -595,7 +595,7 @@ ofxSimpleHttpResponse ofxSimpleHttp::fetchURLtoDiskBlocking(std::string  url, st
 bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThroughEvents, bool beingCalledFromMainThread, bool saveToDisk){
 
 	bool ok = false;
-	ofstream myfile;
+	std::ofstream myfile;
 	bool fileIsAlreadyHere = false;
 	resp->responseBody = "";
 
@@ -651,7 +651,7 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 		std::string protocol = resp->url.substr(0,7);
 
 		if(saveToDisk || protocol == "file://"){
-			myfile.open( resp->absolutePath.c_str(), ios_base::binary );
+			myfile.open( resp->absolutePath.c_str(), std::ios_base::binary );
 		}
 
 		if(protocol == "file://"){
@@ -780,21 +780,21 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 						session->socket().setNoDelay(true);
 						//cout << "buf: " << session->socket().getReceiveBufferSize() << " - " << COPY_BUFFER_SIZE << endl;
 						//session->socket().setReceiveBufferSize(COPY_BUFFER_SIZE);
-					}catch(exception rr){
+					}catch(std::exception rr){
 						ofLogWarning("ofxSimpleHttp") << "cant set socket options : " <<  rr.what();
 					}
 
-				}catch(exception e){
+				}catch(std::exception e){
 					ofLogWarning("ofxSimpleHttp") << "ofxSimpleHttp session send request exception: " << e.what() << " for URL: " << request.url;
 				}
 
 				HTTPResponse res;
-				istream& rs = session->receiveResponse(res);
+				std::istream& rs = session->receiveResponse(res);
 
 				resp->status = res.getStatus();
 				try {
 					resp->timestamp = res.getDate();
-				} catch (exception exc) {
+				} catch (std::exception exc) {
 					resp->timestamp = 0;
 				}
 
