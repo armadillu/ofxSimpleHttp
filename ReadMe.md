@@ -6,8 +6,6 @@
 OpenFrameworks addon to make http downloads easy; 
 
 
-
-
 * supports http://, https:// and file://
 * threaded downloads
 * user agent customization
