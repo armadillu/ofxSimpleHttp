@@ -1,0 +1,8 @@
+!/.gitignore
+# Keep the input fixture, but ignore compiled output and local results.
+!/bin/
+/bin/*
+!/bin/data/
+/bin/data/*
+!/bin/data/image-urls.txt
+/obj/

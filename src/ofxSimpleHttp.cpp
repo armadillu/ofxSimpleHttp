@@ -84,6 +84,15 @@ ofxSimpleHttp::~ofxSimpleHttp(){
 }
 
 
+void ofxSimpleHttp::setConnectionReuse(bool enabled){
+    std::lock_guard<std::mutex> guard(connectionReuseMutex);
+    connectionReuseEnabled = enabled;
+    cachedSession.reset();
+    cachedSessionKey.clear();
+    cachedSessionContext = nullptr;
+}
+
+
 void ofxSimpleHttp::setProxyConfiguration(const ProxyConfig & c){
 	proxyConfig = c;
 }
@@ -731,7 +740,16 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 
 		}else{
 
-			HTTPClientSession * session = NULL;
+            // Keep session ownership local until the entire response is consumed.
+            // A failed/cancelled transfer must never return a socket to the cache.
+            bool reuse = connectionReuseEnabled.load();
+            std::unique_lock<std::mutex> reuseLock(connectionReuseMutex, std::defer_lock);
+            if(reuse){
+                reuseLock.lock();
+                reuse = connectionReuseEnabled.load();
+            }
+            std::unique_ptr<HTTPClientSession> sessionOwner;
+            HTTPClientSession * session = NULL;
 
 			try {
 
@@ -740,13 +758,33 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 				std::string path(uri.getPathAndQuery());
 				if (path.empty()) path = "/";
 
-				if(uri.getScheme() == "https"){
-					session = new HTTPSClientSession(uri.getHost(), uri.getPort(), pContext);
-				}else{
-					session = new HTTPClientSession(uri.getHost(), uri.getPort());
-				}
+                std::vector<std::string> key;
+                if(reuse){
+                    key = {uri.getScheme(), uri.getHost(), std::to_string(uri.getPort()),
+                           proxyConfig.useProxy ? "proxy" : "direct", proxyConfig.host,
+                           std::to_string(proxyConfig.port), proxyConfig.login, proxyConfig.password,
+                           useCredentials ? credentials.getUsername() : "",
+                           useCredentials ? credentials.getPassword() : ""};
+                    if(key == cachedSessionKey &&
+                       (uri.getScheme() != "https" || cachedSessionContext == pContext)){
+                        sessionOwner = std::move(cachedSession);
+                    }else{
+                        cachedSession.reset();
+                    }
+                    cachedSessionKey = key;
+                    cachedSessionContext = uri.getScheme() == "https" ? pContext : nullptr;
+                }
+                const bool newSession = !sessionOwner;
+                if(newSession){
+                    if(uri.getScheme() == "https"){
+                        sessionOwner.reset(new HTTPSClientSession(uri.getHost(), uri.getPort(), pContext));
+                    }else{
+                        sessionOwner.reset(new HTTPClientSession(uri.getHost(), uri.getPort()));
+                    }
+                }
+                session = sessionOwner.get();
 
-				if(proxyConfig.useProxy){
+				if(proxyConfig.useProxy && newSession){
 					session->setProxy(proxyConfig.host, proxyConfig.port);
 					if(proxyConfig.login.size() && proxyConfig.password.size()){
 						session->setProxyCredentials(proxyConfig.login, proxyConfig.password);
@@ -823,8 +861,15 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 					resp->responseBody = output.str();
 				}
 
-				delete session;
-				session = NULL;
+                const bool completeResponse = copySize >= 0 && !resp->downloadCanceled &&
+                    rs.eof() && !rs.bad() &&
+                    (resp->serverReportedSize < 0 || copySize == resp->serverReportedSize);
+                if(reuse && completeResponse && res.getKeepAlive()){
+                    cachedSession = std::move(sessionOwner);
+                }else{
+                    sessionOwner.reset();
+                }
+                session = NULL;
 
 				if (copySize >= 0){
 
@@ -975,10 +1020,8 @@ bool ofxSimpleHttp::downloadURL(ofxSimpleHttpResponse* resp, bool sendResultThro
 				ofLogError("ofxSimpleHttp") << msg;
 			}
             
-            if(session != NULL){
-                delete session;
-                // session = NULL;
-            }
+            // Also closes sessions on exception or incomplete response.
+            sessionOwner.reset();
 		}
 	}else{
 		resp->timeTakenToDownload = 0;

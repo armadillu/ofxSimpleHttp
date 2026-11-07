@@ -46,6 +46,11 @@
 #include "ofEvents.h"
 #include "ofColor.h"
 #include <queue>
+#include <memory>
+#include <mutex>
+#include <atomic>
+#include <vector>
+#include "Poco/Net/HTTPClientSession.h"
 #include <map>
 #include "ofxChecksum.h"
 
@@ -134,6 +139,10 @@ class ofxSimpleHttp : public ofThread{
 
 		void						setSilent(bool noLogging);
 
+        // Opt-in, disabled by default. Configure while idle, like other settings.
+        // Reuses fully consumed HTTP(S) connections within this instance only.
+        void setConnectionReuse(bool enabled);
+
 
 		ofEvent<ofxSimpleHttpResponse> httpResponse;
 
@@ -155,6 +164,12 @@ class ofxSimpleHttp : public ofThread{
 		static std::string		getFileSystemSafeString(const std::string & input);
 
 	protected:
+
+        std::atomic<bool> connectionReuseEnabled{false};
+        std::mutex connectionReuseMutex;
+        std::unique_ptr<Poco::Net::HTTPClientSession> cachedSession;
+        std::vector<std::string> cachedSessionKey;
+        Poco::Net::Context::Ptr cachedSessionContext;
 
 		bool downloadURL( ofxSimpleHttpResponse * resp, bool sendResultThroughEvents, bool beingCalledFromMainThread, bool saveToDisk );
 		void threadedFunction();	//the queue runs here

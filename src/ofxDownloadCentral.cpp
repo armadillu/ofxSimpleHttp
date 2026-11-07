@@ -58,6 +58,10 @@ void ofxDownloadCentral::setMaxURLsToList(int max){
 }
 
 
+void ofxDownloadCentral::setConnectionReuse(bool enabled){
+	connectionReuseEnabled = enabled;
+}
+
 void ofxDownloadCentral::setVerbose(bool b){
 	verbose = b;
 }

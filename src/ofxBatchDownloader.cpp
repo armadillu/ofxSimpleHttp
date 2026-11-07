@@ -47,6 +47,10 @@ void ofxBatchDownloader::setCredentials(const std::string& user, const std::stri
 }
 
 
+void ofxBatchDownloader::setConnectionReuse(bool enabled){
+	http.setConnectionReuse(enabled);
+}
+
 void ofxBatchDownloader::setVerbose(bool b){}
 
 

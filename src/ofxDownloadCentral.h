@@ -73,6 +73,8 @@ class ofxDownloadCentral{
 		int getNumPendingDownloads();
 		int getNumActiveDownloads();
 
+		// Applies to batches queued after this call; default is false.
+		void setConnectionReuse(bool enabled);
 		void setVerbose(bool b);
 		void setNeedsChecksumMatchToSkipDownload(bool needs);	//if downloaded file is on disk, should I assume its good?
 															//or only if you provided sha1 checksum and it matches
@@ -135,6 +137,7 @@ class ofxDownloadCentral{
 			if (urlList.size() > 0 ){
 				ofxBatchDownloader * d = new ofxBatchDownloader();
 				d->setProxyConfiguration(proxyConfig);
+				d->setConnectionReuse(connectionReuseEnabled);
 				if(credentials.first.size() || credentials.second.size()){
 					d->setCredentials(credentials.first, credentials.second);
 				}
@@ -175,6 +178,7 @@ class ofxDownloadCentral{
 	protected:
 
 		void startQueue();
+        bool connectionReuseEnabled = false;
 
 		std::vector<ofxBatchDownloader*>		downloaders;
 		std::vector<ofxBatchDownloader*>		activeDownloaders;

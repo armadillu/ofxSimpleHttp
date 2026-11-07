@@ -22,3 +22,8 @@ OpenFrameworks addon to make http downloads easy;
 ![img1](https://farm6.staticflickr.com/5556/14785717148_c953b4d82e_z_d.jpg)
 
 ![img1](https://farm4.staticflickr.com/3909/14785770407_718d5752cf_z_d.jpg)
+
+
+### Experimental connection reuse
+
+Optional HTTP(S) connection reuse is disabled by default. See [ConnectionReuse.md](ConnectionReuse.md) for configuration, lifecycle rules, and integration tests.

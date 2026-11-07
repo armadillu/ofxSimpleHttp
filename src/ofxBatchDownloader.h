@@ -67,6 +67,7 @@ public:
 	void startDownloading();
 	void cancelBatch(bool notify = false);
 
+	void setConnectionReuse(bool enabled);
 	void setVerbose(bool b); //nop
 	void setNeedsChecksumMatchToSkipDownload(bool needsChecksum);
 	void setIdleTimeAfterEachDownload(float seconds); //wait a bit before notifying once the dowload is over
