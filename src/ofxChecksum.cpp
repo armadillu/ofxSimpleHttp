@@ -70,7 +70,7 @@ std::string ofxChecksum::xxHash(const std::string & filePath) {
 	FILE * f = fopen( filePath.c_str(), "rb" );
 	if(f == NULL){
 		ofLogError("ofxChecksum") << "can't xxHash(); can't open file at \"" << filePath << "\"";
-		return 0;
+		return "";
 	}
 
 	float t = ofGetElapsedTimef();
@@ -112,7 +112,7 @@ std::string ofxChecksum::xxHash3_64(const std::string & filePath) {
 	FILE * f = fopen( filePath.c_str(), "rb" );
 	if(f == NULL){
 		ofLogError("ofxChecksum") << "can't xxHash3_64(); can't open file at \"" << filePath << "\"";
-		return 0;
+		return "";
 	}
 
 	float t = ofGetElapsedTimef();
@@ -155,7 +155,7 @@ std::string ofxChecksum::xxHash3_128(const std::string & filePath) {
 	FILE * f = fopen( filePath.c_str(), "rb" );
 	if(f == NULL){
 		ofLogError("ofxChecksum") << "can't xxHash3_128(); can't open file at \"" << filePath << "\"";
-		return 0;
+		return "";
 	}
 
 	float t = ofGetElapsedTimef();
