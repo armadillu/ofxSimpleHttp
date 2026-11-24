@@ -190,7 +190,7 @@ void ofxBatchDownloader::httpResult(ofxSimpleHttpResponse &r){
 	bool checkedOK = r.checksumOK || (!r.checksumOK && r.expectedChecksum.size() == 0);
 	if(r.ok && checkedOK){
 		okList.push_back( r.url );
-		ofLogNotice("ofxBatchDownloader") << "downloaded OK [" << r.url << "]";
+		//ofLogNotice("ofxBatchDownloader") << "downloaded OK [" << r.url << "]";
 	}else{
 		failedList.push_back( r.url );
 		if (!r.checksumOK){
